@@ -1,5 +1,8 @@
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
-const THECRAG_API_BASE_URL = 'https://www.thecrag.com/api';
+const THECRAG_API_HOST = process.env.THECRAG_API_HOST ?? 'https://www.thecrag.com';
+const THECRAG_API_RESOURCE_STEM = process.env.THECRAG_API_RESOURCE_STEM ?? '/api';
+const THECRAG_API_BASE_URL = `${THECRAG_API_HOST}${THECRAG_API_RESOURCE_STEM}`;
+const THECRAG_OAUTH_ACCESS_TOKEN = process.env.THECRAG_OAUTH_ACCESS_TOKEN;
 
 function toArray(value) {
   if (Array.isArray(value)) {
@@ -28,10 +31,16 @@ function normalizeSubsector(subsector, routes = []) {
 }
 
 async function fetchTheCrag(path) {
+  const headers = {
+    Accept: 'application/json'
+  };
+
+  if (THECRAG_OAUTH_ACCESS_TOKEN) {
+    headers.Authorization = `Bearer ${THECRAG_OAUTH_ACCESS_TOKEN}`;
+  }
+
   const response = await fetch(`${THECRAG_API_BASE_URL}${path}`, {
-    headers: {
-      Accept: 'application/json'
-    },
+    headers,
     next: { revalidate: 3600 }
   });
 
