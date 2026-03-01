@@ -21,4 +21,5 @@ Abrir [http://localhost:3000](http://localhost:3000).
 
 - Esta app usa App Router de Next.js.
 - Estilos con Tailwind CSS.
-- La integración de `thecrag-javascript` en `src/lib/thecrag.js` incluye compatibilidad defensiva para distintos nombres de métodos de la librería.
+- `thecrag-javascript` se instala directamente desde GitHub (`github:theCrag/thecrag-javascript`) porque no está publicado en npm.
+- La integración en `src/lib/thecrag.js` incluye compatibilidad defensiva para distintos nombres de métodos de la librería.
