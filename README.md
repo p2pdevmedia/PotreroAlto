@@ -1,6 +1,6 @@
 # Potrero Alto - Next.js + Tailwind
 
-Aplicación web para mostrar información de escalada del sector **Potrero Alto** usando la librería [`thecrag-javascript`](https://github.com/theCrag/thecrag-javascript).
+Aplicación web para mostrar información de escalada del sector **Potrero Alto** consumiendo la API pública de [theCrag](https://www.thecrag.com).
 
 ## Objetivo
 
@@ -21,5 +21,8 @@ Abrir [http://localhost:3000](http://localhost:3000).
 
 - Esta app usa App Router de Next.js.
 - Estilos con Tailwind CSS.
-- `thecrag-javascript` se instala directamente desde GitHub (`github:theCrag/thecrag-javascript`) porque no está publicado en npm.
-- La integración en `src/lib/thecrag.js` incluye compatibilidad defensiva para distintos nombres de métodos de la librería.
+- El acceso a datos usa endpoints canónicos de theCrag API, por ejemplo:
+  - `/api/node/id/{nodeID}`
+  - `/api/node/id/{nodeID}/children/area`
+  - `/api/node/id/{nodeID}/children/route`
+- La integración está en `src/lib/thecrag.js`.

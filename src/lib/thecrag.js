@@ -1,4 +1,5 @@
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
+const THECRAG_API_BASE_URL = 'https://www.thecrag.com/api';
 
 function toArray(value) {
   if (Array.isArray(value)) {
@@ -11,59 +12,70 @@ function normalizeRoute(route) {
   return {
     id: route.id ?? route.node_id ?? route.uuid,
     name: route.name ?? route.label ?? 'Vía sin nombre',
-    grade: route.grade ?? route.difficulty ?? 'Sin grado',
+    grade: route.grade ?? route.grades?.[0]?.label ?? route.difficulty ?? 'Sin grado',
     stars: route.stars ?? route.rating ?? null,
-    type: route.type ?? route.climb_type ?? null
+    type: route.type ?? route.node_type ?? route.climb_type ?? null
   };
 }
 
-function normalizeSubsector(subsector) {
-  const routes =
-    toArray(subsector.routes).map(normalizeRoute) ||
-    toArray(subsector.children?.routes).map(normalizeRoute);
-
+function normalizeSubsector(subsector, routes = []) {
   return {
     id: subsector.id ?? subsector.node_id ?? subsector.uuid,
     name: subsector.name ?? subsector.label ?? 'Subsector sin nombre',
     description: subsector.description ?? subsector.summary ?? '',
-    routes
+    routes: routes.map(normalizeRoute)
   };
 }
 
+async function fetchTheCrag(path) {
+  const response = await fetch(`${THECRAG_API_BASE_URL}${path}`, {
+    headers: {
+      Accept: 'application/json'
+    },
+    next: { revalidate: 3600 }
+  });
+
+  if (!response.ok) {
+    throw new Error(`theCrag API respondió con estado ${response.status} en ${path}.`);
+  }
+
+  return response.json();
+}
+
+function readList(payload) {
+  return toArray(payload?.list ?? payload?.items ?? payload?.children ?? payload?.data ?? payload);
+}
+
+async function fetchSubsectorRoutes(subsectorId) {
+  const routesPayload = await fetchTheCrag(`/node/id/${subsectorId}/children/route`);
+  return readList(routesPayload);
+}
+
 export async function getPotreroAltoData() {
-  const theCrag = await import('thecrag-javascript');
+  const [sectorPayload, subsectorsPayload] = await Promise.all([
+    fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}`),
+    fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}/children/area`)
+  ]);
 
-  const client =
-    theCrag.createClient?.({ language: 'es' }) ??
-    (theCrag.default ? new theCrag.default({ language: 'es' }) : null);
+  const sector = sectorPayload?.node ?? sectorPayload?.area ?? sectorPayload;
+  const subsectorsRaw = readList(subsectorsPayload);
 
-  if (!client) {
-    throw new Error('No se pudo inicializar thecrag-javascript.');
-  }
+  const subsectors = await Promise.all(
+    subsectorsRaw.map(async (subsector) => {
+      const subsectorId = subsector.id ?? subsector.node_id;
 
-  // Soporta distintas versiones de la librería.
-  const sectorResponse =
-    (await client.getArea?.(POTRERO_ALTO_SECTOR_ID, {
-      include: ['children', 'routes']
-    })) ??
-    (await client.getNode?.(POTRERO_ALTO_SECTOR_ID, {
-      include_children: true,
-      include_routes: true
-    })) ??
-    (await client.area?.(POTRERO_ALTO_SECTOR_ID, {
-      children: true,
-      routes: true
-    }));
+      if (!subsectorId) {
+        return normalizeSubsector(subsector, []);
+      }
 
-  if (!sectorResponse) {
-    throw new Error('No se obtuvo respuesta desde theCrag para Potrero Alto.');
-  }
-
-  const sector = sectorResponse.sector ?? sectorResponse.area ?? sectorResponse;
-  const subsectors =
-    toArray(sector.children)
-      .filter((child) => (child.type ?? child.node_type ?? '').toLowerCase().includes('sector'))
-      .map(normalizeSubsector) || [];
+      try {
+        const routes = await fetchSubsectorRoutes(subsectorId);
+        return normalizeSubsector(subsector, routes);
+      } catch {
+        return normalizeSubsector(subsector, []);
+      }
+    })
+  );
 
   return {
     id: sector.id ?? sector.node_id ?? POTRERO_ALTO_SECTOR_ID,
