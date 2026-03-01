@@ -23,7 +23,7 @@ TODO - make it handle collections as well as single objects
  * Each DAO implements get and set which return a promise
  */
 
-var host = 'http://dev.thecrag.com/';
+var host = 'http://thecrag.com/';
 
 var DAO = {
 	live: {
