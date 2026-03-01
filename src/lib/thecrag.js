@@ -1,3 +1,5 @@
+import { POTRERO_ALTO_FALLBACK_DATA } from '@/lib/fallback-subsectors';
+
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
 const THECRAG_API_HOST = process.env.THECRAG_API_HOST ?? 'https://www.thecrag.com';
 const THECRAG_API_RESOURCE_STEM = process.env.THECRAG_API_RESOURCE_STEM ?? '/api';
@@ -61,10 +63,17 @@ async function fetchSubsectorRoutes(subsectorId) {
 }
 
 export async function getPotreroAltoData() {
-  const [sectorPayload, subsectorsPayload] = await Promise.all([
-    fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}`),
-    fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}/children/area`)
-  ]);
+  let sectorPayload;
+  let subsectorsPayload;
+
+  try {
+    [sectorPayload, subsectorsPayload] = await Promise.all([
+      fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}`),
+      fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}/children/area`)
+    ]);
+  } catch {
+    return POTRERO_ALTO_FALLBACK_DATA;
+  }
 
   const sector = sectorPayload?.node ?? sectorPayload?.area ?? sectorPayload;
   const subsectorsRaw = readList(subsectorsPayload);
