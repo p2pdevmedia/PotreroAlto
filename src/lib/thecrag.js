@@ -28,6 +28,13 @@ function normalizeSubsector(subsector, routes = []) {
     id: subsector.id ?? subsector.node_id ?? subsector.uuid,
     name: subsector.name ?? subsector.label ?? 'Subsector sin nombre',
     description: subsector.description ?? subsector.summary ?? '',
+    image:
+      subsector.image ??
+      subsector.photo ??
+      subsector.thumbnail ??
+      subsector.images?.[0]?.url ??
+      subsector.media?.[0]?.url ??
+      null,
     routes: routes.map(normalizeRoute)
   };
 }

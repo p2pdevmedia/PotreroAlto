@@ -15,6 +15,15 @@ function RouteRow({ route }) {
   );
 }
 
+function subsectorCover(subsector) {
+  if (subsector.image) {
+    return subsector.image;
+  }
+
+  const safeName = encodeURIComponent(subsector.name ?? 'Subsector');
+  return `https://placehold.co/640x360/0f172a/e2e8f0?text=${safeName}`;
+}
+
 export default async function HomePage() {
   let data;
   let error = null;
@@ -55,20 +64,34 @@ export default async function HomePage() {
 
           <div className="grid gap-6 md:grid-cols-2">
             {data.subsectors.map((subsector) => (
-              <article key={subsector.id} className="card">
-                <h3 className="text-xl font-semibold text-white">{subsector.name}</h3>
-                {subsector.description ? <p className="mt-2 text-sm text-slate-300">{subsector.description}</p> : null}
+              <details key={subsector.id} className="card group">
+                <summary className="list-none cursor-pointer outline-none">
+                  <img
+                    src={subsectorCover(subsector)}
+                    alt={`Imagen del subsector ${subsector.name}`}
+                    className="h-44 w-full rounded-xl object-cover"
+                    loading="lazy"
+                  />
+                  <div className="mt-4">
+                    <h3 className="text-xl font-semibold text-white group-open:text-sunset">{subsector.name}</h3>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {subsector.routes.length} {subsector.routes.length === 1 ? 'ruta' : 'rutas'}
+                    </p>
+                  </div>
+                </summary>
 
                 {subsector.routes.length ? (
-                  <ul className="mt-4">
+                  <ul className="mt-4 border-t border-slate-700/50 pt-2">
                     {subsector.routes.map((route) => (
                       <RouteRow key={route.id ?? `${subsector.id}-${route.name}`} route={route} />
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-4 text-sm text-slate-400">Sin vías registradas en este subsector.</p>
+                  <p className="mt-4 border-t border-slate-700/50 pt-4 text-sm text-slate-400">
+                    Sin vías registradas en este subsector.
+                  </p>
                 )}
-              </article>
+              </details>
             ))}
           </div>
         </section>
