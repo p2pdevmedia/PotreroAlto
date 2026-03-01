@@ -31,7 +31,7 @@ export default async function HomePage() {
         <p className="text-sm uppercase tracking-[0.2em] text-slate-300">Guía de escalada</p>
         <h1 className="mt-3 text-4xl font-bold text-white md:text-5xl">Potrero Alto</h1>
         <p className="mt-4 max-w-3xl text-slate-200">
-          Web informativa conectada con <span className="font-semibold text-sunset">theCrag</span> para listar
+          Web informativa conectada con <span className="font-semibold text-sunset">theCrag API</span> para listar
           subsectores y vías del sector <span className="font-semibold">ID 6574670919</span>.
         </p>
       </header>
@@ -42,7 +42,7 @@ export default async function HomePage() {
           <p className="mt-2 text-red-100">{error}</p>
           <p className="mt-4 text-sm text-red-100/80">
             En tu entorno local ejecuta <code className="rounded bg-red-950 px-1 py-0.5">npm install</code> y
-            verifica credenciales/API si la librería de theCrag las requiere.
+            verifica acceso de red y disponibilidad de la API pública de theCrag.
           </p>
         </section>
       ) : (
