@@ -17,6 +17,19 @@ npm run dev
 
 Abrir [http://localhost:3000](http://localhost:3000).
 
+## Variables de entorno
+
+Para APIs protegidas por OAuth, configurar un archivo `.env.local` con:
+
+```bash
+THECRAG_API_HOST=https://www.thecrag.com
+THECRAG_API_RESOURCE_STEM=/api
+THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
+```
+
+- `THECRAG_API_RESOURCE_STEM` es el *OAuth protected API resource stem* (ejemplo: `/api`).
+- Si `THECRAG_OAUTH_ACCESS_TOKEN` no está definido, la app intentará consumir el API sin header `Authorization`.
+
 ## Notas
 
 - Esta app usa App Router de Next.js.
