@@ -109,14 +109,14 @@ export default function SubsectorAccordion({ subsectors }) {
 
       {selectedSubsector ? (
         <div
-          className="fixed inset-0 z-40 flex items-end bg-slate-950/70 p-3 backdrop-blur-sm"
+          className="fixed inset-0 z-40 flex items-center bg-slate-950/70 p-3 backdrop-blur-sm"
           onClick={() => {
             setSelectedSubsectorId(null);
             setSelectedRoute(null);
           }}
         >
           <section
-            className="max-h-[80vh] w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-900"
+            className="flex h-full max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900"
             role="dialog"
             aria-modal="true"
             aria-labelledby="selected-subsector-title"
@@ -143,7 +143,7 @@ export default function SubsectorAccordion({ subsectors }) {
               </button>
             </header>
 
-            <div className="overflow-y-auto px-4 pb-4">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
               {selectedSubsector.routes.length ? (
                 <ul>
                   {selectedSubsector.routes.map((route) => (
