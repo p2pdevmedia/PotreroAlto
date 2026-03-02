@@ -63,12 +63,6 @@ export default async function HomePage() {
         </section>
       ) : (
         <section className="space-y-6">
-          <div className="card">
-            <h2 className="text-2xl font-semibold text-white">{data.name}</h2>
-            <p className="mt-1 text-slate-300">{data.location}</p>
-            {data.description ? <p className="mt-4 text-slate-200">{data.description}</p> : null}
-          </div>
-
           <div className="grid gap-6 md:grid-cols-2">
             {data.subsectors.map((subsector) => (
               <details key={subsector.id} className="card group">
