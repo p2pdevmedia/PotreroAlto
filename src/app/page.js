@@ -14,10 +14,13 @@ export default async function HomePage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <header
-        className="mb-10 card bg-cover bg-center"
+        className="mb-10 card bg-center"
         style={{
           backgroundImage:
-            'linear-gradient(to bottom right, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.88), rgba(45, 99, 91, 0.45)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")'
+            'linear-gradient(to bottom right, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.88), rgba(45, 99, 91, 0.45)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
+          backgroundSize: 'cover, contain',
+          backgroundRepeat: 'no-repeat, no-repeat',
+          backgroundPosition: 'center, center'
         }}
       >
         <p className="text-sm uppercase tracking-[0.2em] text-slate-300">Guía de escalada</p>
