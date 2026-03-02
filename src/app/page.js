@@ -14,7 +14,7 @@ export default async function HomePage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <header
-        className="relative mb-10 card flex flex-col justify-end overflow-hidden"
+        className="relative mb-10 card overflow-hidden"
         style={{ aspectRatio: '4 / 3' }}
       >
         <div
@@ -29,7 +29,7 @@ export default async function HomePage() {
             clipPath: 'inset(0 0 20% 0)'
           }}
         />
-        <div className="relative z-10">
+        <div className="absolute inset-x-0 bottom-[20%] z-10 p-6 md:p-8">
           <p className="text-sm uppercase tracking-[0.2em] text-slate-300">Guía de escalada</p>
           <h1 className="mt-3 text-4xl font-bold text-white md:text-5xl">Potrero Alto</h1>
           <p className="mt-4 max-w-3xl text-slate-200">
