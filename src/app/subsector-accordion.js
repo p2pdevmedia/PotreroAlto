@@ -49,7 +49,7 @@ function RouteRow({ route, onSelect }) {
         onClick={() => onSelect(route)}
         disabled={!hasImage}
       >
-      <div>
+      <div className="min-w-0">
         <p className="font-medium text-slate-100">
           {route.name}
           {hasImage ? <span className="ml-2 text-xs text-sunset">📷</span> : null}
@@ -57,11 +57,11 @@ function RouteRow({ route, onSelect }) {
         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
-      <div className="text-right">
+      <div className="shrink-0 text-right">
         <p className="font-semibold text-sunset">{route.grade}</p>
         {ratingEmojis ? (
           <p
-            className="text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
+            className="whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
             aria-label={`Valoración ${route.stars} de 5`}
           >
             {ratingEmojis}
