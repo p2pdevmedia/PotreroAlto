@@ -87,8 +87,8 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           stars: 3,
           type: 'Sport',
           description:
-            'Placa técnica con secciones de continuidad. Ideal para trabajar precisión de pies y resistencia en movimientos sostenidos.',
-          image: 'https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653'
+            'Dulfer técnico que arranca sostenido y termina con un semi desplome exigente en la salida.',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/96/86/9686440c1a6bbdfb0ec31699fd39aeaa4fc89b54'
         }
       ]
     },
