@@ -80,7 +80,16 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
         { id: 'chancheria-6', name: 'El despilfarro', grade: '7b+', stars: 3, type: 'Sport' },
         { id: 'chancheria-7', name: 'Alien contento', grade: '7b/b+', stars: 3, type: 'Sport' },
         { id: 'chancheria-8', name: 'Mamba Negra', grade: '7b+', stars: 2, type: 'Sport' },
-        { id: 'chancheria-9', name: 'Libre de pecado', grade: '6c', stars: 3, type: 'Sport' }
+        {
+          id: 'chancheria-9',
+          name: 'Libre de pecado',
+          grade: '6c',
+          stars: 3,
+          type: 'Sport',
+          description:
+            'Placa técnica con secciones de continuidad. Ideal para trabajar precisión de pies y resistencia en movimientos sostenidos.',
+          image: 'https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653'
+        }
       ]
     },
     {

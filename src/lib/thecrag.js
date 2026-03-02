@@ -19,7 +19,15 @@ function normalizeRoute(route) {
     name: route.name ?? route.label ?? 'Vía sin nombre',
     grade: route.grade ?? route.grades?.[0]?.label ?? route.difficulty ?? 'Sin grado',
     stars: route.stars ?? route.rating ?? null,
-    type: route.type ?? route.node_type ?? route.climb_type ?? null
+    type: route.type ?? route.node_type ?? route.climb_type ?? null,
+    description: route.description ?? route.summary ?? route.notes ?? '',
+    image:
+      route.image ??
+      route.photo ??
+      route.thumbnail ??
+      route.images?.[0]?.url ??
+      route.media?.[0]?.url ??
+      null
   };
 }
 
