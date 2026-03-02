@@ -15,7 +15,7 @@ export default async function HomePage() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <header
         className="relative mb-10 card flex flex-col justify-end overflow-hidden"
-        style={{ aspectRatio: '4 / 3', minHeight: '28rem' }}
+        style={{ aspectRatio: '4 / 3' }}
       >
         <div
           aria-hidden="true"
