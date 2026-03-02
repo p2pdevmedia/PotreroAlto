@@ -49,7 +49,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
         { id: 'tablero-11', name: 'Las damas primero', grade: '6b', stars: 5, type: 'Sport' },
         { id: 'tablero-12', name: 'El Peon', grade: '6c', stars: 2, type: 'Sport' },
         { id: 'tablero-13', name: 'Enroque', grade: '7a+', stars: 1, type: 'Sport' },
-        { id: 'tablero-14', name: 'Alfil', grade: '7b+/c', stars: nul, type: 'Sport' },
+        { id: 'tablero-14', name: 'Alfil', grade: '7b+/c', stars: null, type: 'Sport' },
         { id: 'tablero-15', name: 'Caballo', grade: '7b', stars: 3, type: 'Sport' },
         { id: 'tablero-16', name: 'Reina', grade: '7a', stars: 5, type: 'Sport' },
         { id: 'tablero-17', name: 'Enroque Largo', grade: '7b/b+', stars: 3, type: 'Sport' },
