@@ -24,8 +24,21 @@ function routeImage(route) {
   return route.image;
 }
 
+function starToEmoji(stars) {
+  const numericStars = Number.parseFloat(stars);
+
+  if (!Number.isFinite(numericStars) || numericStars <= 0) {
+    return null;
+  }
+
+  const totalIcons = Math.min(5, Math.round(numericStars));
+
+  return Array.from({ length: totalIcons }, (_, index) => (index === 4 ? '🚬' : '🍺')).join('');
+}
+
 function RouteRow({ route, onSelect }) {
   const hasImage = Boolean(route.image);
+  const ratingEmojis = starToEmoji(route.stars);
 
   return (
     <li>
@@ -45,7 +58,11 @@ function RouteRow({ route, onSelect }) {
       </div>
       <div className="text-right">
         <p className="font-semibold text-sunset">{route.grade}</p>
-        {route.stars ? <p className="text-xs text-slate-400">⭐ {route.stars}</p> : null}
+        {ratingEmojis ? (
+          <p className="text-xs text-slate-400" aria-label={`Valoración ${route.stars} de 5`}>
+            {ratingEmojis}
+          </p>
+        ) : null}
       </div>
       </button>
     </li>
