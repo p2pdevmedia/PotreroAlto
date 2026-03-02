@@ -28,6 +28,15 @@ export default async function HomePage() {
         </p>
       </header>
 
+      {data?.isFallback && (
+        <div
+          role="alert"
+          className="mb-6 rounded-xl border border-red-400/60 bg-red-700/90 px-4 py-3 text-sm font-semibold text-red-100 shadow-lg"
+        >
+          ⚠️ Mostrando datos de respaldo locales: esta información puede no estar actualizada.
+        </div>
+      )}
+
       {error ? (
         <section className="card border-red-500/30 bg-red-900/20">
           <h2 className="text-xl font-semibold text-red-200">No se pudo cargar la información en este entorno</h2>
