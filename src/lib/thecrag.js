@@ -78,8 +78,12 @@ export async function getPotreroAltoData() {
       fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}`),
       fetchTheCrag(`/node/id/${POTRERO_ALTO_SECTOR_ID}/children/area`)
     ]);
-  } catch {
-    return POTRERO_ALTO_FALLBACK_DATA;
+  } catch (error) {
+    console.error('Error al consultar theCrag API. Se usará el fallback local.', error);
+    return {
+      ...POTRERO_ALTO_FALLBACK_DATA,
+      isFallback: true
+    };
   }
 
   const sector = sectorPayload?.node ?? sectorPayload?.area ?? sectorPayload;
@@ -107,6 +111,7 @@ export async function getPotreroAltoData() {
     name: sector.name ?? 'Potrero Alto',
     location: sector.location ?? sector.region ?? 'San Luis, Argentina',
     description: sector.description ?? sector.summary ?? '',
-    subsectors
+    subsectors,
+    isFallback: false
   };
 }
