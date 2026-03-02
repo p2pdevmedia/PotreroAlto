@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getPotreroAltoData } from '@/lib/thecrag';
 
 function RouteRow({ route }) {
@@ -66,11 +67,14 @@ export default async function HomePage() {
             {data.subsectors.map((subsector) => (
               <details key={subsector.id} className="card group">
                 <summary className="list-none cursor-pointer outline-none">
-                  <img
+                  <Image
                     src={subsectorCover(subsector)}
                     alt={`Imagen del subsector ${subsector.name}`}
                     className="h-44 w-full rounded-xl object-cover"
+                    width={640}
+                    height={360}
                     loading="lazy"
+                    unoptimized
                   />
                   <div className="mt-4">
                     <h3 className="text-xl font-semibold text-white group-open:text-sunset">{subsector.name}</h3>
