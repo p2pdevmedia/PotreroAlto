@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 
 const SUBSECTOR_IMAGE_OVERRIDES = {
@@ -75,6 +75,19 @@ export default function SubsectorAccordion({ subsectors }) {
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
     [selectedSubsectorId, subsectors]
   );
+
+  useEffect(() => {
+    if (!selectedSubsector && !selectedRoute) {
+      return undefined;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [selectedSubsector, selectedRoute]);
 
   return (
     <>
