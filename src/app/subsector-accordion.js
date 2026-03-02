@@ -139,9 +139,9 @@ export default function SubsectorAccordion({ subsectors }) {
       ) : null}
 
       {selectedRoute ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-slate-950/80 p-3 backdrop-blur-sm" onClick={() => setSelectedRoute(null)}>
+        <div className="fixed inset-0 z-50 bg-slate-950/95" onClick={() => setSelectedRoute(null)}>
           <section
-            className="max-h-[85vh] w-full overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900"
+            className="relative h-full w-full overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-labelledby="selected-route-title"
@@ -150,31 +150,27 @@ export default function SubsectorAccordion({ subsectors }) {
             <Image
               src={routeImage(selectedRoute)}
               alt={`Imagen de la vía ${selectedRoute.name}`}
-              className="h-60 w-full object-cover"
-              width={960}
-              height={640}
+              className="h-full w-full object-contain"
+              fill
+              sizes="100vw"
               unoptimized
             />
-            <div className="p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h4 id="selected-route-title" className="text-lg font-semibold text-white">
-                    {selectedRoute.name}
-                  </h4>
-                  <p className="text-sm text-slate-300">
-                    {selectedRoute.grade}
-                    {selectedRoute.type ? ` · ${selectedRoute.type}` : ''}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-                  onClick={() => setSelectedRoute(null)}
-                >
-                  Cerrar
-                </button>
-              </div>
-              <p className="mt-4 text-sm text-slate-200">
+            <button
+              type="button"
+              className="absolute right-4 top-4 z-10 rounded-full border border-slate-600 bg-slate-950/60 px-3 py-1 text-sm text-slate-100 backdrop-blur hover:bg-slate-900"
+              onClick={() => setSelectedRoute(null)}
+            >
+              Cerrar
+            </button>
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-16">
+              <h4 id="selected-route-title" className="text-lg font-semibold text-white">
+                {selectedRoute.name}
+              </h4>
+              <p className="text-sm text-slate-300">
+                {selectedRoute.grade}
+                {selectedRoute.type ? ` · ${selectedRoute.type}` : ''}
+              </p>
+              <p className="mt-3 text-sm text-slate-200">
                 {selectedRoute.description ?? 'Todavía no hay una descripción cargada para esta vía.'}
               </p>
             </div>
