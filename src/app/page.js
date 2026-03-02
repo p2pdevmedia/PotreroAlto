@@ -15,7 +15,7 @@ export default async function HomePage() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <header
         className="relative mb-10 card overflow-hidden"
-        style={{ aspectRatio: '7 / 5' }}
+        style={{ aspectRatio: '7 / 2' }}
       >
         <div
           aria-hidden="true"
