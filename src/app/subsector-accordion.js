@@ -11,7 +11,13 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
   croto:
     'https://videos.openai.com/az/vg-assets/task_01kjr7q6vre89bper3vp0b1s2h%2F1772487432_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=ayAihqZghPfDdQfHZGsHbxGYrQ4XntJ/%2BqjDYvH2RZE%3D&ac=oaivgprodscus2',
   'el arco':
-    'https://videos.openai.com/az/vg-assets/task_01kjr7s21ge2drfqwcyt9sqdqv%2F1772487491_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=mjg%2B7AUiRzU1Y0Zzq/GSBY4nK/EVfSpZS597CTIf%2BUs%3D&ac=oaivgprodscus2'
+    'https://videos.openai.com/az/vg-assets/task_01kjr7s21ge2drfqwcyt9sqdqv%2F1772487491_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=mjg%2B7AUiRzU1Y0Zzq/GSBY4nK/EVfSpZS597CTIf%2BUs%3D&ac=oaivgprodscus2',
+  'el tablero':
+    'https://videos.openai.com/az/vg-assets/task_01kjr80p7ee78amdxkshsc6dyh%2F1772487754_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=jT6mENgiCODGEBMo2QNR1fTleiZ9MwtHXmCoyuSxbfc%3D&ac=oaivgprodscus2',
+  'cañadón':
+    'https://videos.openai.com/az/vg-assets/task_01kjr819adet4rnc6hte1p3ent%2F1772487784_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=ALb7mHPqAMB/zHgGaEPaK4fTVaOOxZUuhFq/wSsyjOM%3D&ac=oaivgprodscus2',
+  'el derrumbe':
+    'https://videos.openai.com/az/vg-assets/task_01kjr7x9x7err8y52pzt0kjj3d%2F1772487643_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=xfuwclzsJPeSaM6I2BC87%2BpDzjq25Qw5iFuNhwtbdWA%3D&ac=oaivgprodscus2'
 };
 
 function routeImage(route) {
