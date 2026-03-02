@@ -15,21 +15,28 @@ export default async function HomePage() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <header
         className="relative mb-10 card overflow-hidden"
-        style={{ aspectRatio: '4 / 3' }}
+        style={{ aspectRatio: '5 / 3' }}
       >
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-[125%]"
+          style={{
+            backgroundImage:
+              'url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center top'
+          }}
+        />
         <div
           aria-hidden="true"
           className="absolute inset-0"
           style={{
             backgroundImage:
-              'linear-gradient(to bottom right, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.88), rgba(45, 99, 91, 0.45)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
-            backgroundSize: 'cover, contain',
-            backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundPosition: 'center, center -20%',
-            clipPath: 'inset(0 0 20% 0)'
+              'linear-gradient(to bottom right, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.88), rgba(45, 99, 91, 0.45))'
           }}
         />
-        <div className="absolute inset-x-0 bottom-[20%] z-10 p-6 md:p-8">
+        <div className="absolute inset-x-0 bottom-0 z-10 p-6 md:p-8">
           <p className="text-sm uppercase tracking-[0.2em] text-slate-300">Guía de escalada</p>
           <h1 className="mt-3 text-4xl font-bold text-white md:text-5xl">Potrero Alto</h1>
           <p className="mt-4 max-w-3xl text-slate-200">
