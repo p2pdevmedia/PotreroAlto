@@ -18,13 +18,38 @@ function RouteRow({ route }) {
   );
 }
 
+const SUBSECTOR_IMAGE_HINTS = [
+  { matcher: /arco/i, hint: 'natural rock arch mountain' },
+  { matcher: /cañad[oó]n|canon|canyon/i, hint: 'canyon cliffs argentina' },
+  { matcher: /tablero|ajedrez|chess/i, hint: 'chess board dark dramatic' },
+  { matcher: /derrumbe|colapso|desplome/i, hint: 'landslide rocky cliff' },
+  { matcher: /chancher[ií]a|chancho|cerdo|pig/i, hint: 'wild boar in mountains' },
+  { matcher: /croto|rustico|r[úu]stico/i, hint: 'rugged mountain shelter' },
+  { matcher: /pared|este|wall/i, hint: 'sunrise rock wall climbing' }
+];
+
+function normalizeName(name) {
+  return (name ?? 'Subsector')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function findHint(subsectorName) {
+  const match = SUBSECTOR_IMAGE_HINTS.find((entry) => entry.matcher.test(subsectorName));
+  return match?.hint ?? `rock climbing sector ${subsectorName}`;
+}
+
 function subsectorCover(subsector) {
   if (subsector.image) {
     return subsector.image;
   }
 
-  const safeName = encodeURIComponent(subsector.name ?? 'Subsector');
-  return `https://placehold.co/720x1280/020617/e2e8f0?text=${safeName}`;
+  const normalizedName = normalizeName(subsector.name);
+  const query = findHint(normalizedName);
+  const seed = normalizedName.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+
+  return `https://source.unsplash.com/720x1280/?${encodeURIComponent(query)}&sig=${seed}`;
 }
 
 export default function SubsectorAccordion({ subsectors }) {
