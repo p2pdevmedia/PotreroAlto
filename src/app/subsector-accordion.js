@@ -36,16 +36,16 @@ export default function SubsectorAccordion({ subsectors }) {
         const isOpen = openSubsectorId === subsector.id;
 
         return (
-          <details
-            key={subsector.id}
-            className="card group"
-            open={isOpen}
-            onToggle={(event) => {
-              const nextOpen = event.currentTarget.open;
-              setOpenSubsectorId(nextOpen ? subsector.id : null);
-            }}
-          >
-            <summary className="list-none cursor-pointer outline-none">
+          <article key={subsector.id} className="card">
+            <button
+              type="button"
+              className="w-full cursor-pointer text-left outline-none"
+              onClick={() => {
+                setOpenSubsectorId((current) => (current === subsector.id ? null : subsector.id));
+              }}
+              aria-expanded={isOpen}
+              aria-controls={`subsector-panel-${subsector.id}`}
+            >
               <Image
                 src={subsectorCover(subsector)}
                 alt={`Imagen del subsector ${subsector.name}`}
@@ -56,25 +56,27 @@ export default function SubsectorAccordion({ subsectors }) {
                 unoptimized
               />
               <div className="mt-4">
-                <h3 className="text-xl font-semibold text-white group-open:text-sunset">{subsector.name}</h3>
+                <h3 className={`text-xl font-semibold ${isOpen ? 'text-sunset' : 'text-white'}`}>{subsector.name}</h3>
                 <p className="mt-1 text-sm text-slate-300">
                   {subsector.routes.length} {subsector.routes.length === 1 ? 'ruta' : 'rutas'}
                 </p>
               </div>
-            </summary>
+            </button>
 
-            {subsector.routes.length ? (
-              <ul className="mt-4 border-t border-slate-700/50 pt-2">
-                {subsector.routes.map((route) => (
-                  <RouteRow key={route.id ?? `${subsector.id}-${route.name}`} route={route} />
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-4 border-t border-slate-700/50 pt-4 text-sm text-slate-400">
-                Sin vías registradas en este subsector.
-              </p>
-            )}
-          </details>
+            {isOpen ? (
+              subsector.routes.length ? (
+                <ul id={`subsector-panel-${subsector.id}`} className="mt-4 border-t border-slate-700/50 pt-2">
+                  {subsector.routes.map((route) => (
+                    <RouteRow key={route.id ?? `${subsector.id}-${route.name}`} route={route} />
+                  ))}
+                </ul>
+              ) : (
+                <p id={`subsector-panel-${subsector.id}`} className="mt-4 border-t border-slate-700/50 pt-4 text-sm text-slate-400">
+                  Sin vías registradas en este subsector.
+                </p>
+              )
+            ) : null}
+          </article>
         );
       })}
     </div>
