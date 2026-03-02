@@ -33,6 +33,8 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       id: 'fallback-tablero',
       name: 'El Tablero',
       description: 'Sector principal con vías de deportiva variadas.',
+      image:
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Chess_board_with_chess_set_in_opening_position_2012_PD_03.jpg/250px-Chess_board_with_chess_set_in_opening_position_2012_PD_03.jpg',
       routes: [
         { id: 'tablero-1', name: 'Duro al Pedal!', grade: '5b', stars: 2, type: 'Sport' },
         { id: 'tablero-2', name: 'La Chaquetuda', grade: '5c+', stars: 2, type: 'Sport' },
@@ -104,6 +106,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       id: 'fallback-arco',
       name: 'El Arco',
       description: 'Área de deportiva junto a La Chanchería.',
+      image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1',
       routes: [
         { id: 'arco-1', name: 'Variante FisuraPreHistorica', grade: '6b', stars: 1, type: 'Sport' },
         { id: 'arco-2', name: 'PreHistorica', grade: '6a', stars: 2, type: 'Sport' },
