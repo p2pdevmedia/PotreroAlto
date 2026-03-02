@@ -25,7 +25,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       name: 'Cañadón',
       description: 'Área deportiva corta con dos líneas.',
       routes: [
-        { id: 'canadon-1', name: '3 hermanos', grade: '6b', stars: 3, type: 'Sport' },
+        { id: 'canadon-1', name: '3 hermanos', grade: '6b', stars: null, type: 'Sport' },
         { id: 'canadon-2', name: 'Monopoly', grade: '6b', stars: null, type: 'Sport' }
       ]
     },
@@ -38,21 +38,21 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       routes: [
         { id: 'tablero-1', name: 'Duro al Pedal!', grade: '5b', stars: 2, type: 'Sport' },
         { id: 'tablero-2', name: 'La Chaquetuda', grade: '5c+', stars: 2, type: 'Sport' },
-        { id: 'tablero-3', name: 'Vino & Keterolac', grade: '6c/c+', stars: 1, type: 'Sport' },
-        { id: 'tablero-4', name: 'Biciequipadores', grade: '7b', stars: 1, type: 'Sport' },
-        { id: 'tablero-5', name: 'KuKuruch', grade: '6b', stars: 2, type: 'Sport' },
+        { id: 'tablero-3', name: 'Vino & Keterolac', grade: '6c/c+', stars: null, type: 'Sport' },
+        { id: 'tablero-4', name: 'Biciequipadores', grade: '7b', stars: null, type: 'Sport' },
+        { id: 'tablero-5', name: 'KuKuruch', grade: '6b', stars: 3, type: 'Sport' },
         { id: 'tablero-6', name: 'Banquito para dos', grade: '5b', stars: 2, type: 'Sport' },
-        { id: 'tablero-7', name: 'el banquito', grade: '6a', stars: 1, type: 'Sport' },
-        { id: 'tablero-8', name: 'El sheriff', grade: '6a', stars: 5, type: 'Sport' },
-        { id: 'tablero-9', name: 'Jägermeister', grade: '6a', stars: 2, type: 'Sport' },
+        { id: 'tablero-7', name: 'el banquito', grade: '6a', stars: null, type: 'Sport' },
+        { id: 'tablero-8', name: 'El sheriff', grade: '6a', stars: 4, type: 'Sport' },
+        { id: 'tablero-9', name: 'Jägermeister', grade: '6a', stars: null, type: 'Sport' },
         { id: 'tablero-10', name: 'CapricorniaBosh', grade: '6b/b+', stars: 2, type: 'Sport' },
         { id: 'tablero-11', name: 'Las damas primero', grade: '6b', stars: 5, type: 'Sport' },
         { id: 'tablero-12', name: 'El Peon', grade: '6c', stars: 2, type: 'Sport' },
         { id: 'tablero-13', name: 'Enroque', grade: '7a+', stars: 1, type: 'Sport' },
-        { id: 'tablero-14', name: 'Alfil', grade: '7b+/c', stars: 2, type: 'Sport' },
+        { id: 'tablero-14', name: 'Alfil', grade: '7b+/c', stars: nul, type: 'Sport' },
         { id: 'tablero-15', name: 'Caballo', grade: '7b', stars: 3, type: 'Sport' },
         { id: 'tablero-16', name: 'Reina', grade: '7a', stars: 5, type: 'Sport' },
-        { id: 'tablero-17', name: 'Enroque Largo', grade: '7b/b+', stars: 2, type: 'Sport' },
+        { id: 'tablero-17', name: 'Enroque Largo', grade: '7b/b+', stars: 3, type: 'Sport' },
         { id: 'tablero-18', name: 'Jaque Permanente', grade: '7a', stars: 3, type: 'Sport' }
       ]
     },
@@ -61,10 +61,10 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       name: 'El Derrumbe',
       description: 'Sector deportivo con desplome y vías largas.',
       routes: [
-        { id: 'derrumbe-1', name: 'MatematicamenteposibleChipped', grade: '7b+/c', stars: 2, type: 'Sport' },
+        { id: 'derrumbe-1', name: 'MatematicamenteposibleChipped', grade: '7b+/c', stars: null, type: 'Sport' },
         { id: 'derrumbe-2', name: 'Generación Z', grade: '6c/c+', stars: 5, type: 'Sport' },
         { id: 'derrumbe-3', name: 'Diamante', grade: '7a', stars: 5, type: 'Sport' },
-        { id: 'derrumbe-4', name: 'Trébol', grade: '6b+/c', stars: 1, type: 'Sport' },
+        { id: 'derrumbe-4', name: 'Trébol', grade: '6b+/c', stars: null, type: 'Sport' },
         {
           id: 'derrumbe-5',
           name: 'Corazón',
@@ -83,13 +83,13 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       description: 'Sector con rutas duras y proyectos.',
       routes: [
         { id: 'chancheria-1', name: 'Motivación Peruana', grade: 'Proyecto', stars: 5, type: 'Sport' },
-        { id: 'chancheria-2', name: 'Amigas y Rivales', grade: '7c', stars: 2, type: 'Sport' },
-        { id: 'chancheria-3', name: 'Trago amargo', grade: '7b+', stars: 1, type: 'Sport' },
-        { id: 'chancheria-4', name: 'Ricky in the flow', grade: '7b', stars: 2, type: 'Sport' },
-        { id: 'chancheria-5', name: 'Carancho come zorzal', grade: '7b+', stars: 3, type: 'Sport' },
-        { id: 'chancheria-6', name: 'El despilfarro', grade: '7b+', stars: 3, type: 'Sport' },
-        { id: 'chancheria-7', name: 'Alien contento', grade: '7b/b+', stars: 3, type: 'Sport' },
-        { id: 'chancheria-8', name: 'Mamba Negra', grade: '7b+', stars: 2, type: 'Sport' },
+        { id: 'chancheria-2', name: 'Amigas y Rivales', grade: '7c', stars: null, type: 'Sport' },
+        { id: 'chancheria-3', name: 'Trago amargo', grade: '7b+', stars: null, type: 'Sport' },
+        { id: 'chancheria-4', name: 'Ricky in the flow', grade: '7b', stars: 1, type: 'Sport' },
+        { id: 'chancheria-5', name: 'Carancho come zorzal', grade: '7b+', stars: null, type: 'Sport' },
+        { id: 'chancheria-6', name: 'El despilfarro', grade: '7b+', stars: null, type: 'Sport' },
+        { id: 'chancheria-7', name: 'Alien contento', grade: '7b/b+', stars: null, type: 'Sport' },
+        { id: 'chancheria-8', name: 'Mamba Negra', grade: '7b+', stars: 4, type: 'Sport' },
         {
           id: 'chancheria-9',
           name: 'Libre de pecado',
@@ -108,14 +108,14 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       description: 'Área de deportiva junto a La Chanchería.',
       image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1',
       routes: [
-        { id: 'arco-1', name: 'Variante FisuraPreHistorica', grade: '6b', stars: 1, type: 'Sport' },
-        { id: 'arco-2', name: 'PreHistorica', grade: '6a', stars: 2, type: 'Sport' },
-        { id: 'arco-3', name: 'ESTACIONAMIENTO MEDIDO', grade: '6c+/7a', stars: 2, type: 'Sport' },
-        { id: 'arco-4', name: 'Variante - Prohibido estacionar', grade: '6b', stars: 3, type: 'Sport' },
+        { id: 'arco-1', name: 'Variante FisuraPreHistorica', grade: '6b', stars: null, type: 'Sport' },
+        { id: 'arco-2', name: 'PreHistorica', grade: '6a', stars: null, type: 'Sport' },
+        { id: 'arco-3', name: 'ESTACIONAMIENTO MEDIDO', grade: '6c+/7a', stars: 3, type: 'Sport' },
+        { id: 'arco-4', name: 'Variante - Prohibido estacionar', grade: '6b', stars: 2, type: 'Sport' },
         { id: 'arco-5', name: 'Musgotopia', grade: '6b', stars: null, type: 'Sport' },
         { id: 'arco-6', name: 'Sombra chinesca', grade: '6b', stars: 2, type: 'Sport' },
         { id: 'arco-7', name: 'eЯЯeЯЯaЯa', grade: '6a', stars: 3, type: 'Sport' },
-        { id: 'arco-8', name: 'EmPotreBro', grade: '6b', stars: 5, type: 'Sport' }
+        { id: 'arco-8', name: 'EmPotreBro', grade: '6b', stars: 4, type: 'Sport' }
       ]
     },
     {
