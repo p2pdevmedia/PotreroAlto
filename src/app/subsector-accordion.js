@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 
 const SUBSECTOR_IMAGE_OVERRIDES = {
@@ -21,30 +21,48 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
 };
 
 function routeImage(route) {
-  if (route.image) {
-    return route.image;
+  return route.image;
+}
+
+function starToEmoji(stars) {
+  const numericStars = Number.parseFloat(stars);
+
+  if (!Number.isFinite(numericStars) || numericStars <= 0) {
+    return null;
   }
 
-  const safeName = encodeURIComponent(route.name ?? 'Vía');
-  return `https://placehold.co/960x640/020617/e2e8f0?text=${safeName}`;
+  const totalIcons = Math.min(5, Math.round(numericStars));
+
+  return Array.from({ length: totalIcons }, (_, index) => (index === 4 ? '🚬' : '🍺')).join('');
 }
 
 function RouteRow({ route, onSelect }) {
+  const hasImage = Boolean(route.image);
+  const ratingEmojis = starToEmoji(route.stars);
+
   return (
     <li>
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-4 border-b border-slate-700/60 py-3 text-left last:border-0"
+        className="flex w-full items-center justify-between gap-4 border-b border-slate-700/60 py-3 text-left last:border-0 disabled:cursor-default disabled:opacity-70"
         onClick={() => onSelect(route)}
+        disabled={!hasImage}
       >
       <div>
-        <p className="font-medium text-slate-100">{route.name}</p>
+        <p className="font-medium text-slate-100">
+          {route.name}
+          {hasImage ? <span className="ml-2 text-xs text-sunset">📷</span> : null}
+        </p>
         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
       <div className="text-right">
         <p className="font-semibold text-sunset">{route.grade}</p>
-        {route.stars ? <p className="text-xs text-slate-400">⭐ {route.stars}</p> : null}
+        {ratingEmojis ? (
+          <p className="text-xs text-slate-400" aria-label={`Valoración ${route.stars} de 5`}>
+            {ratingEmojis}
+          </p>
+        ) : null}
       </div>
       </button>
     </li>
@@ -74,6 +92,19 @@ export default function SubsectorAccordion({ subsectors }) {
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
     [selectedSubsectorId, subsectors]
   );
+
+  useEffect(() => {
+    if (!selectedSubsector && !selectedRoute) {
+      return undefined;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [selectedSubsector, selectedRoute]);
 
   return (
     <>
@@ -108,14 +139,14 @@ export default function SubsectorAccordion({ subsectors }) {
 
       {selectedSubsector ? (
         <div
-          className="fixed inset-0 z-40 flex items-end bg-slate-950/70 p-3 backdrop-blur-sm"
+          className="fixed inset-0 z-40 flex items-center bg-slate-950/70 p-3 backdrop-blur-sm"
           onClick={() => {
             setSelectedSubsectorId(null);
             setSelectedRoute(null);
           }}
         >
           <section
-            className="max-h-[80vh] w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-900"
+            className="flex h-full max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900"
             role="dialog"
             aria-modal="true"
             aria-labelledby="selected-subsector-title"
@@ -142,7 +173,7 @@ export default function SubsectorAccordion({ subsectors }) {
               </button>
             </header>
 
-            <div className="overflow-y-auto px-4 pb-4">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
               {selectedSubsector.routes.length ? (
                 <ul>
                   {selectedSubsector.routes.map((route) => (
