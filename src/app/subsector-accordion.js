@@ -32,8 +32,9 @@ function starToEmoji(stars) {
   }
 
   const totalIcons = Math.min(5, Math.round(numericStars));
+  const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
 
-  return Array.from({ length: totalIcons }, (_, index) => (index === 4 ? '🚬' : '🍺')).join('');
+  return ratingScale.slice(0, totalIcons).join('');
 }
 
 function RouteRow({ route, onSelect }) {
