@@ -21,24 +21,25 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
 };
 
 function routeImage(route) {
-  if (route.image) {
-    return route.image;
-  }
-
-  const safeName = encodeURIComponent(route.name ?? 'Vía');
-  return `https://placehold.co/960x640/020617/e2e8f0?text=${safeName}`;
+  return route.image;
 }
 
 function RouteRow({ route, onSelect }) {
+  const hasImage = Boolean(route.image);
+
   return (
     <li>
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-4 border-b border-slate-700/60 py-3 text-left last:border-0"
+        className="flex w-full items-center justify-between gap-4 border-b border-slate-700/60 py-3 text-left last:border-0 disabled:cursor-default disabled:opacity-70"
         onClick={() => onSelect(route)}
+        disabled={!hasImage}
       >
       <div>
-        <p className="font-medium text-slate-100">{route.name}</p>
+        <p className="font-medium text-slate-100">
+          {route.name}
+          {hasImage ? <span className="ml-2 text-xs text-sunset">📷</span> : null}
+        </p>
         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
