@@ -19,7 +19,7 @@ export default function HomeContent({ data, error }) {
               className="absolute inset-x-0 top-0 h-[125%]"
               style={{
                 backgroundImage:
-                  'url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
+                  'url("https://image.thecrag.com/1954x960/c9/40/c9406eb7acab8e732b25d781bc34bda75d2819fc")',
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center top'
