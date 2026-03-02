@@ -34,6 +34,7 @@ THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
 
 - Esta app usa App Router de Next.js.
 - Estilos con Tailwind CSS.
+- Los assets estáticos deben ubicarse en la carpeta `public/`.
 - El acceso a datos usa endpoints canónicos de theCrag API, por ejemplo:
   - `/api/node/id/{nodeID}`
   - `/api/node/id/{nodeID}/children/area`
