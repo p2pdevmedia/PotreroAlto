@@ -3,6 +3,17 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 
+const SUBSECTOR_IMAGE_OVERRIDES = {
+  'la chanchería':
+    'https://videos.openai.com/az/vg-assets/task_01kjr7njtfe2qbcdm2tfqbcjte%2F1772487378_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=qErrSv27kQKSsZR0RyGibAyWuAItM9acUvdMZIn72TE%3D&ac=oaivgprodscus2',
+  'cheto / pared este':
+    'https://videos.openai.com/az/vg-assets/task_01kjr7pvhbej1vs1tbe5vb6368%2F1772487421_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=MO0gcLygn4jljZzHYBn5hZWQz5wPXu0kp/xACbr6R70%3D&ac=oaivgprodscus2',
+  croto:
+    'https://videos.openai.com/az/vg-assets/task_01kjr7q6vre89bper3vp0b1s2h%2F1772487432_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=ayAihqZghPfDdQfHZGsHbxGYrQ4XntJ/%2BqjDYvH2RZE%3D&ac=oaivgprodscus2',
+  'el arco':
+    'https://videos.openai.com/az/vg-assets/task_01kjr7s21ge2drfqwcyt9sqdqv%2F1772487491_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=mjg%2B7AUiRzU1Y0Zzq/GSBY4nK/EVfSpZS597CTIf%2BUs%3D&ac=oaivgprodscus2'
+};
+
 function routeImage(route) {
   if (route.image) {
     return route.image;
@@ -35,6 +46,12 @@ function RouteRow({ route, onSelect }) {
 }
 
 function subsectorCover(subsector) {
+  const overrideImage = SUBSECTOR_IMAGE_OVERRIDES[subsector.name?.toLowerCase()];
+
+  if (overrideImage) {
+    return overrideImage;
+  }
+
   if (subsector.image) {
     return subsector.image;
   }
