@@ -32,8 +32,9 @@ function starToEmoji(stars) {
   }
 
   const totalIcons = Math.min(5, Math.round(numericStars));
+  const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
 
-  return Array.from({ length: totalIcons }, (_, index) => (index === 4 ? '🚬' : '🍺')).join('');
+  return ratingScale.slice(0, totalIcons).reverse().join('');
 }
 
 function RouteRow({ route, onSelect }) {
@@ -59,7 +60,10 @@ function RouteRow({ route, onSelect }) {
       <div className="text-right">
         <p className="font-semibold text-sunset">{route.grade}</p>
         {ratingEmojis ? (
-          <p className="text-xs text-slate-400" aria-label={`Valoración ${route.stars} de 5`}>
+          <p
+            className="text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
+            aria-label={`Valoración ${route.stars} de 5`}
+          >
             {ratingEmojis}
           </p>
         ) : null}
