@@ -17,7 +17,7 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
   'cañadón':
     'https://videos.openai.com/az/vg-assets/task_01kjr819adet4rnc6hte1p3ent%2F1772487784_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=ALb7mHPqAMB/zHgGaEPaK4fTVaOOxZUuhFq/wSsyjOM%3D&ac=oaivgprodscus2',
   'el derrumbe':
-    'https://videos.openai.com/az/vg-assets/task_01kjr7x9x7err8y52pzt0kjj3d%2F1772487643_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=xfuwclzsJPeSaM6I2BC87%2BpDzjq25Qw5iFuNhwtbdWA%3D&ac=oaivgprodscus2'
+    'https://videos.openai.com/az/vg-assets/task_01kjr8tt0reqg8gnc14tkmtdgx%2F1772488627_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=g35vAsdXdOupQW7/Mgi%2BdyAzrBKNWtYiZuFmGsZ%2BqY4%3D&ac=oaivgprodscus2'
 };
 
 function routeImage(route) {
