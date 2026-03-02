@@ -63,7 +63,15 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
         { id: 'derrumbe-2', name: 'Generación Z', grade: '6c/c+', stars: 3, type: 'Sport' },
         { id: 'derrumbe-3', name: 'Diamante', grade: '7a', stars: 3, type: 'Sport' },
         { id: 'derrumbe-4', name: 'Trébol', grade: '6b+/c', stars: 1, type: 'Sport' },
-        { id: 'derrumbe-5', name: 'Corazón', grade: '7a+', stars: 2, type: 'Sport' },
+        {
+          id: 'derrumbe-5',
+          name: 'Corazón',
+          grade: '7a+',
+          stars: 5,
+          type: 'Sport',
+          description: 'Línea de 5 estrellas con agujeros y bidedos sostenidos.',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/ee/ff/eeff0a21f93bc5522a6e2d1d84046068790662d6'
+        },
         { id: 'derrumbe-6', name: 'Grandes Amigos', grade: '7c', stars: 3, type: 'Sport' }
       ]
     },
