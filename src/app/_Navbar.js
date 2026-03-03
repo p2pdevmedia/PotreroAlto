@@ -129,7 +129,7 @@ export default function Navbar({
         Potrero Alto
       </p>
 
-      <div className="relative z-10 flex items-center justify-between gap-3">
+      <div className="relative z-30 flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => handleSectionChange('inicio')}
@@ -218,7 +218,7 @@ export default function Navbar({
       {isMobileMenuOpen && (
         <ul
           id="mobile-navbar-menu"
-          className="relative z-10 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
+          className="relative z-20 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
         >
           {navItems.map((item) => (
             <li key={item.id}>
@@ -265,7 +265,7 @@ export default function Navbar({
       )}
 
       {!isCompact ? (
-        <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
+        <div className="relative z-0 mt-3 border-t border-slate-700/70 pt-3">
           <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
             {t(locale, 'searchRoute')}
           </label>

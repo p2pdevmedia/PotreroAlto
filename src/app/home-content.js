@@ -1,17 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
-import { t } from '@/lib/i18n';
+import { LANGUAGE_OPTIONS, GRADE_SYSTEM_OPTIONS, t } from '@/lib/i18n';
 
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
   const [locale, setLocale] = useState('es');
   const [gradeSystem, setGradeSystem] = useState('french');
+
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const savedLocale = window.localStorage.getItem('potrero-locale');
+    const savedGradeSystem = window.localStorage.getItem('potrero-grade-system');
+
+    if (savedLocale && LANGUAGE_OPTIONS.some((option) => option.code === savedLocale)) {
+      setLocale(savedLocale);
+    }
+
+    if (savedGradeSystem && GRADE_SYSTEM_OPTIONS.some((option) => option.code === savedGradeSystem)) {
+      setGradeSystem(savedGradeSystem);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem('potrero-locale', locale);
+  }, [locale]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem('potrero-grade-system', gradeSystem);
+  }, [gradeSystem]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
