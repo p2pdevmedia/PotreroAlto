@@ -10,7 +10,11 @@ export default function HomeContent({ data, error }) {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
-      <Navbar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Navbar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        subsectors={data?.subsectors ?? []}
+      />
 
       {activeSection === 'inicio' && (
         <>
