@@ -5,10 +5,13 @@ import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
+import { t } from '@/lib/i18n';
 
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
+  const [language, setLanguage] = useState('es');
+  const [gradeSystem, setGradeSystem] = useState('french');
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
@@ -16,6 +19,10 @@ export default function HomeContent({ data, error }) {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         subsectors={data?.subsectors ?? []}
+        language={language}
+        onLanguageChange={setLanguage}
+        gradeSystem={gradeSystem}
+        onGradeSystemChange={setGradeSystem}
       />
 
       {activeSection === 'inicio' && (
@@ -36,8 +43,9 @@ export default function HomeContent({ data, error }) {
               routes={data.subsectors.flatMap((subsector) => subsector.routes)}
               title="Potrero Alto"
               className="mb-6"
+              language={language}
             />
-              <SubsectorAccordion subsectors={data.subsectors} />
+              <SubsectorAccordion subsectors={data.subsectors} language={language} gradeSystem={gradeSystem} />
             </section>
           )}
         </>
@@ -278,14 +286,14 @@ export default function HomeContent({ data, error }) {
       )}
 
       <footer className="mt-10 border-t border-slate-700/60 pt-6 text-center text-slate-300">
-        <p className="text-sm">Hecho con 💪 para la comunidad ❤️</p>
+        <p className="text-sm">{t(language, 'madeForCommunity')}</p>
         <a
           href="https://link.mercadopago.com.ar/potreroalto"
           target="_blank"
           rel="noreferrer"
           className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
         >
-          Regalame una 🍺
+          {t(language, 'buyBeer')}
         </a>
       </footer>
     </main>

@@ -2,12 +2,8 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-
-const navItems = [
-  { id: 'como-llegar', label: 'Cómo llegar' },
-  { id: 'faq', label: 'FAQ guía' }
-];
-
+import { convertGrade } from '@/lib/grade-conversion';
+import { GRADE_SYSTEMS, LANGUAGES, t } from '@/lib/i18n';
 
 function normalizeText(value) {
   return (
@@ -57,9 +53,25 @@ function ratingEmojis(stars) {
   const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
   return ratingScale.slice(0, Math.min(5, Math.round(numericStars))).reverse().join('');
 }
-export default function Navbar({ activeSection, onSectionChange, subsectors = [] }) {
+
+export default function Navbar({
+  activeSection,
+  onSectionChange,
+  subsectors = [],
+  language,
+  onLanguageChange,
+  gradeSystem,
+  onGradeSystemChange
+}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const navItems = [
+    { id: 'inicio', label: t(language, 'home') },
+    { id: 'como-llegar', label: t(language, 'howToGetThere') },
+    { id: 'faq', label: t(language, 'faqGuide') }
+  ];
 
   const routeSearchResults = useMemo(() => {
     if (!searchTerm?.trim()) {
@@ -100,12 +112,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
       </p>
 
       <div className="relative z-10 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => handleSectionChange('inicio')}
-          className="p-0 transition-opacity hover:opacity-90"
-          aria-label="Ir al inicio"
-        >
+        <button type="button" onClick={() => handleSectionChange('inicio')} className="p-0 transition-opacity hover:opacity-90">
           <Image
             src="/ChatGPT%20Image%20Mar%203,%202026%20at%2002_13_58%20PM.png"
             alt="Logo Potrero Alto"
@@ -116,19 +123,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
           />
         </button>
 
-        <button
-          type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:bg-slate-800 md:hidden"
-          aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={isMobileMenuOpen}
-          aria-controls="mobile-navbar-menu"
-          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-        >
-          <span className="sr-only">{isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}</span>
-          <span className="text-xl leading-none">☰</span>
-        </button>
-
-        <ul className="hidden items-center justify-center gap-2 text-sm font-semibold text-slate-200 md:flex md:gap-4 md:text-base">
+        <ul className="hidden flex-1 items-center justify-center gap-2 text-sm font-semibold text-slate-200 md:flex md:gap-4 md:text-base">
           {navItems.map((item) => (
             <li key={item.id}>
               <button
@@ -145,13 +140,58 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
             </li>
           ))}
         </ul>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:bg-slate-800 md:hidden"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          >
+            <span className="text-xl leading-none">☰</span>
+          </button>
+          <div className="relative">
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:bg-slate-800"
+              onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+            >
+              👤
+            </button>
+            {isProfileMenuOpen ? (
+              <div className="absolute right-0 top-12 w-56 space-y-3 rounded-xl border border-slate-700 bg-slate-950/95 p-3 text-sm text-slate-200">
+                <label className="block">
+                  <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">{t(language, 'language')}</span>
+                  <select
+                    value={language}
+                    onChange={(event) => onLanguageChange(event.target.value)}
+                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5"
+                  >
+                    {LANGUAGES.map((item) => (
+                      <option key={item.code} value={item.code}>{item.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">{t(language, 'gradeSystem')}</span>
+                  <select
+                    value={gradeSystem}
+                    onChange={(event) => onGradeSystemChange(event.target.value)}
+                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5"
+                  >
+                    {GRADE_SYSTEMS.map((item) => (
+                      <option key={item.code} value={item.code}>{item.label}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {isMobileMenuOpen && (
-        <ul
-          id="mobile-navbar-menu"
-          className="relative z-10 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
-        >
+        <ul id="mobile-navbar-menu" className="relative z-10 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden">
           {navItems.map((item) => (
             <li key={item.id}>
               <button
@@ -172,12 +212,12 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
 
       <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
         <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-          Buscar vía
+          {t(language, 'searchRoute')}
         </label>
         <input
           id="route-search"
           type="search"
-          placeholder="Nombre de la vía..."
+          placeholder={t(language, 'routePlaceholder')}
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
           className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
@@ -190,36 +230,27 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
                 <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
                   <div className="flex gap-3">
                     {route.image ? (
-                      <Image
-                        src={route.image}
-                        alt={`Foto de la vía ${route.name}`}
-                        width={80}
-                        height={80}
-                        className="h-16 w-16 rounded-lg object-cover"
-                        unoptimized
-                      />
+                      <Image src={route.image} alt={route.name} width={80} height={80} className="h-16 w-16 rounded-lg object-cover" unoptimized />
                     ) : (
                       <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
-                        Sin foto
+                        {t(language, 'noPhoto')}
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-white">{route.name}</p>
                       <p className="text-xs text-slate-400">{route.subsectorName}</p>
-                      <p className="mt-1 text-xs text-slate-200">Grado: {route.grade ?? 'Sin grado'}</p>
+                      <p className="mt-1 text-xs text-slate-200">{t(language, 'grade')}: {convertGrade(route.grade, gradeSystem) ?? t(language, 'noGrade')}</p>
                       <p className="line-clamp-2 text-xs text-slate-300">
-                        {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
+                        {route.description || t(language, 'noDescription')}
                       </p>
-                      {ratingEmojis(route.stars) ? (
-                        <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
-                      ) : null}
+                      {ratingEmojis(route.stars) ? <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p> : null}
                     </div>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-slate-400">No encontramos vías con un nombre similar.</p>
+            <p className="mt-3 text-sm text-slate-400">{t(language, 'noMatches')}</p>
           )
         ) : null}
       </div>
