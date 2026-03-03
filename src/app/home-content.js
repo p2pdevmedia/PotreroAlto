@@ -108,6 +108,13 @@ export default function HomeContent({ data, error }) {
                   El gráfico de distribución te ayuda a ver rápidamente si el sector tiene más rutas fáciles, intermedias
                   o duras. Es ideal para planificar una jornada según tu nivel y el de tu cordada.
                 </p>
+                <p className="mt-2">
+                  Escala de colores por dificultad en el histograma:{' '}
+                  <span className="font-semibold text-green-400">verde</span> para grados más fáciles,{' '}
+                  <span className="font-semibold text-blue-400">azul</span> para intermedios,{' '}
+                  <span className="font-semibold text-red-400">rojo</span> para difíciles y{' '}
+                  <span className="font-semibold text-red-900">rojo oscuro</span> para los más exigentes.
+                </p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">¿Para qué sirve el buscador de vías?</h3>
