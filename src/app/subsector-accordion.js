@@ -89,8 +89,9 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
         {hasImage || ratingEmojis ? (
           <div className="flex items-center justify-end gap-2 whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
             {hasImage ? (
-              <span className="rounded-full border border-sunset/70 bg-sunset/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sunset">
-                {t(locale, 'noPhoto')}
+              <span className="inline-flex min-w-14 flex-col items-center rounded-lg border border-sunset/70 bg-sunset/15 px-2 py-1 text-[10px] font-semibold uppercase leading-tight tracking-wide text-sunset">
+                <span aria-hidden="true">📷</span>
+                <span>{t(locale, 'photo')}</span>
               </span>
             ) : null}
             {ratingEmojis ? <p aria-label={`${t(locale, 'ratingAria')} ${route.stars} de 5`}>{ratingEmojis}</p> : null}
