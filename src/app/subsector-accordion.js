@@ -120,6 +120,7 @@ function subsectorCover(subsector) {
 
 export default function SubsectorAccordion({ subsectors = [], locale = 'es', gradeSystem = 'french' }) {
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
+  const [selectedGradeBucket, setSelectedGradeBucket] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
 
   const selectedSubsectorIdRef = useRef(null);
@@ -219,6 +220,10 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
     setSelectedRoute(null);
   };
 
+  const closeSelectedGradeBucket = () => {
+    setSelectedGradeBucket(null);
+  };
+
   const closeSelectedSubsector = () => {
     if (typeof window !== 'undefined' && routeStatePushedRef.current) {
       window.history.back();
@@ -231,6 +236,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
     }
 
     setSelectedRoute(null);
+    setSelectedGradeBucket(null);
     setSelectedSubsectorId(null);
   };
 
@@ -305,6 +311,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
                 className="mb-4"
                 locale={locale}
                 gradeSystem={gradeSystem}
+                onGradeSelect={setSelectedGradeBucket}
               />
 
               {selectedSubsector.routes.length ? (
@@ -327,8 +334,78 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
         </div>
       ) : null}
 
+      {selectedGradeBucket ? (
+        <div className="fixed inset-0 z-50 bg-slate-950/90 p-4 backdrop-blur-sm" onClick={closeSelectedGradeBucket}>
+          <div
+            className="mx-auto flex h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selectedGradeBucket.gradeLabel} ${t(locale, 'gradeLabel').toLowerCase()}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-700 px-5 py-4">
+              <h2 className="text-lg font-semibold text-slate-100">
+                {selectedGradeBucket.gradeLabel} · {selectedGradeBucket.routes.length}{' '}
+                {selectedGradeBucket.routes.length === 1 ? t(locale, 'routeSingle') : t(locale, 'routePlural')}
+              </h2>
+              <button
+                type="button"
+                onClick={closeSelectedGradeBucket}
+                className="rounded-md border border-slate-600 px-3 py-1 text-sm font-medium text-slate-100 transition hover:border-slate-300"
+              >
+                {t(locale, 'closeButton')}
+              </button>
+            </div>
+
+            <ul className="min-h-0 flex-1 overflow-y-auto px-5 py-3">
+              {selectedGradeBucket.routes.map((route) => {
+                const ratingEmojis = starToEmoji(route.stars);
+                const hasImage = Boolean(route.image);
+
+                return (
+                  <li key={`${route.id ?? route.name}-${route.grade ?? 'no-grade'}`} className="border-b border-slate-800 py-3 last:border-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-100">{route.name}</p>
+                        {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
+                        {route.description ? <p className="mt-1 text-xs text-slate-300">{route.description}</p> : null}
+                        {hasImage ? (
+                          <button
+                            type="button"
+                            className="mt-2 overflow-hidden rounded-lg border border-slate-700 transition hover:border-slate-400"
+                            onClick={() => setSelectedRoute(route)}
+                            aria-label={`${t(locale, 'photo')} ${route.name}`}
+                          >
+                            <Image
+                              src={route.image}
+                              alt={`${t(locale, 'routeImageAlt')} ${route.name}`}
+                              width={320}
+                              height={180}
+                              className="h-24 w-40 object-cover"
+                              unoptimized
+                            />
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className="shrink-0 text-right">
+                        <p className="font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
+                        {ratingEmojis ? <p className="mt-1 text-xs text-slate-200">{ratingEmojis}</p> : null}
+                        <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">
+                          {hasImage ? t(locale, 'photo') : t(locale, 'noPhoto')}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      ) : null}
+
       {selectedRoute ? (
-        <div className="fixed inset-0 z-50 bg-slate-950/95" onClick={closeSelectedRoute}>
+        <div className="fixed inset-0 z-[60] bg-slate-950/95" onClick={closeSelectedRoute}>
           <section
             className="relative h-full w-full overflow-hidden"
             role="dialog"
