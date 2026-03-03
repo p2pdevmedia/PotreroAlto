@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
+import GradeDistributionChart from '@/app/grade-distribution-chart';
 
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
@@ -60,6 +61,12 @@ export default function HomeContent({ data, error }) {
             </section>
           ) : (
             <section className="space-y-6" aria-label="Subsectores de Potrero Alto">
+
+            <GradeDistributionChart
+              routes={data.subsectors.flatMap((subsector) => subsector.routes)}
+              title="Potrero Alto"
+              className="mb-6"
+            />
               <SubsectorAccordion subsectors={data.subsectors} />
             </section>
           )}
