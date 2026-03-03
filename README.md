@@ -40,3 +40,22 @@ THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
   - `/api/node/id/{nodeID}/children/area`
   - `/api/node/id/{nodeID}/children/route`
 - La integración está en `src/lib/thecrag.js`.
+
+## Registro descentralizado de ascensiones
+
+Se agregó una propuesta técnica para soportar login social + wallet y registro de ascensiones/sugerencias de grado usando OrbitDB/IPFS, sin base de datos central.
+
+Ver: `docs/decentralized-ascents-orbitdb-ipfs.md`.
+
+
+## Registro de ascensiones (MVP)
+
+La app ahora permite registrar ascensiones por vía desde la interfaz:
+
+- Login con **wallet EVM** (si hay `window.ethereum`).
+- Login **social local** (genera identidad criptográfica local con WebCrypto).
+- Firma del evento `ascent.v1` y guardado en `localStorage`.
+- Publicación opcional a IPFS si el navegador expone `window.ipfs` (por ejemplo con IPFS Companion).
+
+Este MVP no incluye aún replicación OrbitDB automática entre nodos, pero deja operativo el flujo de creación y firma de eventos en cliente.
+

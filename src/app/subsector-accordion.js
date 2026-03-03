@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
+import AscentPanel from '@/app/ascent-panel';
 
 const SUBSECTOR_IMAGE_OVERRIDES = {
   'la chanchería':
@@ -248,6 +249,8 @@ export default function SubsectorAccordion({ subsectors }) {
               <p className="mt-3 text-sm text-slate-200">
                 {selectedRoute.description ?? 'Todavía no hay una descripción cargada para esta vía.'}
               </p>
+
+              <AscentPanel route={selectedRoute} />
             </div>
           </section>
         </div>
