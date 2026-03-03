@@ -53,12 +53,12 @@ function RouteRow({ route, onSelect }) {
       <div className="min-w-0">
         <p className="font-medium text-slate-100">
           {route.name}
-          {hasImage ? <span className="ml-2 text-xs text-sunset">📷</span> : null}
         </p>
         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
       <div className="shrink-0 text-right">
+        {hasImage ? <p className="text-xs text-sunset">📷</p> : null}
         <p className="font-semibold text-sunset">{route.grade}</p>
         {ratingEmojis ? (
           <p
