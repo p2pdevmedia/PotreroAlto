@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 const navItems = [
-  { id: 'inicio', label: 'Potrero Alto' },
   { id: 'como-llegar', label: 'Cómo llegar' },
   { id: 'faq', label: 'FAQ guía' }
 ];
@@ -87,7 +86,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
 
   return (
     <nav
-      className="sticky top-4 z-20 mb-6 rounded-2xl border border-slate-700/70 p-3 shadow-xl shadow-slate-950/50"
+      className="sticky top-4 z-20 mb-6 overflow-hidden rounded-2xl border border-slate-700/70 p-3 shadow-xl shadow-slate-950/50"
       style={{
         backgroundImage:
           'linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.86), rgba(45, 99, 91, 0.4)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
@@ -96,7 +95,11 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         backgroundRepeat: 'no-repeat'
       }}
     >
-      <div className="flex items-center justify-between gap-3">
+      <p className="pointer-events-none absolute left-1/2 top-[42%] z-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-3xl font-black uppercase tracking-[0.35em] text-slate-100/15 md:text-5xl">
+        Potrero Alto
+      </p>
+
+      <div className="relative z-10 flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => handleSectionChange('inicio')}
@@ -147,7 +150,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
       {isMobileMenuOpen && (
         <ul
           id="mobile-navbar-menu"
-          className="mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
+          className="relative z-10 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
         >
           {navItems.map((item) => (
             <li key={item.id}>
@@ -167,7 +170,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         </ul>
       )}
 
-      <div className="mt-3 border-t border-slate-700/70 pt-3">
+      <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
         <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
           Buscar vía
         </label>
