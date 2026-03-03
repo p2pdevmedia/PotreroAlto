@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
@@ -40,6 +40,7 @@ export default function HomeContent({ data, error }) {
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
   const [locale, setLocale] = useState('es');
   const [gradeSystem, setGradeSystem] = useState('french');
+  const sectorMapStatePushedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -75,6 +76,49 @@ export default function HomeContent({ data, error }) {
 
     window.localStorage.setItem('potrero-grade-system', gradeSystem);
   }, [gradeSystem]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handlePopState = () => {
+      if (isSectorMapOpen) {
+        sectorMapStatePushedRef.current = false;
+        setIsSectorMapOpen(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isSectorMapOpen]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (isSectorMapOpen && !sectorMapStatePushedRef.current) {
+      window.history.pushState({ potreroOverlay: 'sector-map' }, '', window.location.href);
+      sectorMapStatePushedRef.current = true;
+    }
+
+    if (!isSectorMapOpen) {
+      sectorMapStatePushedRef.current = false;
+    }
+  }, [isSectorMapOpen]);
+
+  const closeSectorMap = () => {
+    if (typeof window !== 'undefined' && sectorMapStatePushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    setIsSectorMapOpen(false);
+  };
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
@@ -265,11 +309,11 @@ export default function HomeContent({ data, error }) {
           role="dialog"
           aria-modal="true"
           aria-label={t(locale, 'zoomedImageLabel')}
-          onClick={() => setIsSectorMapOpen(false)}
+          onClick={closeSectorMap}
         >
           <button
             type="button"
-            onClick={() => setIsSectorMapOpen(false)}
+            onClick={closeSectorMap}
             className="absolute right-4 top-4 rounded-md border border-slate-600 bg-slate-900/90 px-3 py-1 text-sm font-medium text-slate-100 transition hover:border-slate-300"
           >
             {t(locale, 'close')}
