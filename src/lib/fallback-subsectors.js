@@ -108,14 +108,98 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       description: 'Área de deportiva junto a La Chanchería.',
       image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1',
       routes: [
-        { id: 'arco-1', name: 'Variante FisuraPreHistorica', grade: '6b', stars: null, type: 'Sport' },
-        { id: 'arco-2', name: 'PreHistorica', grade: '6a', stars: null, type: 'Sport' },
-        { id: 'arco-3', name: 'ESTACIONAMIENTO MEDIDO', grade: '6c+/7a', stars: 3, type: 'Sport' },
-        { id: 'arco-4', name: 'Variante - Prohibido estacionar', grade: '6b', stars: 2, type: 'Sport' },
-        { id: 'arco-5', name: 'Musgotopia', grade: '6b', stars: null, type: 'Sport' },
-        { id: 'arco-6', name: 'Sombra chinesca', grade: '6b', stars: 2, type: 'Sport' },
-        { id: 'arco-7', name: 'eЯЯeЯЯaЯa', grade: '6a', stars: 3, type: 'Sport' },
-        { id: 'arco-8', name: 'EmPotreBro', grade: '6b', stars: 4, type: 'Sport' }
+        {
+          id: 'arco-1',
+          name: 'Variante FisuraPreHistorica',
+          grade: '6b',
+          stars: null,
+          type: 'Sport',
+          description: 'Variante de "PreHistorica", empieza por la fisura y termina en la reunion de "PreHistorica"',
+          lengthMeters: 18,
+          quickdraws: 10,
+          equippedBy: 'JP',
+          equippedDate: '1 Mayo 2025'
+        },
+        {
+          id: 'arco-2',
+          name: 'PreHistorica',
+          grade: '6a',
+          stars: null,
+          type: 'Sport',
+          description: 'Primer ruta del sector. Ubicada en el margen derecho de la chancheria equipada por el 2000',
+          lengthMeters: 18,
+          quickdraws: 10
+        },
+        {
+          id: 'arco-3',
+          name: 'ESTACIONAMIENTO MEDIDO',
+          grade: '6c+/7a',
+          stars: 3,
+          type: 'Sport',
+          description: 'Roca frágil, es recomendable el uso de casco.',
+          lengthMeters: 20,
+          quickdraws: 15,
+          equippedBy: 'ivan & JB',
+          equippedDate: '8 Oct 2024',
+          firstAscentBy: 'JB',
+          firstAscentDate: '17 Oct 2024'
+        },
+        {
+          id: 'arco-4',
+          name: 'Variante - Prohibido estacionar',
+          grade: '6b',
+          stars: 2,
+          type: 'Sport',
+          description: 'Variante de "Estacionamiento medido", termina en la reunion de "Musgotopia"',
+          lengthMeters: 16
+        },
+        {
+          id: 'arco-5',
+          name: 'Musgotopia',
+          grade: '6b',
+          stars: null,
+          type: 'Sport',
+          lengthMeters: 18,
+          quickdraws: 12,
+          equippedBy: 'juan Ramon',
+          equippedDate: '2 Abr 2025'
+        },
+        {
+          id: 'arco-6',
+          name: 'Sombra chinesca',
+          grade: '6b',
+          stars: 2,
+          type: 'Sport',
+          lengthMeters: 11,
+          quickdraws: 10,
+          equippedBy: 'иван',
+          equippedDate: '2 Abr 2025'
+        },
+        {
+          id: 'arco-7',
+          name: 'eЯЯeЯЯaЯa',
+          grade: '6a',
+          stars: 3,
+          type: 'Sport',
+          lengthMeters: 14,
+          quickdraws: 7,
+          firstAscentBy: 'Tomas Genova',
+          firstAscentDate: '1 Abr 2025'
+        },
+        {
+          id: 'arco-8',
+          name: 'EmPotreBro',
+          grade: '6b',
+          stars: 4,
+          type: 'Sport',
+          description: 'Placa frontal',
+          lengthMeters: 14,
+          quickdraws: 7,
+          equippedBy: 'juan Ramon, иван & Tommy',
+          equippedDate: '31 Mar 2025',
+          firstAscentBy: 'иван',
+          firstAscentDate: '31 Mar 2025'
+        }
       ]
     },
     {
