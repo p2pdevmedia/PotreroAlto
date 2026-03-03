@@ -112,10 +112,10 @@ export default function GradeDistributionChart({ routes = [], title, className =
                 {title}
               </h3>
             ) : null}
-            {!compact ? <p className="text-xs text-slate-400">Distribución de vías por grado</p> : null}
+            {!compact ? <p className="text-xs text-slate-400">{t(locale, 'distributionByGrade')}</p> : null}
           </div>
           <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-slate-300`}>
-            {totalRoutesWithGrade} {t(locale, 'gradeLabel').toLowerCase()}
+            {totalRoutesWithGrade} {t(locale, 'withGrade')}
           </p>
         </header>
       ) : null}

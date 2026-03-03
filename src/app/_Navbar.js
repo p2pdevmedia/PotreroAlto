@@ -134,7 +134,7 @@ export default function Navbar({
           type="button"
           onClick={() => handleSectionChange('inicio')}
           className="p-0 transition-opacity hover:opacity-90"
-          aria-label="Ir al inicio"
+          aria-label={t(locale, 'goHome')}
         >
           <Image
             src="/ChatGPT%20Image%20Mar%203,%202026%20at%2002_13_58%20PM.png"
@@ -179,7 +179,7 @@ export default function Navbar({
               type="button"
               onClick={() => setIsUserMenuOpen((prev) => !prev)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-900/70 text-lg transition hover:border-sunset"
-              aria-label="User preferences"
+              aria-label={t(locale, 'userPreferences')}
             >
               👤
             </button>
