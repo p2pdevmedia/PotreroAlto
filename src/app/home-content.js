@@ -60,19 +60,46 @@ export default function HomeContent({ data, error }) {
         </section>
       )}
 
-      {activeSection === 'desarrollo-del-sector' && (
-        <section className="card">
-          <h2 className="text-2xl font-bold text-white">Desarrollo del sector</h2>
-          <p className="mt-3 text-slate-200">
-            El desarrollo de Potrero Alto comenzó con aperturas exploratorias de escaladores locales que buscaban nuevas
-            líneas en la zona de San Martín de los Andes. Con el tiempo, la comunidad fue equipando rutas deportivas,
-            limpiando accesos y compartiendo reseñas para que más personas pudieran conocer el lugar.
-          </p>
-          <p className="mt-3 text-slate-200">
-            Hoy el sector sigue creciendo gracias al trabajo colaborativo: apertura de nuevas vías, mantenimiento del
-            material fijo y difusión de buenas prácticas para conservar el entorno natural. Esta guía ayuda a centralizar
-            la información de subsectores y vías para planificar visitas de forma responsable.
-          </p>
+      {activeSection === 'faq' && (
+        <section className="space-y-6">
+          <article className="card">
+            <h2 className="text-2xl font-bold text-white">Sistema de puntuación</h2>
+            <p className="mt-3 text-slate-200">
+              En los resultados de búsqueda, la valoración de cada vía aparece con una combinación de emojis en este orden:
+              <span className="font-semibold text-slate-100"> ⭐ 🧉 🍺 🍕 🚬</span>.
+            </p>
+            <p className="mt-3 text-slate-200">
+              A mayor cantidad de símbolos, mejor puntuada está la vía por la comunidad. Si no ves emojis, significa que
+              todavía no tiene puntuación cargada.
+            </p>
+          </article>
+
+          <article className="card">
+            <h2 className="text-2xl font-bold text-white">FAQ: cómo entender la guía de escalada</h2>
+            <div className="mt-4 space-y-4 text-slate-200">
+              <div>
+                <h3 className="text-lg font-semibold text-white">¿Qué muestra cada subsector?</h3>
+                <p className="mt-1">
+                  Cada subsector agrupa las vías por pared o zona. Ahí vas a encontrar cantidad de rutas, dificultad,
+                  descripciones y, cuando está disponible, foto de referencia.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">¿Cómo uso el histograma de grados?</h3>
+                <p className="mt-1">
+                  El gráfico de distribución te ayuda a ver rápidamente si el sector tiene más rutas fáciles, intermedias
+                  o duras. Es ideal para planificar una jornada según tu nivel y el de tu cordada.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">¿Para qué sirve el buscador de vías?</h3>
+                <p className="mt-1">
+                  Podés escribir el nombre de una vía y el buscador te sugiere coincidencias similares. En cada resultado
+                  vas a ver subsector, grado, descripción y puntuación.
+                </p>
+              </div>
+            </div>
+          </article>
         </section>
       )}
     </main>
