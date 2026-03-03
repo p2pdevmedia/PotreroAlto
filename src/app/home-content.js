@@ -5,10 +5,13 @@ import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
+import { t } from '@/lib/i18n';
 
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
+  const [locale, setLocale] = useState('es');
+  const [gradeSystem, setGradeSystem] = useState('french');
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
@@ -16,6 +19,10 @@ export default function HomeContent({ data, error }) {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         subsectors={data?.subsectors ?? []}
+        locale={locale}
+        onLocaleChange={setLocale}
+        gradeSystem={gradeSystem}
+        onGradeSystemChange={setGradeSystem}
       />
 
       {activeSection === 'inicio' && (
@@ -36,8 +43,10 @@ export default function HomeContent({ data, error }) {
               routes={data.subsectors.flatMap((subsector) => subsector.routes)}
               title="Potrero Alto"
               className="mb-6"
+              locale={locale}
+              gradeSystem={gradeSystem}
             />
-              <SubsectorAccordion subsectors={data.subsectors} />
+              <SubsectorAccordion subsectors={data.subsectors} locale={locale} gradeSystem={gradeSystem} />
             </section>
           )}
         </>
@@ -45,7 +54,7 @@ export default function HomeContent({ data, error }) {
 
       {activeSection === 'como-llegar' && (
         <section className="card">
-          <h2 className="text-2xl font-bold text-white">Cómo llegar</h2>
+          <h2 className="text-2xl font-bold text-white">{t(locale, 'howToGetThere')}</h2>
           <p className="mt-3 max-w-3xl text-slate-200">
             Potrero Alto está ubicado en <span className="font-semibold">Q8370 San Martín de los Andes, Neuquén</span>.
             Podés usar el siguiente mapa para ver el punto exacto del sector.
