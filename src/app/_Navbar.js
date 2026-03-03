@@ -69,6 +69,7 @@ export default function Navbar({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCompact, setIsCompact] = useState(false);
   const [selectedSearchRoute, setSelectedSearchRoute] = useState(null);
@@ -137,6 +138,7 @@ export default function Navbar({
   const handleSectionChange = (sectionId) => {
     onSectionChange(sectionId);
     setIsMobileMenuOpen(false);
+    setIsMobileUserMenuOpen(false);
   };
 
   const closeSelectedSearchRoute = () => {
@@ -255,6 +257,45 @@ export default function Navbar({
           id="mobile-navbar-menu"
           className="relative z-20 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
         >
+          <li>
+            <button
+              type="button"
+              onClick={() => setIsMobileUserMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-900/70 text-lg transition hover:border-sunset"
+              aria-label={t(locale, 'userPreferences')}
+              aria-expanded={isMobileUserMenuOpen}
+            >
+              👤
+            </button>
+          </li>
+          {isMobileUserMenuOpen ? (
+            <li className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
+              <label className="block text-xs text-slate-300">
+                {t(locale, 'language')}
+                <select
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+                  value={locale}
+                  onChange={(event) => onLocaleChange(event.target.value)}
+                >
+                  {LANGUAGE_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="mt-2 block text-xs text-slate-300">
+                {t(locale, 'gradeSystem')}
+                <select
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+                  value={gradeSystem}
+                  onChange={(event) => onGradeSystemChange(event.target.value)}
+                >
+                  {GRADE_SYSTEM_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            </li>
+          ) : null}
           {navItems.map((item) => (
             <li key={item.id}>
               <button
@@ -270,32 +311,6 @@ export default function Navbar({
               </button>
             </li>
           ))}
-          <li className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
-            <label className="block text-xs text-slate-300">
-              {t(locale, 'language')}
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
-                value={locale}
-                onChange={(event) => onLocaleChange(event.target.value)}
-              >
-                {LANGUAGE_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="mt-2 block text-xs text-slate-300">
-              {t(locale, 'gradeSystem')}
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
-                value={gradeSystem}
-                onChange={(event) => onGradeSystemChange(event.target.value)}
-              >
-                {GRADE_SYSTEM_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-          </li>
         </ul>
       )}
 
