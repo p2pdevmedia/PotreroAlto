@@ -10,14 +10,101 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       name: 'Cheto / Pared Este',
       description: 'Sector de deportiva con 8 vías equipadas.',
       routes: [
-        { id: 'pared-este-1', name: 'Viento Este', grade: '6a+', stars: 2, type: 'Sport' },
-        { id: 'pared-este-2', name: 'Oveja Negra', grade: '7a', stars: 1, type: 'Sport' },
-        { id: 'pared-este-3', name: 'Forza Giacomo', grade: '6a+', stars: 2, type: 'Sport' },
-        { id: 'pared-este-4', name: 'Lucheti quien te conoce', grade: '6a+', stars: 2, type: 'Sport' },
-        { id: 'pared-este-5', name: 'Eh Japanesse!', grade: '6b', stars: 2, type: 'Sport' },
-        { id: 'pared-este-6', name: 'Presto Pronta', grade: '6b', stars: 2, type: 'Sport' },
-        { id: 'pared-este-7', name: 'Proyectando Valencia', grade: '5+', stars: 2, type: 'Sport' },
-        { id: 'pared-este-8', name: 'Palitos Salados 650', grade: '6a', stars: 2, type: 'Sport' }
+        {
+          id: 'pared-este-1',
+          name: 'Viento Este',
+          grade: '6a+',
+          stars: 2,
+          type: 'Sport',
+          description: 'comparte descuelgue con "oveja negra"',
+          lengthMeters: 19,
+          quickdraws: 9,
+          equippedBy: 'Pelu Ka',
+          equippedDate: '9 May 2025'
+        },
+        {
+          id: 'pared-este-2',
+          name: 'Oveja Negra',
+          grade: '7a',
+          stars: 1,
+          type: 'Sport',
+          description: 'comparte descuelgue con "viento este"',
+          lengthMeters: 20,
+          quickdraws: 11,
+          equippedBy: 'Pelu Ka',
+          equippedDate: '14 May 2025'
+        },
+        {
+          id: 'pared-este-3',
+          name: 'Forza Giacomo',
+          grade: '6a+',
+          stars: 2,
+          type: 'Sport',
+          description: 'comparte descuelgue con "Lucheti quien te conoce"',
+          lengthMeters: 20,
+          quickdraws: 10,
+          equippedBy: 'Fede Aragno',
+          equippedDate: '9 May 2025'
+        },
+        {
+          id: 'pared-este-4',
+          name: 'Lucheti quien te conoce',
+          grade: '6a+',
+          stars: 2,
+          type: 'Sport',
+          description: 'comparte descuelgue con "Forza Giacomo"',
+          lengthMeters: 20,
+          quickdraws: 10,
+          equippedBy: 'Fede Aragno',
+          equippedDate: '14 May 2025'
+        },
+        {
+          id: 'pared-este-5',
+          name: 'Eh Japanesse!',
+          grade: '6b',
+          stars: 2,
+          type: 'Sport',
+          description: 'comparte primeras 3 chapas con "Presto Pronta" y luego hacia la izquierda',
+          lengthMeters: 22,
+          quickdraws: 12,
+          equippedBy: 'Fede Aragno',
+          equippedDate: '22 May 2025'
+        },
+        {
+          id: 'pared-este-6',
+          name: 'Presto Pronta',
+          grade: '6b',
+          stars: 2,
+          type: 'Sport',
+          description: 'comparte primeras 3 chapas con "Eh Japanesse!" y luego hacia la derecha',
+          lengthMeters: 15,
+          quickdraws: 9,
+          equippedBy: 'Fede Aragno',
+          equippedDate: '20 May 2025'
+        },
+        {
+          id: 'pared-este-7',
+          name: 'Proyectando Valencia',
+          grade: '5+',
+          stars: 2,
+          type: 'Sport',
+          description: 'comparte descuelgue con "Presto Pronta"',
+          lengthMeters: 15,
+          quickdraws: 9,
+          equippedBy: 'Pelu Ka',
+          equippedDate: '22 May 2025'
+        },
+        {
+          id: 'pared-este-8',
+          name: 'Palitos Salados 650',
+          grade: '6a',
+          stars: 2,
+          type: 'Sport',
+          lengthMeters: 15,
+          quickdraws: 7,
+          equippedBy: 'Pelu Ka',
+          equippedDate: '20 May 2025'
+        }
       ]
     },
     {
