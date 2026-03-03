@@ -128,13 +128,13 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
           <span className="text-xl leading-none">☰</span>
         </button>
 
-        <ul className="hidden items-center justify-center gap-2 text-sm font-semibold text-slate-200 md:flex md:gap-4 md:text-base">
+        <ul className="hidden flex-nowrap items-center justify-center gap-2 text-sm font-semibold text-slate-200 md:flex md:gap-4 md:text-base">
           {navItems.map((item) => (
             <li key={item.id}>
               <button
                 type="button"
                 onClick={() => handleSectionChange(item.id)}
-                className={`rounded-full px-4 py-2 transition ${
+                className={`whitespace-nowrap rounded-full px-4 py-2 transition ${
                   activeSection === item.id
                     ? 'bg-slate-200 text-slate-900'
                     : 'hover:bg-slate-800 hover:text-sunset'
@@ -157,7 +157,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
               <button
                 type="button"
                 onClick={() => handleSectionChange(item.id)}
-                className={`w-full rounded-full px-4 py-2 text-left transition ${
+                className={`w-full whitespace-nowrap rounded-full px-4 py-2 text-left transition ${
                   activeSection === item.id
                     ? 'bg-slate-200 text-slate-900'
                     : 'hover:bg-slate-800 hover:text-sunset'
