@@ -2,12 +2,8 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-
-const navItems = [
-  { id: 'como-llegar', label: 'Cómo llegar' },
-  { id: 'faq', label: 'FAQ guía' }
-];
-
+import { LANGUAGES } from '@/app/i18n';
+import { GRADE_SYSTEMS } from '@/app/grade-system';
 
 function normalizeText(value) {
   return (
@@ -57,8 +53,25 @@ function ratingEmojis(stars) {
   const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
   return ratingScale.slice(0, Math.min(5, Math.round(numericStars))).reverse().join('');
 }
-export default function Navbar({ activeSection, onSectionChange, subsectors = [] }) {
+
+export default function Navbar({
+  activeSection,
+  onSectionChange,
+  subsectors = [],
+  language,
+  onLanguageChange,
+  gradeSystem,
+  onGradeSystemChange,
+  formatGrade,
+  t
+}) {
+  const navItems = [
+    { id: 'como-llegar', label: t('howToGet') },
+    { id: 'faq', label: t('faq') }
+  ];
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const routeSearchResults = useMemo(() => {
@@ -86,7 +99,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
 
   return (
     <nav
-      className="sticky top-4 z-20 mb-6 overflow-hidden rounded-2xl border border-slate-700/70 p-3 shadow-xl shadow-slate-950/50"
+      className="sticky top-4 z-20 mb-6 overflow-visible rounded-2xl border border-slate-700/70 p-3 shadow-xl shadow-slate-950/50"
       style={{
         backgroundImage:
           'linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.86), rgba(45, 99, 91, 0.4)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
@@ -99,12 +112,12 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         Potrero Alto
       </p>
 
-      <div className="relative z-10 flex items-center justify-between gap-3">
+      <div className="relative z-20 flex items-center gap-3">
         <button
           type="button"
           onClick={() => handleSectionChange('inicio')}
           className="p-0 transition-opacity hover:opacity-90"
-          aria-label="Ir al inicio"
+          aria-label={t('goHome')}
         >
           <Image
             src="/ChatGPT%20Image%20Mar%203,%202026%20at%2002_13_58%20PM.png"
@@ -119,32 +132,74 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:bg-slate-800 md:hidden"
-          aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-label={isMobileMenuOpen ? t('closeMenu') : t('openMenu')}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-navbar-menu"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
         >
-          <span className="sr-only">{isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}</span>
+          <span className="sr-only">{isMobileMenuOpen ? t('closeMenu') : t('openMenu')}</span>
           <span className="text-xl leading-none">☰</span>
         </button>
 
-        <ul className="hidden items-center justify-center gap-2 text-sm font-semibold text-slate-200 md:flex md:gap-4 md:text-base">
-          {navItems.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => handleSectionChange(item.id)}
-                className={`rounded-full px-4 py-2 transition ${
-                  activeSection === item.id
-                    ? 'bg-slate-200 text-slate-900'
-                    : 'hover:bg-slate-800 hover:text-sunset'
-                }`}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="ml-auto hidden items-center gap-4 md:flex">
+          <ul className="flex items-center justify-start gap-2 text-sm font-semibold text-slate-200 md:gap-4 md:text-base">
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => handleSectionChange(item.id)}
+                  className={`rounded-full px-4 py-2 transition ${
+                    activeSection === item.id
+                      ? 'bg-slate-200 text-slate-900'
+                      : 'hover:bg-slate-800 hover:text-sunset'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-950/70 text-base text-slate-100 hover:bg-slate-800"
+              aria-label={t('accountMenu')}
+              aria-expanded={isUserMenuOpen}
+            >
+              👤
+            </button>
+            {isUserMenuOpen ? (
+              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-700 bg-slate-950/95 p-3 shadow-2xl">
+                <label htmlFor="lang" className="text-xs font-semibold text-slate-300">{t('language')}</label>
+                <select
+                  id="lang"
+                  value={language}
+                  onChange={(event) => onLanguageChange(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1.5 text-xs text-slate-100"
+                >
+                  {LANGUAGES.map((item) => (
+                    <option key={item.code} value={item.code}>{item.label}</option>
+                  ))}
+                </select>
+
+                <label htmlFor="grade-system" className="mt-3 block text-xs font-semibold text-slate-300">{t('gradeSystem')}</label>
+                <select
+                  id="grade-system"
+                  value={gradeSystem}
+                  onChange={(event) => onGradeSystemChange(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1.5 text-xs text-slate-100"
+                >
+                  {GRADE_SYSTEMS.map((item) => (
+                    <option key={item.code} value={item.code}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
       </div>
 
       {isMobileMenuOpen && (
@@ -172,12 +227,12 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
 
       <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
         <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-          Buscar vía
+          {t('searchRoute')}
         </label>
         <input
           id="route-search"
           type="search"
-          placeholder="Nombre de la vía..."
+          placeholder={t('routeName')}
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
           className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
@@ -192,7 +247,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
                     {route.image ? (
                       <Image
                         src={route.image}
-                        alt={`Foto de la vía ${route.name}`}
+                        alt={`${t('photo')} ${route.name}`}
                         width={80}
                         height={80}
                         className="h-16 w-16 rounded-lg object-cover"
@@ -200,15 +255,15 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
                       />
                     ) : (
                       <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
-                        Sin foto
+                        {t('noPhoto')}
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-white">{route.name}</p>
                       <p className="text-xs text-slate-400">{route.subsectorName}</p>
-                      <p className="mt-1 text-xs text-slate-200">Grado: {route.grade ?? 'Sin grado'}</p>
+                      <p className="mt-1 text-xs text-slate-200">{t('grade')}: {formatGrade(route.grade ?? t('noGrade'))}</p>
                       <p className="line-clamp-2 text-xs text-slate-300">
-                        {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
+                        {route.description || t('noDescription')}
                       </p>
                       {ratingEmojis(route.stars) ? (
                         <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
@@ -219,7 +274,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-slate-400">No encontramos vías con un nombre similar.</p>
+            <p className="mt-3 text-sm text-slate-400">{t('noMatches')}</p>
           )
         ) : null}
       </div>

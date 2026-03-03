@@ -12,7 +12,7 @@ const structuredData = {
   '@type': 'WebSite',
   name: 'Potrero Alto',
   url: siteUrl,
-  inLanguage: ['es-AR', 'en', 'pt', 'fr', 'de', 'it'],
+  inLanguage: ['es-AR', 'en', 'pt', 'fr', 'de', 'zh', 'ru'],
   description: pageDescription,
   about: {
     '@type': 'SportsActivityLocation',
@@ -57,14 +57,15 @@ export const metadata = {
       pt: '/',
       fr: '/',
       de: '/',
-      it: '/',
+      zh: '/',
+      ru: '/',
       'x-default': '/'
     }
   },
   openGraph: {
     type: 'website',
     locale: 'es_AR',
-    alternateLocale: ['en_US', 'pt_BR', 'fr_FR', 'de_DE', 'it_IT'],
+    alternateLocale: ['en_US', 'pt_BR', 'fr_FR', 'de_DE', 'zh_CN', 'ru_RU'],
     url: '/',
     siteName: 'Potrero Alto',
     title: pageTitle,
