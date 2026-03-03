@@ -75,7 +75,10 @@ export default function Navbar({
 
   useEffect(() => {
     const compactThreshold = 88;
-    const expandThreshold = 40;
+    // On Android, collapsing this navbar can reduce layout height enough to
+    // briefly lower scrollY and cause rapid compact/expand loops. Requiring the
+    // user to return very close to the top before expanding avoids that jitter.
+    const expandThreshold = 8;
     let rafId = null;
 
     const updateCompactState = () => {
