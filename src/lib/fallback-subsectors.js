@@ -392,7 +392,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           equippedBy: 'ivan & JB',
           equippedDate: '8 Oct 2024',
           firstAscentBy: 'JB',
-          firstAscentDate: '17 Oct 2024'
+          firstAscentDate: '17 Oct 2024',
           image: 'https://image.thecrag.com/1280x960/8d/87/8d8736b9168cd854c0339fb5d7f46e2214433c6c'
         },
         {
