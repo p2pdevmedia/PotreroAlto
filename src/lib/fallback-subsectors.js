@@ -47,7 +47,14 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
         { id: 'tablero-9', name: 'Jägermeister', grade: '6a', stars: null, type: 'Sport' },
         { id: 'tablero-10', name: 'CapricorniaBosh', grade: '6b/b+', stars: 2, type: 'Sport' },
         { id: 'tablero-11', name: 'Las damas primero', grade: '6b', stars: 5, type: 'Sport' },
-        { id: 'tablero-12', name: 'El Peon', grade: '6c', stars: 2, type: 'Sport' },
+        {
+          id: 'tablero-12',
+          name: 'El Peon',
+          grade: '6c',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/899x1599/e3/af/e3af4b6502756b857698771db3d5154521edd309'
+        },
         { id: 'tablero-13', name: 'Enroque', grade: '7a+', stars: 1, type: 'Sport' },
         { id: 'tablero-14', name: 'Alfil', grade: '7b+/c', stars: null, type: 'Sport' },
         { id: 'tablero-15', name: 'Caballo', grade: '7b', stars: 3, type: 'Sport' },
@@ -63,7 +70,14 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       routes: [
         { id: 'derrumbe-1', name: 'MatematicamenteposibleChipped', grade: '7b+/c', stars: null, type: 'Sport' },
         { id: 'derrumbe-2', name: 'Generación Z', grade: '6c/c+', stars: 5, type: 'Sport' },
-        { id: 'derrumbe-3', name: 'Diamante', grade: '7a', stars: 5, type: 'Sport' },
+        {
+          id: 'derrumbe-3',
+          name: 'Diamante',
+          grade: '7a',
+          stars: 5,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/dc/b2/dcb2b678e32cdbf2601b1d71392acd513206152b'
+        },
         { id: 'derrumbe-4', name: 'Trébol', grade: '6b+/c', stars: null, type: 'Sport' },
         {
           id: 'derrumbe-5',
@@ -110,12 +124,47 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       routes: [
         { id: 'arco-1', name: 'Variante FisuraPreHistorica', grade: '6b', stars: null, type: 'Sport' },
         { id: 'arco-2', name: 'PreHistorica', grade: '6a', stars: null, type: 'Sport' },
-        { id: 'arco-3', name: 'ESTACIONAMIENTO MEDIDO', grade: '6c+/7a', stars: 3, type: 'Sport' },
+        {
+          id: 'arco-3',
+          name: 'ESTACIONAMIENTO MEDIDO',
+          grade: '6c+/7a',
+          stars: 3,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/1280x960/8d/87/8d8736b9168cd854c0339fb5d7f46e2214433c6c'
+        },
         { id: 'arco-4', name: 'Variante - Prohibido estacionar', grade: '6b', stars: 2, type: 'Sport' },
-        { id: 'arco-5', name: 'Musgotopia', grade: '6b', stars: null, type: 'Sport' },
-        { id: 'arco-6', name: 'Sombra chinesca', grade: '6b', stars: 2, type: 'Sport' },
-        { id: 'arco-7', name: 'eЯЯeЯЯaЯa', grade: '6a', stars: 3, type: 'Sport' },
-        { id: 'arco-8', name: 'EmPotreBro', grade: '6b', stars: 4, type: 'Sport' }
+        {
+          id: 'arco-5',
+          name: 'Musgotopia',
+          grade: '6b',
+          stars: null,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+        },
+        {
+          id: 'arco-6',
+          name: 'Sombra chinesca',
+          grade: '6b',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+        },
+        {
+          id: 'arco-7',
+          name: 'eЯЯeЯЯaЯa',
+          grade: '6a',
+          stars: 3,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+        },
+        {
+          id: 'arco-8',
+          name: 'EmPotreBro',
+          grade: '6b',
+          stars: 4,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+        }
       ]
     },
     {
