@@ -86,7 +86,16 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
   };
 
   return (
-    <nav className="sticky top-4 z-20 mb-6 rounded-2xl border border-slate-700/70 bg-slate-900/95 p-3 shadow-xl shadow-slate-950/50 backdrop-blur">
+    <nav
+      className="sticky top-4 z-20 mb-6 rounded-2xl border border-slate-700/70 p-3 shadow-xl shadow-slate-950/50"
+      style={{
+        backgroundImage:
+          'linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.86), rgba(45, 99, 91, 0.4)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <div className="flex items-center justify-between gap-3">
         <button
           type="button"
