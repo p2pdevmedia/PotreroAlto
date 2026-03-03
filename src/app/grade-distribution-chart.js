@@ -101,7 +101,7 @@ export default function GradeDistributionChart({ routes = [], title, className =
         <p className="text-xs text-slate-300">{totalRoutesWithGrade} con grado</p>
       </header>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-8 sm:gap-x-2 sm:gap-y-5 sm:overflow-visible lg:grid-cols-[repeat(15,minmax(0,1fr))]">
+      <div className="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4">
         {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
@@ -110,11 +110,11 @@ export default function GradeDistributionChart({ routes = [], title, className =
           return (
             <div
               key={grade}
-              className="group relative flex w-14 shrink-0 cursor-default flex-col items-center gap-2 rounded-md px-1 py-1 transition-colors duration-200 hover:bg-slate-900/60 sm:w-auto sm:shrink"
+              className="group relative flex min-w-0 cursor-default flex-col items-center gap-1.5 rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 sm:gap-2"
               aria-label={`${count} vías en grado ${grade}`}
               title={`${grade}: ${count} vías`}
             >
-              <div className="flex h-24 w-full max-w-10 items-end rounded bg-slate-900/70 px-1 pb-1">
+              <div className="flex h-20 w-full items-end rounded bg-slate-900/70 px-0.5 pb-1 sm:h-24 sm:px-1">
                 <div
                   className="w-full rounded transition-all duration-200 ease-out group-hover:-translate-y-0.5"
                   style={{
@@ -125,8 +125,10 @@ export default function GradeDistributionChart({ routes = [], title, className =
                   aria-hidden="true"
                 />
               </div>
-              <p className="text-sm font-semibold leading-none text-slate-100 transition-colors group-hover:text-white">{count}</p>
-              <p className="text-xs font-medium leading-none text-slate-300 transition-colors group-hover:text-white">
+              <p className="text-[11px] font-semibold leading-none text-slate-100 transition-colors group-hover:text-white sm:text-sm">
+                {count}
+              </p>
+              <p className="text-[10px] font-medium leading-none text-slate-300 transition-colors group-hover:text-white sm:text-xs">
                 {grade}
               </p>
             </div>
