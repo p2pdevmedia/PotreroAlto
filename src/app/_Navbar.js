@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 const navItems = [
   { id: 'inicio', label: 'Potrero Alto' },
   { id: 'como-llegar', label: 'Cómo llegar' },
-  { id: 'desarrollo-del-sector', label: 'Desarrollo del sector' }
+  { id: 'faq', label: 'FAQ guía' }
 ];
 
 
