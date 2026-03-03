@@ -58,15 +58,16 @@ function RouteRow({ route, onSelect }) {
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
       <div className="shrink-0 text-right">
-        {hasImage ? <p className="text-xs text-sunset">📷</p> : null}
         <p className="font-semibold text-sunset">{route.grade}</p>
-        {ratingEmojis ? (
-          <p
-            className="whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
-            aria-label={`Valoración ${route.stars} de 5`}
-          >
-            {ratingEmojis}
-          </p>
+        {hasImage || ratingEmojis ? (
+          <div className="flex items-center justify-end gap-1 whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
+            {hasImage ? <span className="text-sunset">📷</span> : null}
+            {ratingEmojis ? (
+              <p aria-label={`Valoración ${route.stars} de 5`}>
+                {ratingEmojis}
+              </p>
+            ) : null}
+          </div>
         ) : null}
       </div>
       </button>
