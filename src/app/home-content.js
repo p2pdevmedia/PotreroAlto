@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
@@ -77,6 +78,23 @@ export default function HomeContent({ data, error }) {
           <article className="card">
             <h2 className="text-2xl font-bold text-white">FAQ: cómo entender la guía de escalada</h2>
             <div className="mt-4 space-y-4 text-slate-200">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Distribución de subsectores en el predio</h3>
+                <p className="mt-1">
+                  Esta imagen muestra la distribución de los subsectores dentro del Predio Potrero Alto para que puedas
+                  ubicarte más rápido al llegar.
+                </p>
+                <div className="mt-3 overflow-hidden rounded-xl border border-slate-700/60 bg-slate-900/40">
+                  <Image
+                    src="/WhatsApp Image 2026-03-03 at 3.20.04 PM.jpeg"
+                    alt="Distribución de los subsectores dentro del Predio Potrero Alto"
+                    width={1600}
+                    height={1200}
+                    className="h-auto w-full"
+                    priority={false}
+                  />
+                </div>
+              </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">¿Qué muestra cada subsector?</h3>
                 <p className="mt-1">
