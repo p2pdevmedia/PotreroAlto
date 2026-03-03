@@ -67,16 +67,23 @@ export default function GradeDistributionChart({ routes = [], title, className =
           const heightPercent = (count / maxCount) * 100;
 
           return (
-            <div key={grade} className="flex flex-col items-center gap-2">
+            <div
+              key={grade}
+              className="group relative flex cursor-default flex-col items-center gap-2 rounded-md px-1 py-1 transition-colors duration-200 hover:bg-slate-900/60"
+              aria-label={`${count} vías en grado ${grade}`}
+              title={`${grade}: ${count} vías`}
+            >
               <div className="flex h-24 w-full max-w-10 items-end rounded bg-slate-900/70 px-1 pb-1">
                 <div
-                  className="w-full rounded bg-gradient-to-t from-fuchsia-700 to-fuchsia-400"
+                  className="w-full rounded bg-gradient-to-t from-fuchsia-700 to-fuchsia-400 transition-all duration-200 ease-out group-hover:-translate-y-0.5 group-hover:from-fuchsia-600 group-hover:to-fuchsia-300 group-hover:shadow-[0_0_16px_rgba(217,70,239,0.6)]"
                   style={{ height: `${Math.max(count ? 8 : 0, heightPercent)}%` }}
                   aria-hidden="true"
                 />
               </div>
-              <p className="text-sm font-semibold leading-none text-slate-100">{count}</p>
-              <p className="text-xs font-medium leading-none text-slate-300">{grade}</p>
+              <p className="text-sm font-semibold leading-none text-slate-100 transition-colors group-hover:text-white">{count}</p>
+              <p className="text-xs font-medium leading-none text-slate-300 transition-colors group-hover:text-fuchsia-200">
+                {grade}
+              </p>
             </div>
           );
         })}
