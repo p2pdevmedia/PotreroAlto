@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
 import { convertGrade, t } from '@/lib/i18n';
@@ -122,6 +122,11 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
 
+  const selectedSubsectorIdRef = useRef(null);
+  const selectedRouteRef = useRef(null);
+  const subsectorStatePushedRef = useRef(false);
+  const routeStatePushedRef = useRef(false);
+
   const selectedSubsector = useMemo(
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
     [selectedSubsectorId, subsectors]
@@ -139,6 +144,95 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
       document.body.style.overflow = originalOverflow;
     };
   }, [selectedSubsector, selectedRoute]);
+
+  useEffect(() => {
+    selectedSubsectorIdRef.current = selectedSubsectorId;
+  }, [selectedSubsectorId]);
+
+  useEffect(() => {
+    selectedRouteRef.current = selectedRoute;
+  }, [selectedRoute]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handlePopState = () => {
+      if (selectedRouteRef.current) {
+        routeStatePushedRef.current = false;
+        setSelectedRoute(null);
+        return;
+      }
+
+      if (selectedSubsectorIdRef.current) {
+        routeStatePushedRef.current = false;
+        subsectorStatePushedRef.current = false;
+        setSelectedRoute(null);
+        setSelectedSubsectorId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (selectedSubsectorId && !subsectorStatePushedRef.current) {
+      window.history.pushState({ potreroOverlay: 'subsector' }, '', window.location.href);
+      subsectorStatePushedRef.current = true;
+    }
+
+    if (!selectedSubsectorId) {
+      subsectorStatePushedRef.current = false;
+    }
+  }, [selectedSubsectorId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (selectedRoute && !routeStatePushedRef.current) {
+      window.history.pushState({ potreroOverlay: 'route' }, '', window.location.href);
+      routeStatePushedRef.current = true;
+    }
+
+    if (!selectedRoute) {
+      routeStatePushedRef.current = false;
+    }
+  }, [selectedRoute]);
+
+  const closeSelectedRoute = () => {
+    if (typeof window !== 'undefined' && routeStatePushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    setSelectedRoute(null);
+  };
+
+  const closeSelectedSubsector = () => {
+    if (typeof window !== 'undefined' && routeStatePushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    if (typeof window !== 'undefined' && subsectorStatePushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    setSelectedRoute(null);
+    setSelectedSubsectorId(null);
+  };
 
   return (
     <>
@@ -177,10 +271,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
       {selectedSubsector ? (
         <div
           className="fixed inset-0 z-40 flex items-center bg-slate-950/70 p-3 backdrop-blur-sm"
-          onClick={() => {
-            setSelectedSubsectorId(null);
-            setSelectedRoute(null);
-          }}
+          onClick={closeSelectedSubsector}
         >
           <section
             className="flex h-full max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900"
@@ -201,10 +292,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
               <button
                 type="button"
                 className="rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-                onClick={() => {
-                  setSelectedSubsectorId(null);
-                  setSelectedRoute(null);
-                }}
+                onClick={closeSelectedSubsector}
               >
                 {t(locale, 'closeButton')}
               </button>
@@ -240,7 +328,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
       ) : null}
 
       {selectedRoute ? (
-        <div className="fixed inset-0 z-50 bg-slate-950/95" onClick={() => setSelectedRoute(null)}>
+        <div className="fixed inset-0 z-50 bg-slate-950/95" onClick={closeSelectedRoute}>
           <section
             className="relative h-full w-full overflow-hidden"
             role="dialog"
@@ -259,7 +347,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
             <button
               type="button"
               className="absolute right-4 top-4 z-10 rounded-full border border-slate-600 bg-slate-950/60 px-3 py-1 text-sm text-slate-100 backdrop-blur hover:bg-slate-900"
-              onClick={() => setSelectedRoute(null)}
+              onClick={closeSelectedRoute}
             >
               {t(locale, 'closeButton')}
             </button>
