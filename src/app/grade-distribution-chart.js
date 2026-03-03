@@ -86,22 +86,39 @@ function buildDistribution(routes = []) {
   return counts;
 }
 
-export default function GradeDistributionChart({ routes = [], title, className = '' }) {
+export default function GradeDistributionChart({ routes = [], title, className = '', compact = false, barsOnly = false }) {
   const distribution = buildDistribution(routes);
   const maxCount = Math.max(...Object.values(distribution), 1);
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
+  const chartHeightClass = compact ? 'h-10 sm:h-12' : 'h-20 sm:h-24';
+  const chartWrapperClass = compact
+    ? `grid h-full grid-cols-[repeat(15,minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
+    : 'grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4';
+  const containerClass = barsOnly
+    ? `h-full w-full ${className}`
+    : compact
+      ? `rounded-lg border border-slate-700/60 bg-slate-950/65 p-2.5 ${className}`
+      : `rounded-xl border border-slate-700/70 bg-slate-950/60 p-4 ${className}`;
 
   return (
-    <section className={`rounded-xl border border-slate-700/70 bg-slate-950/60 p-4 ${className}`}>
-      <header className="mb-4 flex items-end justify-between gap-4">
-        <div>
-          {title ? <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-200">{title}</h3> : null}
-          <p className="text-xs text-slate-400">Distribución de vías por grado</p>
-        </div>
-        <p className="text-xs text-slate-300">{totalRoutesWithGrade} con grado</p>
-      </header>
+    <section className={containerClass}>
+      {!barsOnly ? (
+        <header className={`flex items-end justify-between gap-4 ${compact ? 'mb-2' : 'mb-4'}`}>
+          <div>
+            {title ? (
+              <h3 className={`${compact ? 'text-[10px]' : 'text-sm'} font-semibold uppercase tracking-wide text-slate-200`}>
+                {title}
+              </h3>
+            ) : null}
+            {!compact ? <p className="text-xs text-slate-400">Distribución de vías por grado</p> : null}
+          </div>
+          <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-slate-300`}>
+            {totalRoutesWithGrade} con grado
+          </p>
+        </header>
+      ) : null}
 
-      <div className="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4">
+      <div className={chartWrapperClass}>
         {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
@@ -110,13 +127,13 @@ export default function GradeDistributionChart({ routes = [], title, className =
           return (
             <div
               key={grade}
-              className="group relative flex min-w-0 cursor-default flex-col items-center gap-1.5 rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 sm:gap-2"
+              className={`group relative flex min-w-0 cursor-default flex-col items-center rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'}`}
               aria-label={`${count} vías en grado ${grade}`}
               title={`${grade}: ${count} vías`}
             >
-              <div className="flex h-20 w-full items-end rounded bg-slate-900/70 px-0.5 pb-1 sm:h-24 sm:px-1">
+              <div className={`flex w-full items-end ${barsOnly ? 'h-full bg-transparent px-0 pb-0' : `rounded bg-slate-900/70 ${chartHeightClass} ${compact ? 'px-0 pb-0.5' : 'px-0.5 pb-1 sm:px-1'}`}`}>
                 <div
-                  className="w-full rounded transition-all duration-200 ease-out group-hover:-translate-y-0.5"
+                  className={`w-full transition-all duration-200 ease-out group-hover:-translate-y-0.5 ${barsOnly ? 'rounded-sm opacity-65 group-hover:opacity-90' : 'rounded'}`}
                   style={{
                     height: `${Math.max(count ? 8 : 0, heightPercent)}%`,
                     background: `linear-gradient(to top, color-mix(in srgb, ${difficultyColor} 72%, black), ${difficultyColor})`,
@@ -125,12 +142,20 @@ export default function GradeDistributionChart({ routes = [], title, className =
                   aria-hidden="true"
                 />
               </div>
-              <p className="text-[11px] font-semibold leading-none text-slate-100 transition-colors group-hover:text-white sm:text-sm">
-                {count}
-              </p>
-              <p className="text-[10px] font-medium leading-none text-slate-300 transition-colors group-hover:text-white sm:text-xs">
-                {grade}
-              </p>
+              {!barsOnly ? (
+                <>
+                  <p
+                    className={`${compact ? 'text-[9px] sm:text-[10px]' : 'text-[11px] sm:text-sm'} font-semibold leading-none text-slate-100 transition-colors group-hover:text-white`}
+                  >
+                    {count}
+                  </p>
+                  {!compact ? (
+                    <p className="text-[10px] font-medium leading-none text-slate-300 transition-colors group-hover:text-white sm:text-xs">
+                      {grade}
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
             </div>
           );
         })}
