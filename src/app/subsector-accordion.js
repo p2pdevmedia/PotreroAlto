@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import GradeDistributionChart from '@/app/grade-distribution-chart';
 
 const SUBSECTOR_IMAGE_OVERRIDES = {
   'la chanchería':
@@ -178,6 +179,12 @@ export default function SubsectorAccordion({ subsectors }) {
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+              <GradeDistributionChart
+                routes={selectedSubsector.routes}
+                title={`Grados en ${selectedSubsector.name}`}
+                className="mb-4"
+              />
+
               {selectedSubsector.routes.length ? (
                 <ul>
                   {selectedSubsector.routes.map((route) => (
