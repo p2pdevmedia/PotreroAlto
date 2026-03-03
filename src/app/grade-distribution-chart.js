@@ -1,5 +1,45 @@
 const GRADE_BUCKETS = ['<5a', '5a', '5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c', '9a', '>9a'];
 
+const DIFFICULTY_COLOR_STOPS = [
+  { stop: 0, color: '34 197 94' }, // verde: muy fácil
+  { stop: 0.35, color: '59 130 246' }, // azul: intermedio
+  { stop: 0.7, color: '239 68 68' }, // rojo: difícil
+  { stop: 1, color: '127 29 29' } // rojo oscuro: muy difícil
+];
+
+function interpolateColor(startColor, endColor, ratio) {
+  return startColor.map((startChannel, index) => {
+    const endChannel = endColor[index];
+    return Math.round(startChannel + (endChannel - startChannel) * ratio);
+  });
+}
+
+function parseRgbColor(color) {
+  return color.split(' ').map((channel) => Number.parseInt(channel, 10));
+}
+
+function getDifficultyColor(gradeIndex) {
+  if (GRADE_BUCKETS.length <= 1) {
+    return 'rgb(239 68 68)';
+  }
+
+  const normalizedIndex = gradeIndex / (GRADE_BUCKETS.length - 1);
+  const upperStopIndex = DIFFICULTY_COLOR_STOPS.findIndex((entry) => normalizedIndex <= entry.stop);
+
+  if (upperStopIndex <= 0) {
+    return `rgb(${DIFFICULTY_COLOR_STOPS[0].color})`;
+  }
+
+  const lowerStop = DIFFICULTY_COLOR_STOPS[upperStopIndex - 1];
+  const upperStop = DIFFICULTY_COLOR_STOPS[upperStopIndex];
+  const stopDistance = upperStop.stop - lowerStop.stop;
+  const ratio = stopDistance > 0 ? (normalizedIndex - lowerStop.stop) / stopDistance : 0;
+
+  const interpolatedColor = interpolateColor(parseRgbColor(lowerStop.color), parseRgbColor(upperStop.color), ratio);
+
+  return `rgb(${interpolatedColor.join(' ')})`;
+}
+
 function normalizeGrade(grade) {
   if (!grade) {
     return null;
@@ -62,9 +102,10 @@ export default function GradeDistributionChart({ routes = [], title, className =
       </header>
 
       <div className="grid grid-cols-5 gap-x-2 gap-y-5 sm:grid-cols-8 lg:grid-cols-[repeat(15,minmax(0,1fr))]">
-        {GRADE_BUCKETS.map((grade) => {
+        {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
+          const difficultyColor = getDifficultyColor(gradeIndex);
 
           return (
             <div
@@ -75,13 +116,17 @@ export default function GradeDistributionChart({ routes = [], title, className =
             >
               <div className="flex h-24 w-full max-w-10 items-end rounded bg-slate-900/70 px-1 pb-1">
                 <div
-                  className="w-full rounded bg-gradient-to-t from-fuchsia-700 to-fuchsia-400 transition-all duration-200 ease-out group-hover:-translate-y-0.5 group-hover:from-fuchsia-600 group-hover:to-fuchsia-300 group-hover:shadow-[0_0_16px_rgba(217,70,239,0.6)]"
-                  style={{ height: `${Math.max(count ? 8 : 0, heightPercent)}%` }}
+                  className="w-full rounded transition-all duration-200 ease-out group-hover:-translate-y-0.5"
+                  style={{
+                    height: `${Math.max(count ? 8 : 0, heightPercent)}%`,
+                    background: `linear-gradient(to top, color-mix(in srgb, ${difficultyColor} 72%, black), ${difficultyColor})`,
+                    boxShadow: count ? `0 0 16px color-mix(in srgb, ${difficultyColor} 55%, transparent)` : 'none'
+                  }}
                   aria-hidden="true"
                 />
               </div>
               <p className="text-sm font-semibold leading-none text-slate-100 transition-colors group-hover:text-white">{count}</p>
-              <p className="text-xs font-medium leading-none text-slate-300 transition-colors group-hover:text-fuchsia-200">
+              <p className="text-xs font-medium leading-none text-slate-300 transition-colors group-hover:text-white">
                 {grade}
               </p>
             </div>
