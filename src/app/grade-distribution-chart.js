@@ -101,7 +101,7 @@ export default function GradeDistributionChart({ routes = [], title, className =
         <p className="text-xs text-slate-300">{totalRoutesWithGrade} con grado</p>
       </header>
 
-      <div className="grid grid-cols-5 gap-x-2 gap-y-5 sm:grid-cols-8 lg:grid-cols-[repeat(15,minmax(0,1fr))]">
+      <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-8 sm:gap-x-2 sm:gap-y-5 sm:overflow-visible lg:grid-cols-[repeat(15,minmax(0,1fr))]">
         {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
@@ -110,7 +110,7 @@ export default function GradeDistributionChart({ routes = [], title, className =
           return (
             <div
               key={grade}
-              className="group relative flex cursor-default flex-col items-center gap-2 rounded-md px-1 py-1 transition-colors duration-200 hover:bg-slate-900/60"
+              className="group relative flex w-14 shrink-0 cursor-default flex-col items-center gap-2 rounded-md px-1 py-1 transition-colors duration-200 hover:bg-slate-900/60 sm:w-auto sm:shrink"
               aria-label={`${count} vías en grado ${grade}`}
               title={`${grade}: ${count} vías`}
             >
