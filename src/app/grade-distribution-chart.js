@@ -1,3 +1,5 @@
+import { makeTranslator } from '@/app/i18n';
+
 const GRADE_BUCKETS = ['<5a', '5a', '5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c', '9a', '>9a'];
 
 const DIFFICULTY_COLOR_STOPS = [
@@ -86,7 +88,8 @@ function buildDistribution(routes = []) {
   return counts;
 }
 
-export default function GradeDistributionChart({ routes = [], title, className = '', compact = false, barsOnly = false }) {
+export default function GradeDistributionChart({ routes = [], title, className = '', compact = false, barsOnly = false, language = 'es' }) {
+  const t = makeTranslator(language);
   const distribution = buildDistribution(routes);
   const maxCount = Math.max(...Object.values(distribution), 1);
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
@@ -110,10 +113,10 @@ export default function GradeDistributionChart({ routes = [], title, className =
                 {title}
               </h3>
             ) : null}
-            {!compact ? <p className="text-xs text-slate-400">Distribución de vías por grado</p> : null}
+            {!compact ? <p className="text-xs text-slate-400">{t('distributionByGrade')}</p> : null}
           </div>
           <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-slate-300`}>
-            {totalRoutesWithGrade} con grado
+            {t('withGrade', { count: totalRoutesWithGrade })}
           </p>
         </header>
       ) : null}
@@ -128,8 +131,8 @@ export default function GradeDistributionChart({ routes = [], title, className =
             <div
               key={grade}
               className={`group relative flex min-w-0 cursor-default flex-col items-center rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'}`}
-              aria-label={`${count} vías en grado ${grade}`}
-              title={`${grade}: ${count} vías`}
+              aria-label={t('routesInGrade', { count, grade })}
+              title={t('routesInGrade', { count, grade })}
             >
               <div className={`flex w-full items-end ${barsOnly ? 'h-full bg-transparent px-0 pb-0' : `rounded bg-slate-900/70 ${chartHeightClass} ${compact ? 'px-0 pb-0.5' : 'px-0.5 pb-1 sm:px-1'}`}`}>
                 <div

@@ -2,12 +2,7 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-
-const navItems = [
-  { id: 'como-llegar', label: 'Cómo llegar' },
-  { id: 'faq', label: 'FAQ guía' }
-];
-
+import { GRADE_SYSTEMS, LANGUAGES, convertGrade, makeTranslator } from '@/app/i18n';
 
 function normalizeText(value) {
   return (
@@ -57,9 +52,24 @@ function ratingEmojis(stars) {
   const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
   return ratingScale.slice(0, Math.min(5, Math.round(numericStars))).reverse().join('');
 }
-export default function Navbar({ activeSection, onSectionChange, subsectors = [] }) {
+
+export default function Navbar({
+  activeSection,
+  onSectionChange,
+  subsectors = [],
+  language,
+  gradeSystem,
+  onLanguageChange,
+  onGradeSystemChange
+}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const t = makeTranslator(language);
+  const navItems = [
+    { id: 'como-llegar', label: t('howToGet') },
+    { id: 'faq', label: t('faqGuide') }
+  ];
 
   const routeSearchResults = useMemo(() => {
     if (!searchTerm?.trim()) {
@@ -144,40 +154,95 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
               </button>
             </li>
           ))}
+          <li className="relative">
+            <button
+              type="button"
+              aria-label={t('userMenu')}
+              onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 text-lg hover:border-slate-500"
+            >
+              👤
+            </button>
+            {isUserMenuOpen ? (
+              <div className="absolute right-0 top-12 w-64 rounded-xl border border-slate-700 bg-slate-950/95 p-3 text-xs shadow-2xl">
+                <p className="mb-1 text-slate-300">{t('language')}</p>
+                <select
+                  value={language}
+                  onChange={(event) => onLanguageChange(event.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-slate-100"
+                >
+                  {LANGUAGES.map((item) => (
+                    <option key={item.code} value={item.code}>{item.label}</option>
+                  ))}
+                </select>
+                <p className="mb-1 mt-3 text-slate-300">{t('gradingSystem')}</p>
+                <select
+                  value={gradeSystem}
+                  onChange={(event) => onGradeSystemChange(event.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-slate-100"
+                >
+                  {GRADE_SYSTEMS.map((item) => (
+                    <option key={item.code} value={item.code}>{t(item.labelKey)}</option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+          </li>
         </ul>
       </div>
 
       {isMobileMenuOpen && (
-        <ul
-          id="mobile-navbar-menu"
-          className="relative z-10 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
-        >
-          {navItems.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => handleSectionChange(item.id)}
-                className={`w-full rounded-full px-4 py-2 text-left transition ${
-                  activeSection === item.id
-                    ? 'bg-slate-200 text-slate-900'
-                    : 'hover:bg-slate-800 hover:text-sunset'
-                }`}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div id="mobile-navbar-menu" className="relative z-10 mt-3 space-y-2 text-sm font-semibold text-slate-200 md:hidden">
+          <ul className="flex flex-col gap-2">
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => handleSectionChange(item.id)}
+                  className={`w-full rounded-full px-4 py-2 text-left transition ${
+                    activeSection === item.id
+                      ? 'bg-slate-200 text-slate-900'
+                      : 'hover:bg-slate-800 hover:text-sunset'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-3">
+            <p className="mb-1 text-slate-300">{t('language')}</p>
+            <select
+              value={language}
+              onChange={(event) => onLanguageChange(event.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-slate-100"
+            >
+              {LANGUAGES.map((item) => (
+                <option key={item.code} value={item.code}>{item.label}</option>
+              ))}
+            </select>
+            <p className="mb-1 mt-3 text-slate-300">{t('gradingSystem')}</p>
+            <select
+              value={gradeSystem}
+              onChange={(event) => onGradeSystemChange(event.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-slate-100"
+            >
+              {GRADE_SYSTEMS.map((item) => (
+                <option key={item.code} value={item.code}>{t(item.labelKey)}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       )}
 
       <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
         <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-          Buscar vía
+          {t('searchRoute')}
         </label>
         <input
           id="route-search"
           type="search"
-          placeholder="Nombre de la vía..."
+          placeholder={t('searchPlaceholder')}
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
           className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
@@ -186,40 +251,43 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         {searchTerm.trim() ? (
           routeSearchResults.length ? (
             <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
-              {routeSearchResults.map((route) => (
-                <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
-                  <div className="flex gap-3">
-                    {route.image ? (
-                      <Image
-                        src={route.image}
-                        alt={`Foto de la vía ${route.name}`}
-                        width={80}
-                        height={80}
-                        className="h-16 w-16 rounded-lg object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
-                        Sin foto
+              {routeSearchResults.map((route) => {
+                const convertedGrade = convertGrade(route.grade, gradeSystem);
+                return (
+                  <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
+                    <div className="flex gap-3">
+                      {route.image ? (
+                        <Image
+                          src={route.image}
+                          alt={`Foto de la vía ${route.name}`}
+                          width={80}
+                          height={80}
+                          className="h-16 w-16 rounded-lg object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+                          Sin foto
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-white">{route.name}</p>
+                        <p className="text-xs text-slate-400">{route.subsectorName}</p>
+                        <p className="mt-1 text-xs text-slate-200">{t('gradingSystem')}: {convertedGrade ?? '-'}</p>
+                        <p className="line-clamp-2 text-xs text-slate-300">
+                          {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
+                        </p>
+                        {ratingEmojis(route.stars) ? (
+                          <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
+                        ) : null}
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">{route.name}</p>
-                      <p className="text-xs text-slate-400">{route.subsectorName}</p>
-                      <p className="mt-1 text-xs text-slate-200">Grado: {route.grade ?? 'Sin grado'}</p>
-                      <p className="line-clamp-2 text-xs text-slate-300">
-                        {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
-                      </p>
-                      {ratingEmojis(route.stars) ? (
-                        <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
-                      ) : null}
                     </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-slate-400">No encontramos vías con un nombre similar.</p>
+            <p className="mt-3 text-sm text-slate-400">{t('noResults', { term: searchTerm.trim() })}</p>
           )
         ) : null}
       </div>
