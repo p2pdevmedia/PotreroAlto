@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const navItems = [
   { id: 'inicio', label: 'Potrero Alto' },
@@ -9,8 +9,76 @@ const navItems = [
   { id: 'desarrollo-del-sector', label: 'Desarrollo del sector' }
 ];
 
-export default function Navbar({ activeSection, onSectionChange }) {
+
+function normalizeText(value) {
+  return (
+    value
+      ?.normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .trim() ?? ''
+  );
+}
+
+function similarityScore(candidateName, query) {
+  const candidate = normalizeText(candidateName);
+  const target = normalizeText(query);
+
+  if (!candidate || !target) {
+    return 0;
+  }
+
+  if (candidate.includes(target)) {
+    return 1;
+  }
+
+  const targetTokens = target.split(/\s+/).filter(Boolean);
+  const candidateTokens = candidate.split(/\s+/).filter(Boolean);
+
+  return targetTokens.reduce((max, token) => {
+    if (candidate.includes(token)) {
+      return Math.max(max, 0.85);
+    }
+
+    const partialMatch = candidateTokens.some((candidateToken) =>
+      candidateToken.startsWith(token.slice(0, Math.max(2, Math.floor(token.length / 2))))
+    );
+
+    return partialMatch ? Math.max(max, 0.7) : max;
+  }, 0);
+}
+
+function ratingEmojis(stars) {
+  const numericStars = Number.parseFloat(stars);
+
+  if (!Number.isFinite(numericStars) || numericStars <= 0) {
+    return null;
+  }
+
+  const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
+  return ratingScale.slice(0, Math.min(5, Math.round(numericStars))).reverse().join('');
+}
+export default function Navbar({ activeSection, onSectionChange, subsectors = [] }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const routeSearchResults = useMemo(() => {
+    if (!searchTerm?.trim()) {
+      return [];
+    }
+
+    return (subsectors ?? [])
+      .flatMap((subsector) =>
+        (subsector.routes ?? []).map((route) => ({
+          ...route,
+          subsectorName: subsector.name,
+          score: similarityScore(route.name, searchTerm)
+        }))
+      )
+      .filter((route) => route.score >= 0.7)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+  }, [searchTerm, subsectors]);
 
   const handleSectionChange = (sectionId) => {
     onSectionChange(sectionId);
@@ -89,6 +157,60 @@ export default function Navbar({ activeSection, onSectionChange }) {
           ))}
         </ul>
       )}
+
+      <div className="mt-3 border-t border-slate-700/70 pt-3">
+        <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
+          Buscar vía
+        </label>
+        <input
+          id="route-search"
+          type="search"
+          placeholder="Nombre de la vía..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
+        />
+
+        {searchTerm.trim() ? (
+          routeSearchResults.length ? (
+            <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
+              {routeSearchResults.map((route) => (
+                <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
+                  <div className="flex gap-3">
+                    {route.image ? (
+                      <Image
+                        src={route.image}
+                        alt={`Foto de la vía ${route.name}`}
+                        width={80}
+                        height={80}
+                        className="h-16 w-16 rounded-lg object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+                        Sin foto
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">{route.name}</p>
+                      <p className="text-xs text-slate-400">{route.subsectorName}</p>
+                      <p className="mt-1 text-xs text-slate-200">Grado: {route.grade ?? 'Sin grado'}</p>
+                      <p className="line-clamp-2 text-xs text-slate-300">
+                        {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
+                      </p>
+                      {ratingEmojis(route.stars) ? (
+                        <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-slate-400">No encontramos vías con un nombre similar.</p>
+          )
+        ) : null}
+      </div>
     </nav>
   );
 }
