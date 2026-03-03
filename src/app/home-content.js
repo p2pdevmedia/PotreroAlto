@@ -35,6 +35,29 @@ const GRADE_CONVERSION_ROWS = [
   ['9c', '5.15d', 'XIV', '41']
 ];
 
+
+function ratingIconCount(stars) {
+  const numericStars = Number.parseFloat(stars);
+
+  if (!Number.isFinite(numericStars) || numericStars <= 0) {
+    return 0;
+  }
+
+  return Math.min(5, Math.round(numericStars));
+}
+
+function starToEmoji(stars) {
+  const totalIcons = ratingIconCount(stars);
+
+  if (!totalIcons) {
+    return null;
+  }
+
+  const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
+
+  return ratingScale.slice(0, totalIcons).reverse().join('');
+}
+
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
@@ -125,6 +148,10 @@ export default function HomeContent({ data, error }) {
     setSelectedGradeBucket(null);
   };
 
+  const allRoutesWithSubsector = (data?.subsectors ?? []).flatMap((subsector) =>
+    (subsector.routes ?? []).map((route) => ({ ...route, subsectorName: subsector.name }))
+  );
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <Navbar
@@ -151,7 +178,7 @@ export default function HomeContent({ data, error }) {
           ) : (
             <section className="space-y-6" aria-label="Subsectores de Potrero Alto">
               <GradeDistributionChart
-                routes={data.subsectors.flatMap((subsector) => subsector.routes)}
+                routes={allRoutesWithSubsector}
                 className="mb-6"
                 locale={locale}
                 gradeSystem={gradeSystem}
@@ -359,12 +386,41 @@ export default function HomeContent({ data, error }) {
               </button>
             </div>
             <ul className="min-h-0 flex-1 overflow-y-auto px-5 py-3">
-              {selectedGradeBucket.routes.map((route) => (
-                <li key={`${route.id ?? route.name}-${route.grade ?? 'no-grade'}`} className="border-b border-slate-800 py-2 last:border-0">
-                  <p className="font-medium text-slate-100">{route.name}</p>
-                  <p className="text-sm text-slate-300">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
-                </li>
-              ))}
+              {selectedGradeBucket.routes.map((route) => {
+                const ratingEmojis = starToEmoji(route.stars);
+                const routeMetrics = [
+                  route.lengthMeters ? `${route.lengthMeters}m` : null,
+                  route.quickdraws ? `${route.quickdraws} expreses` : null
+                ]
+                  .filter(Boolean)
+                  .join(', ');
+                const firstAscent = route.firstAscentBy
+                  ? `PA: ${route.firstAscentBy}${route.firstAscentDate ? `, ${route.firstAscentDate}` : ''}`
+                  : null;
+                const equipped = route.equippedBy
+                  ? `Equip: ${route.equippedBy}${route.equippedDate ? `, ${route.equippedDate}` : ''}`
+                  : null;
+
+                return (
+                  <li key={`${route.id ?? route.name}-${route.grade ?? 'no-grade'}`} className="border-b border-slate-800 py-3 last:border-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-100">{route.name}</p>
+                        <p className="text-xs uppercase tracking-wide text-slate-400">Subsector: {route.subsectorName ?? '-'}</p>
+                        {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
+                        {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
+                        {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
+                        {equipped ? <p className="text-xs text-slate-300">{equipped}</p> : null}
+                        {route.description ? <p className="mt-1 text-xs text-slate-300">{route.description}</p> : null}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
+                        {ratingEmojis ? <p className="mt-1 text-xs text-slate-200">{ratingEmojis}</p> : null}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
