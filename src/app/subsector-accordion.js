@@ -142,7 +142,10 @@ export default function SubsectorAccordion({ subsectors }) {
               unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/10 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-3">
+            <div className="absolute bottom-3 right-3 h-1/3 w-1/2">
+              <GradeDistributionChart routes={subsector.routes} compact barsOnly className="pointer-events-none" />
+            </div>
+            <div className="absolute inset-x-0 bottom-0 p-3 pr-[52%]">
               <p className="line-clamp-2 text-sm font-semibold text-white drop-shadow">{subsector.name}</p>
               <p className="mt-1 text-xs text-slate-100/95">
                 ▶ {subsector.routes.length} {subsector.routes.length === 1 ? 'ruta' : 'rutas'}
