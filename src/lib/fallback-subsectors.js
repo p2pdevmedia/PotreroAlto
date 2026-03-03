@@ -134,7 +134,14 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
         { id: 'tablero-9', name: 'Jägermeister', grade: '6a', stars: null, type: 'Sport' },
         { id: 'tablero-10', name: 'CapricorniaBosh', grade: '6b/b+', stars: 2, type: 'Sport' },
         { id: 'tablero-11', name: 'Las damas primero', grade: '6b', stars: 5, type: 'Sport' },
-        { id: 'tablero-12', name: 'El Peon', grade: '6c', stars: 2, type: 'Sport' },
+        {
+          id: 'tablero-12',
+          name: 'El Peon',
+          grade: '6c',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/899x1599/e3/af/e3af4b6502756b857698771db3d5154521edd309'
+        },
         { id: 'tablero-13', name: 'Enroque', grade: '7a+', stars: 1, type: 'Sport' },
         { id: 'tablero-14', name: 'Alfil', grade: '7b+/c', stars: null, type: 'Sport' },
         { id: 'tablero-15', name: 'Caballo', grade: '7b', stars: 3, type: 'Sport' },
@@ -148,6 +155,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       name: 'El Derrumbe',
       description: 'Sector deportivo con desplome y vías largas.',
       routes: [
+
         {
           id: 'derrumbe-1',
           name: 'MatematicamenteposibleChipped',
@@ -169,6 +177,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           equippedBy: 'иван & juan Ramon',
           equippedDate: '12 Sep 2026'
         },
+
         {
           id: 'derrumbe-3',
           name: 'Diamante',
@@ -180,6 +189,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           quickdraws: 10,
           equippedBy: 'иван & JP',
           equippedDate: '15 May 2024'
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/dc/b2/dcb2b678e32cdbf2601b1d71392acd513206152b'
         },
         {
           id: 'derrumbe-4',
@@ -193,6 +203,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           equippedBy: 'иван & ATMAN',
           equippedDate: '12 Apr 2023'
         },
+
         {
           id: 'derrumbe-5',
           name: 'Corazón',
@@ -374,6 +385,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           grade: '6c+/7a',
           stars: 3,
           type: 'Sport',
+
           description: 'Roca frágil, es recomendable el uso de casco.',
           lengthMeters: 20,
           quickdraws: 15,
@@ -381,6 +393,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           equippedDate: '8 Oct 2024',
           firstAscentBy: 'JB',
           firstAscentDate: '17 Oct 2024'
+          image: 'https://image.thecrag.com/1280x960/8d/87/8d8736b9168cd854c0339fb5d7f46e2214433c6c'
         },
         {
           id: 'arco-4',
@@ -391,6 +404,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           description: 'Variante de "Estacionamiento medido", termina en la reunion de "Musgotopia"',
           lengthMeters: 16
         },
+
         {
           id: 'arco-5',
           name: 'Musgotopia',
@@ -401,6 +415,8 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           quickdraws: 12,
           equippedBy: 'juan Ramon',
           equippedDate: '2 Abr 2025'
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+
         },
         {
           id: 'arco-6',
@@ -408,10 +424,13 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           grade: '6b',
           stars: 2,
           type: 'Sport',
+
           lengthMeters: 11,
           quickdraws: 10,
           equippedBy: 'иван',
           equippedDate: '2 Abr 2025'
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+
         },
         {
           id: 'arco-7',
@@ -423,6 +442,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           quickdraws: 7,
           firstAscentBy: 'Tomas Genova',
           firstAscentDate: '1 Abr 2025'
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
         },
         {
           id: 'arco-8',
@@ -437,6 +457,8 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           equippedDate: '31 Mar 2025',
           firstAscentBy: 'иван',
           firstAscentDate: '31 Mar 2025'
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+
         }
       ]
     },
