@@ -13,3 +13,19 @@ body {
 .card {
   @apply rounded-2xl border border-slate-700/60 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/30;
 }
+
+@keyframes logo-breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+  }
+
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+.animate-logo-breathe {
+  animation: logo-breathe 2.6s ease-in-out infinite;
+  transform-origin: center;
+}
