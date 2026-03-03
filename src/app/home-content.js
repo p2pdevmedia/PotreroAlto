@@ -117,6 +117,65 @@ export default function HomeContent({ data, error }) {
                 </p>
               </div>
               <div>
+                <h3 className="text-lg font-semibold text-white">Tabla de conversión de grados (aproximada)</h3>
+                <p className="mt-1">
+                  En Potrero Alto usamos principalmente el sistema francés, pero acá tenés una guía rápida para comparar
+                  con otros sistemas comunes: Yosemite (YDS), UIAA y Ewbank (Australia/Nueva Zelanda).
+                </p>
+                <div className="mt-3 overflow-x-auto rounded-xl border border-slate-700/60">
+                  <table className="min-w-full divide-y divide-slate-700/70 text-left text-sm">
+                    <thead className="bg-slate-900/70 text-slate-100">
+                      <tr>
+                        <th className="px-3 py-2 font-semibold">Francés</th>
+                        <th className="px-3 py-2 font-semibold">Yosemite (YDS)</th>
+                        <th className="px-3 py-2 font-semibold">UIAA</th>
+                        <th className="px-3 py-2 font-semibold">Ewbank</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800 bg-slate-950/40 text-slate-200">
+                      {[
+                        ['V+', '5.9', 'VI-', '17'],
+                        ['6a', '5.10a', 'VI+', '18'],
+                        ['6a+', '5.10b', 'VII-', '19'],
+                        ['6b', '5.10c', 'VII', '20'],
+                        ['6b+', '5.10d', 'VII+', '21'],
+                        ['6c', '5.11a', 'VIII-', '22'],
+                        ['6c/+', '5.11b', 'VIII', '23'],
+                        ['6c+', '5.11c', 'VIII+', '24'],
+                        ['7a', '5.11d', 'IX-', '25'],
+                        ['7a+', '5.12a', 'IX', '26'],
+                        ['7b', '5.12b', 'IX+', '27'],
+                        ['7b+', '5.12c', 'X-', '28'],
+                        ['7c', '5.12d', 'X', '29'],
+                        ['7c+', '5.13a', 'X+', '30'],
+                        ['8a', '5.13b', 'XI-', '31'],
+                        ['8a+', '5.13c', 'XI', '32'],
+                        ['8b', '5.13d', 'XI+', '33'],
+                        ['8b+', '5.14a', 'XII-', '34'],
+                        ['8c', '5.14b', 'XII', '35'],
+                        ['8c+', '5.14c', 'XII+', '36'],
+                        ['9a', '5.14d', 'XIII-', '37'],
+                        ['9a+', '5.15a', 'XIII', '38'],
+                        ['9b', '5.15b', 'XIII+', '39'],
+                        ['9b+', '5.15c', 'XIV-', '40'],
+                        ['9c', '5.15d', 'XIV', '41']
+                      ].map(([french, yds, uiaa, ewbank]) => (
+                        <tr key={french}>
+                          <td className="px-3 py-2 font-medium text-slate-100">{french}</td>
+                          <td className="px-3 py-2">{yds}</td>
+                          <td className="px-3 py-2">{uiaa}</td>
+                          <td className="px-3 py-2">{ewbank}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-2 text-xs text-slate-400">
+                  Nota: las conversiones entre sistemas son orientativas y pueden variar según el estilo de escalada y
+                  la región.
+                </p>
+              </div>
+              <div>
                 <h3 className="text-lg font-semibold text-white">¿Para qué sirve el buscador de vías?</h3>
                 <p className="mt-1">
                   Podés escribir el nombre de una vía y el buscador te sugiere coincidencias similares. En cada resultado
