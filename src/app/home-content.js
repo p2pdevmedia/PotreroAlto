@@ -108,12 +108,74 @@ export default function HomeContent({ data, error }) {
                   El gráfico de distribución te ayuda a ver rápidamente si el sector tiene más rutas fáciles, intermedias
                   o duras. Es ideal para planificar una jornada según tu nivel y el de tu cordada.
                 </p>
+                <p className="mt-2">
+                  Escala de colores por dificultad en el histograma:{' '}
+                  <span className="font-semibold text-green-400">verde</span> para grados más fáciles,{' '}
+                  <span className="font-semibold text-blue-400">azul</span> para intermedios,{' '}
+                  <span className="font-semibold text-red-400">rojo</span> para difíciles y{' '}
+                  <span className="font-semibold text-red-900">rojo oscuro</span> para los más exigentes.
+                </p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">¿Para qué sirve el buscador de vías?</h3>
                 <p className="mt-1">
                   Podés escribir el nombre de una vía y el buscador te sugiere coincidencias similares. En cada resultado
                   vas a ver subsector, grado, descripción y puntuación.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article className="card">
+            <h2 className="text-2xl font-bold text-white">Reglamento del sector — Potrero Alto</h2>
+            <div className="mt-4 space-y-4 text-slate-200">
+              <div>
+                <h3 className="text-lg font-semibold text-white">1️⃣ 🏕️ No acampar</h3>
+                <p className="mt-1">🚫 No está permitido acampar dentro del sector de escalada.</p>
+                <p className="mt-1">🌿 Ayudamos a reducir el impacto ambiental y visual.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white">2️⃣ 🔥 No hacer fuego</h3>
+                <p className="mt-1">🚫 Prohibido hacer fuego o fogatas.</p>
+                <p className="mt-1">🌲 Zona sensible a incendios.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white">3️⃣ 🗑️ Basura</h3>
+                <p className="mt-1">♻️ Todo lo que entra, sale.</p>
+                <p className="mt-1">🧹 Llevarse siempre la basura propia.</p>
+                <p className="mt-1">💚 Si podés, llevar también basura que encuentres.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white">4️⃣ 🧗 Respeto por el sector</h3>
+                <p className="mt-1">🤫 Mantener volumen bajo y ambiente tranquilo.</p>
+                <p className="mt-1">🌱 Respetar la flora y el entorno natural.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white">5️⃣ 🤝 Comunidad</h3>
+                <p className="mt-1">🛠️ Si disfrutás del lugar, ayudá a mejorarlo.</p>
+                <p className="mt-1">🚶 Podés colaborar limpiando senderos o moviendo piedras sueltas.</p>
+                <p className="mt-1">💬 Compartí buenas prácticas con otros escaladores.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white">6️⃣ 🚙 Estacionamiento responsable🅿️</h3>
+                <p className="mt-1">↔️ Estacionar pensando en ocupar la menor parte posible del camino.</p>
+                <p className="mt-1">🚗 Dejar espacio suficiente para el paso de otros vehículos.</p>
+                <p className="mt-1">🚜 Mantener libre el acceso para vecinos, servicios y emergencias.</p>
+                <p className="mt-1">
+                  El acceso depende del respeto y la buena convivencia con los vecinos. Estacionar bien es parte de cuidar
+                  el sector.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white">⭐ Espíritu del lugar</h3>
+                <p className="mt-1">
+                  Potrero Alto es un espacio construido entre todos. Cuidarlo es responsabilidad compartida.
                 </p>
               </div>
             </div>
