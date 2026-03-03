@@ -6,6 +6,24 @@ const THECRAG_API_RESOURCE_STEM = process.env.THECRAG_API_RESOURCE_STEM ?? '/api
 const THECRAG_API_BASE_URL = `${THECRAG_API_HOST}${THECRAG_API_RESOURCE_STEM}`;
 const THECRAG_OAUTH_ACCESS_TOKEN = process.env.THECRAG_OAUTH_ACCESS_TOKEN;
 
+const ROUTE_IMAGE_OVERRIDES = {
+  diamante: 'https://image.thecrag.com/1280x960/filters:rotate(270)/dc/b2/dcb2b678e32cdbf2601b1d71392acd513206152b',
+  'el peon': 'https://image.thecrag.com/899x1599/e3/af/e3af4b6502756b857698771db3d5154521edd309',
+  'estacionamiento medido': 'https://image.thecrag.com/1280x960/8d/87/8d8736b9168cd854c0339fb5d7f46e2214433c6c',
+  musgotopia: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1',
+  'sombra chinesca': 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1',
+  'eяяeяяaяa': 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1',
+  empotrebro: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+};
+
+function normalizeRouteName(name) {
+  return name
+    ?.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
 function toArray(value) {
   if (Array.isArray(value)) {
     return value;
@@ -14,14 +32,18 @@ function toArray(value) {
 }
 
 function normalizeRoute(route) {
+  const routeName = route.name ?? route.label ?? 'Vía sin nombre';
+  const normalizedRouteName = normalizeRouteName(routeName);
+
   return {
     id: route.id ?? route.node_id ?? route.uuid,
-    name: route.name ?? route.label ?? 'Vía sin nombre',
+    name: routeName,
     grade: route.grade ?? route.grades?.[0]?.label ?? route.difficulty ?? 'Sin grado',
     stars: route.stars ?? route.rating ?? null,
     type: route.type ?? route.node_type ?? route.climb_type ?? null,
     description: route.description ?? route.summary ?? route.notes ?? '',
     image:
+      ROUTE_IMAGE_OVERRIDES[normalizedRouteName] ??
       route.image ??
       route.photo ??
       route.thumbnail ??
