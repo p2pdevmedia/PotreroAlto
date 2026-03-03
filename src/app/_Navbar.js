@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { convertGrade, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
 
 const navItems = [
@@ -71,17 +71,46 @@ export default function Navbar({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCompact, setIsCompact] = useState(false);
+  const compactStateRef = useRef(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsCompact(window.scrollY > 64);
+    const compactThreshold = 72;
+    const expandThreshold = 4;
+    let rafId = null;
+
+    const updateCompactState = () => {
+      const currentScroll = window.scrollY;
+
+      if (!compactStateRef.current && currentScroll > compactThreshold) {
+        compactStateRef.current = true;
+        setIsCompact(true);
+      } else if (compactStateRef.current && currentScroll <= expandThreshold) {
+        compactStateRef.current = false;
+        setIsCompact(false);
+      }
+
+      rafId = null;
     };
 
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    const scheduleCompactUpdate = () => {
+      if (rafId !== null) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(updateCompactState);
+    };
+
+    updateCompactState();
+    window.addEventListener('scroll', scheduleCompactUpdate, { passive: true });
+    window.addEventListener('resize', scheduleCompactUpdate);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', scheduleCompactUpdate);
+      window.removeEventListener('resize', scheduleCompactUpdate);
+
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
     };
   }, []);
 
