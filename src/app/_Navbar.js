@@ -98,8 +98,24 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
     setIsMobileMenuOpen(false);
   };
 
+  const handleNavbarClick = (event) => {
+    if (!isCompact) {
+      return;
+    }
+
+    if (
+      event.target instanceof Element &&
+      event.target.closest('button, a, input, textarea, select, label')
+    ) {
+      return;
+    }
+
+    handleSectionChange('inicio');
+  };
+
   return (
     <nav
+      onClick={handleNavbarClick}
       className={`sticky top-4 z-20 mb-6 overflow-hidden rounded-2xl border border-slate-700/70 shadow-xl shadow-slate-950/50 transition-all ${
         isCompact ? 'p-2' : 'p-3'
       }`}
