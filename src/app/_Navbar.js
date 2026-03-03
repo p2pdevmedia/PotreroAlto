@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const navItems = [
   { id: 'como-llegar', label: 'Cómo llegar' },
@@ -60,6 +60,20 @@ function ratingEmojis(stars) {
 export default function Navbar({ activeSection, onSectionChange, subsectors = [] }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsCompact(window.scrollY > 64);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const routeSearchResults = useMemo(() => {
     if (!searchTerm?.trim()) {
@@ -86,7 +100,9 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
 
   return (
     <nav
-      className="sticky top-4 z-20 mb-6 overflow-hidden rounded-2xl border border-slate-700/70 p-3 shadow-xl shadow-slate-950/50"
+      className={`sticky top-4 z-20 mb-6 overflow-hidden rounded-2xl border border-slate-700/70 shadow-xl shadow-slate-950/50 transition-all ${
+        isCompact ? 'p-2' : 'p-3'
+      }`}
       style={{
         backgroundImage:
           'linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.86), rgba(45, 99, 91, 0.4)), url("https://image.thecrag.com/1280x960/04/2a/042abb36f28639772ff48b7839955649f754f653")',
@@ -95,7 +111,11 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         backgroundRepeat: 'no-repeat'
       }}
     >
-      <p className="pointer-events-none absolute left-1/2 top-[42%] z-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-3xl font-black uppercase tracking-[0.35em] text-slate-100/15 md:text-5xl">
+      <p
+        className={`pointer-events-none absolute left-1/2 z-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-black uppercase tracking-[0.35em] text-slate-100/15 transition-all ${
+          isCompact ? 'top-1/2 text-2xl opacity-40 md:text-3xl' : 'top-[42%] text-3xl md:text-5xl'
+        }`}
+      >
         Potrero Alto
       </p>
 
@@ -170,59 +190,61 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
         </ul>
       )}
 
-      <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
-        <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-          Buscar vía
-        </label>
-        <input
-          id="route-search"
-          type="search"
-          placeholder="Nombre de la vía..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
-        />
+      {!isCompact ? (
+        <div className="relative z-10 mt-3 border-t border-slate-700/70 pt-3">
+          <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
+            Buscar vía
+          </label>
+          <input
+            id="route-search"
+            type="search"
+            placeholder="Nombre de la vía..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
+          />
 
-        {searchTerm.trim() ? (
-          routeSearchResults.length ? (
-            <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
-              {routeSearchResults.map((route) => (
-                <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
-                  <div className="flex gap-3">
-                    {route.image ? (
-                      <Image
-                        src={route.image}
-                        alt={`Foto de la vía ${route.name}`}
-                        width={80}
-                        height={80}
-                        className="h-16 w-16 rounded-lg object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
-                        Sin foto
+          {searchTerm.trim() ? (
+            routeSearchResults.length ? (
+              <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
+                {routeSearchResults.map((route) => (
+                  <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
+                    <div className="flex gap-3">
+                      {route.image ? (
+                        <Image
+                          src={route.image}
+                          alt={`Foto de la vía ${route.name}`}
+                          width={80}
+                          height={80}
+                          className="h-16 w-16 rounded-lg object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+                          Sin foto
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-white">{route.name}</p>
+                        <p className="text-xs text-slate-400">{route.subsectorName}</p>
+                        <p className="mt-1 text-xs text-slate-200">Grado: {route.grade ?? 'Sin grado'}</p>
+                        <p className="line-clamp-2 text-xs text-slate-300">
+                          {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
+                        </p>
+                        {ratingEmojis(route.stars) ? (
+                          <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
+                        ) : null}
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">{route.name}</p>
-                      <p className="text-xs text-slate-400">{route.subsectorName}</p>
-                      <p className="mt-1 text-xs text-slate-200">Grado: {route.grade ?? 'Sin grado'}</p>
-                      <p className="line-clamp-2 text-xs text-slate-300">
-                        {route.description || 'Todavía no hay una descripción cargada para esta vía.'}
-                      </p>
-                      {ratingEmojis(route.stars) ? (
-                        <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
-                      ) : null}
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-slate-400">No encontramos vías con un nombre similar.</p>
-          )
-        ) : null}
-      </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm text-slate-400">No encontramos vías con un nombre similar.</p>
+            )
+          ) : null}
+        </div>
+      ) : null}
     </nav>
   );
 }
