@@ -25,14 +25,23 @@ function routeImage(route) {
   return route.image;
 }
 
-function starToEmoji(stars) {
+function ratingIconCount(stars) {
   const numericStars = Number.parseFloat(stars);
 
   if (!Number.isFinite(numericStars) || numericStars <= 0) {
+    return 0;
+  }
+
+  return Math.min(5, Math.round(numericStars));
+}
+
+function starToEmoji(stars) {
+  const totalIcons = ratingIconCount(stars);
+
+  if (!totalIcons) {
     return null;
   }
 
-  const totalIcons = Math.min(5, Math.round(numericStars));
   const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
 
   return ratingScale.slice(0, totalIcons).reverse().join('');
@@ -41,6 +50,7 @@ function starToEmoji(stars) {
 function RouteRow({ route, onSelect }) {
   const hasImage = Boolean(route.image);
   const ratingEmojis = starToEmoji(route.stars);
+  const starsPaddingLeft = `${Math.max(1, ratingIconCount(route.stars)) * 0.08}rem`;
 
   return (
     <li>
@@ -63,7 +73,7 @@ function RouteRow({ route, onSelect }) {
           <div className="flex items-center justify-end gap-1 whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
             {hasImage ? <span className="text-sunset">📷</span> : null}
             {ratingEmojis ? (
-              <p aria-label={`Valoración ${route.stars} de 5`}>
+              <p aria-label={`Valoración ${route.stars} de 5`} style={{ paddingLeft: starsPaddingLeft }}>
                 {ratingEmojis}
               </p>
             ) : null}
