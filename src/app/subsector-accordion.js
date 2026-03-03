@@ -25,14 +25,23 @@ function routeImage(route) {
   return route.image;
 }
 
-function starToEmoji(stars) {
+function ratingIconCount(stars) {
   const numericStars = Number.parseFloat(stars);
 
   if (!Number.isFinite(numericStars) || numericStars <= 0) {
+    return 0;
+  }
+
+  return Math.min(5, Math.round(numericStars));
+}
+
+function starToEmoji(stars) {
+  const totalIcons = ratingIconCount(stars);
+
+  if (!totalIcons) {
     return null;
   }
 
-  const totalIcons = Math.min(5, Math.round(numericStars));
   const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
 
   return ratingScale.slice(0, totalIcons).reverse().join('');
@@ -53,20 +62,21 @@ function RouteRow({ route, onSelect }) {
       <div className="min-w-0">
         <p className="font-medium text-slate-100">
           {route.name}
-          {hasImage ? <span className="ml-2 text-xs text-sunset">📷</span> : null}
         </p>
         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
       <div className="shrink-0 text-right">
         <p className="font-semibold text-sunset">{route.grade}</p>
-        {ratingEmojis ? (
-          <p
-            className="whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
-            aria-label={`Valoración ${route.stars} de 5`}
-          >
-            {ratingEmojis}
-          </p>
+        {hasImage || ratingEmojis ? (
+          <div className="flex items-center justify-end gap-2 whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
+            {hasImage ? (
+              <span className="rounded-full border border-sunset/70 bg-sunset/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sunset">
+                Foto
+              </span>
+            ) : null}
+            {ratingEmojis ? <p aria-label={`Valoración ${route.stars} de 5`}>{ratingEmojis}</p> : null}
+          </div>
         ) : null}
       </div>
       </button>
