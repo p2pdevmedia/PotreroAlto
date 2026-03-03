@@ -207,35 +207,85 @@ const COPY = {
     howToGetThere: 'Anfahrt',
     faqGuide: 'FAQ',
     language: 'Sprache',
-    gradeSystem: 'Bewertungssystem'
+    gradeSystem: 'Bewertungssystem',
+    howToGetThereText: 'Potrero Alto liegt in Q8370 San Martín de los Andes, Neuquén. Mit der folgenden Karte findest du den genauen Standort des Sektors.',
+    faqRatingBody1: 'In den Suchergebnissen wird die Bewertung jeder Route mit dieser Emoji-Reihenfolge angezeigt:',
+    faqRatingBody2: 'Je mehr Symbole, desto besser wurde die Route von der Community bewertet. Wenn keine Emojis angezeigt werden, gibt es noch keine Bewertung.',
+    faqDistributionBody: 'Dieses Bild zeigt die Verteilung der Untersektoren im Gebiet Potrero Alto, damit du dich bei der Ankunft schneller orientieren kannst.',
+    faqSubsectorBody: 'Jeder Untersektor gruppiert Routen nach Wand oder Bereich. Dort findest du Anzahl der Routen, Schwierigkeitsgrad, Beschreibungen und – wenn verfügbar – Referenzfotos.',
+    faqHistogramBody1: 'Das Verteilungsdiagramm hilft dir schnell zu sehen, ob der Sektor mehr leichte, mittlere oder schwere Routen hat. Ideal, um den Tag nach deinem Niveau und dem deiner Seilpartner:innen zu planen.',
+    gradeColorSentence: 'Farbskala der Schwierigkeit im Histogramm: Grün für leichtere Grade, Blau für mittlere, Rot für schwere und Dunkelrot für die anspruchsvollsten.',
+    faqConversionBody: 'In Potrero Alto nutzen wir hauptsächlich das französische System. Diese Kurzübersicht hilft dir beim Vergleich mit Yosemite (YDS), UIAA und Ewbank (Australien/Neuseeland).',
+    conversionNote: 'Hinweis: Umrechnungen zwischen Systemen sind nur Richtwerte und können je nach Kletterstil und Region variieren.',
+    faqSearchBody: 'Du kannst den Namen einer Route eingeben und die Suche schlägt ähnliche Treffer vor. Jedes Ergebnis zeigt Untersektor, Grad, Beschreibung und Bewertung.'
   },
   zh: {
     ...BASE_EN,
     howToGetThere: '如何到达',
     faqGuide: '常见问题',
     language: '语言',
-    gradeSystem: '分级系统'
+    gradeSystem: '分级系统',
+    howToGetThereText: 'Potrero Alto 位于内乌肯省圣马丁德洛斯安第斯 Q8370。你可以使用下方地图查看该攀岩区域的准确位置。',
+    faqRatingBody1: '在搜索结果中，每条线路的评分会按以下表情顺序显示：',
+    faqRatingBody2: '符号越多，表示社区给这条线路的评分越高。如果没有表情，说明该线路暂时还没有评分。',
+    faqDistributionBody: '这张图片展示了 Potrero Alto 场地内各子区域的分布，帮助你到达后更快定位。',
+    faqSubsectorBody: '每个子区域会按岩壁或区域汇总线路。你可以看到线路数量、难度、描述，以及可用时的参考照片。',
+    faqHistogramBody1: '分布图可以帮助你快速判断该区域以简单、中等还是高难线路为主。非常适合根据你和同伴的水平规划当天行程。',
+    gradeColorSentence: '柱状图中的难度配色：绿色表示较易级别，蓝色表示中等，红色表示较难，深红色表示最具挑战。',
+    faqConversionBody: 'Potrero Alto 主要使用法式分级。此快速对照可帮助你与 Yosemite（YDS）、UIAA 和 Ewbank（澳大利亚/新西兰）进行比较。',
+    conversionNote: '注意：不同分级系统之间的换算仅供参考，可能因攀登风格和地区而有所差异。',
+    faqSearchBody: '你可以输入线路名称，搜索工具会推荐相近结果。每条结果都会显示子区域、难度、描述和评分。'
   },
   ru: {
     ...BASE_EN,
     howToGetThere: 'Как добраться',
     faqGuide: 'FAQ',
     language: 'Язык',
-    gradeSystem: 'Система категорий'
+    gradeSystem: 'Система категорий',
+    howToGetThereText: 'Potrero Alto находится по адресу Q8370 San Martín de los Andes, Neuquén. Используйте карту ниже, чтобы увидеть точную точку сектора.',
+    faqRatingBody1: 'В результатах поиска рейтинг каждого маршрута показывается в такой последовательности эмодзи:',
+    faqRatingBody2: 'Чем больше символов, тем выше оценка маршрута сообществом. Если эмодзи нет, значит оценка ещё не добавлена.',
+    faqDistributionBody: 'Это изображение показывает расположение подсекторов внутри Potrero Alto, чтобы вы быстрее сориентировались по прибытии.',
+    faqSubsectorBody: 'Каждый подсектор группирует маршруты по стене или зоне. Там вы найдёте количество маршрутов, сложность, описания и, если доступны, фото-ориентиры.',
+    faqHistogramBody1: 'График распределения помогает быстро понять, каких маршрутов больше: простых, средних или сложных. Это удобно для планирования дня под ваш уровень и уровень напарника.',
+    gradeColorSentence: 'Цветовая шкала сложности на гистограмме: зелёный — более лёгкие категории, синий — средние, красный — сложные, тёмно-красный — самые требовательные.',
+    faqConversionBody: 'В Potrero Alto в основном используется французская система, но эта краткая таблица помогает сравнить её с Yosemite (YDS), UIAA и Ewbank (Австралия/Новая Зеландия).',
+    conversionNote: 'Примечание: соответствия между системами ориентировочные и могут отличаться в зависимости от стиля лазания и региона.',
+    faqSearchBody: 'Вы можете ввести название маршрута, и поиск предложит похожие совпадения. В каждом результате указаны подсектор, категория, описание и рейтинг.'
   },
   fr: {
     ...BASE_EN,
     howToGetThere: 'Comment y aller',
     faqGuide: 'Guide FAQ',
     language: 'Langue',
-    gradeSystem: 'Système de cotation'
+    gradeSystem: 'Système de cotation',
+    howToGetThereText: 'Potrero Alto se trouve à Q8370 San Martín de los Andes, Neuquén. Vous pouvez utiliser la carte ci-dessous pour voir l’emplacement exact du secteur.',
+    faqRatingBody1: 'Dans les résultats de recherche, la note de chaque voie apparaît avec cette séquence d’emojis :',
+    faqRatingBody2: 'Plus il y a de symboles, meilleure est la note donnée par la communauté. S’il n’y a pas d’emojis, cela signifie qu’aucune note n’a encore été enregistrée.',
+    faqDistributionBody: 'Cette image montre la répartition des sous-secteurs dans le site de Potrero Alto afin de vous orienter plus rapidement à l’arrivée.',
+    faqSubsectorBody: 'Chaque sous-secteur regroupe les voies par paroi ou zone. Vous y trouverez le nombre de voies, la difficulté, des descriptions et, quand elles sont disponibles, des photos de référence.',
+    faqHistogramBody1: 'Le graphique de répartition vous aide à voir rapidement si le secteur comporte surtout des voies faciles, intermédiaires ou dures. Idéal pour planifier la journée selon votre niveau et celui de votre cordée.',
+    gradeColorSentence: 'Échelle de couleurs de difficulté dans l’histogramme : vert pour les niveaux plus faciles, bleu pour intermédiaire, rouge pour difficile et rouge foncé pour les plus exigeants.',
+    faqConversionBody: 'À Potrero Alto, nous utilisons surtout le système français, mais ce guide rapide permet de comparer avec Yosemite (YDS), UIAA et Ewbank (Australie/Nouvelle-Zélande).',
+    conversionNote: 'Remarque : les conversions entre systèmes sont indicatives et peuvent varier selon le style d’escalade et la région.',
+    faqSearchBody: 'Vous pouvez saisir le nom d’une voie et la recherche propose des correspondances similaires. Chaque résultat affiche le sous-secteur, la cotation, la description et la note.'
   },
   pt: {
     ...BASE_EN,
     howToGetThere: 'Como chegar',
     faqGuide: 'FAQ guia',
     language: 'Idioma',
-    gradeSystem: 'Sistema de graduação'
+    gradeSystem: 'Sistema de graduação',
+    howToGetThereText: 'Potrero Alto fica em Q8370 San Martín de los Andes, Neuquén. Você pode usar o mapa abaixo para ver o ponto exato do setor.',
+    faqRatingBody1: 'Nos resultados de busca, a avaliação de cada via aparece nesta sequência de emojis:',
+    faqRatingBody2: 'Quanto mais símbolos, melhor a via foi avaliada pela comunidade. Se não houver emojis, significa que ainda não há avaliação registrada.',
+    faqDistributionBody: 'Esta imagem mostra a distribuição dos subsetores dentro do Potrero Alto para que você se localize mais rápido ao chegar.',
+    faqSubsectorBody: 'Cada subsetor agrupa as vias por parede ou área. Ali você encontra quantidade de vias, grau, descrições e, quando disponível, foto de referência.',
+    faqHistogramBody1: 'O gráfico de distribuição ajuda você a ver rapidamente se o setor tem mais vias fáceis, intermediárias ou difíceis. É ideal para planejar o dia de acordo com o seu nível e o da sua dupla.',
+    gradeColorSentence: 'Escala de cores de dificuldade no histograma: verde para graus mais fáceis, azul para intermediários, vermelho para difíceis e vermelho escuro para os mais exigentes.',
+    faqConversionBody: 'Em Potrero Alto usamos principalmente o sistema francês, mas este guia rápido permite comparar com Yosemite (YDS), UIAA e Ewbank (Austrália/Nova Zelândia).',
+    conversionNote: 'Observação: as conversões entre sistemas são aproximadas e podem variar conforme o estilo de escalada e a região.',
+    faqSearchBody: 'Você pode digitar o nome de uma via e a busca sugere correspondências semelhantes. Em cada resultado você verá subsetor, grau, descrição e avaliação.'
   }
 };
 
