@@ -188,7 +188,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 20,
           quickdraws: 10,
           equippedBy: 'иван & JP',
-          equippedDate: '15 May 2024'
+          equippedDate: '15 May 2024',
           image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/dc/b2/dcb2b678e32cdbf2601b1d71392acd513206152b'
         },
         {
@@ -414,7 +414,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 18,
           quickdraws: 12,
           equippedBy: 'juan Ramon',
-          equippedDate: '2 Abr 2025'
+          equippedDate: '2 Abr 2025',
           image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
 
         },
@@ -428,7 +428,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 11,
           quickdraws: 10,
           equippedBy: 'иван',
-          equippedDate: '2 Abr 2025'
+          equippedDate: '2 Abr 2025',
           image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
 
         },
@@ -441,7 +441,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 14,
           quickdraws: 7,
           firstAscentBy: 'Tomas Genova',
-          firstAscentDate: '1 Abr 2025'
+          firstAscentDate: '1 Abr 2025',
           image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
         },
         {
@@ -456,7 +456,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           equippedBy: 'juan Ramon, иван & Tommy',
           equippedDate: '31 Mar 2025',
           firstAscentBy: 'иван',
-          firstAscentDate: '31 Mar 2025'
+          firstAscentDate: '31 Mar 2025',
           image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
 
         }
