@@ -111,7 +111,7 @@ export default function Navbar({ activeSection, onSectionChange, subsectors = []
             alt="Logo Potrero Alto"
             width={48}
             height={48}
-            className="h-10 w-10 rounded-lg object-cover md:h-12 md:w-12"
+            className="animate-logo-breathe h-10 w-10 rounded-lg object-cover md:h-12 md:w-12"
             priority
           />
         </button>
