@@ -124,11 +124,61 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       description: 'Subsector en desarrollo con líneas nuevas.',
       routes: [
         { id: 'croto-1', name: 'sin terminar', grade: 'Sin grado', stars: null, type: 'Sport' },
-        { id: 'croto-2', name: 'Aliento de chancho', grade: '8?', stars: null, type: 'Sport' },
-        { id: 'croto-3', name: 'Patada de chancho', grade: '6c', stars: 5, type: 'Sport' },
-        { id: 'croto-4', name: 'Mariscal the campo', grade: 'Sin grado', stars: null, type: 'Sport' },
-        { id: 'croto-5', name: 'Se vienen cositas', grade: '6b', stars: 5, type: 'Sport' },
-        { id: 'croto-6', name: 'Municipales', grade: '6a+', stars: 3, type: 'Sport' }
+        {
+          id: 'croto-2',
+          name: 'Aliento de chancho',
+          grade: '8?',
+          stars: null,
+          type: 'Sport',
+          lengthMeters: 22,
+          quickdraws: 12
+        },
+        {
+          id: 'croto-3',
+          name: 'Patada de chancho',
+          grade: '6c',
+          stars: 5,
+          type: 'Sport',
+          lengthMeters: 14,
+          quickdraws: 11,
+          firstAscentBy: 'Eche & e',
+          firstAscentDate: '8 Feb',
+          equippedBy: 'иван',
+          equippedDate: '8 Feb'
+        },
+        {
+          id: 'croto-4',
+          name: 'Mariscal the campo',
+          grade: 'Sin grado',
+          stars: null,
+          type: 'Sport',
+          lengthMeters: 25,
+          quickdraws: 13
+        },
+        {
+          id: 'croto-5',
+          name: 'Se vienen cositas',
+          grade: '6b',
+          stars: 5,
+          type: 'Sport',
+          lengthMeters: 18,
+          quickdraws: 11,
+          equippedBy: 'Cata Pinel',
+          equippedDate: '8 Feb'
+        },
+        {
+          id: 'croto-6',
+          name: 'Municipales',
+          grade: '6a+',
+          stars: 3,
+          type: 'Sport',
+          lengthMeters: 13,
+          quickdraws: 9,
+          firstAscentBy: 'juan Ramon',
+          firstAscentDate: '9 Feb',
+          equippedBy: 'juan Ramon',
+          equippedDate: '9 Feb'
+        }
       ]
     }
   ]
