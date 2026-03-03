@@ -50,6 +50,20 @@ function starToEmoji(stars) {
 function RouteRow({ route, onSelect }) {
   const hasImage = Boolean(route.image);
   const ratingEmojis = starToEmoji(route.stars);
+  const routeMetrics = [
+    route.lengthMeters ? `${route.lengthMeters}m` : null,
+    route.quickdraws ? `${route.quickdraws} expreses` : null
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const firstAscent = route.firstAscentBy
+    ? `PA: ${route.firstAscentBy}${route.firstAscentDate ? `, ${route.firstAscentDate}` : ''}`
+    : null;
+
+  const equipped = route.equippedBy
+    ? `Equip: ${route.equippedBy}${route.equippedDate ? `, ${route.equippedDate}` : ''}`
+    : null;
 
   return (
     <li>
@@ -64,6 +78,9 @@ function RouteRow({ route, onSelect }) {
           {route.name}
         </p>
         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
+        {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
+        {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
+        {equipped ? <p className="text-xs text-slate-300">{equipped}</p> : null}
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
       <div className="shrink-0 text-right">
