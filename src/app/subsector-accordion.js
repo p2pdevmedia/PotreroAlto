@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
+import { convertGrade, t } from '@/lib/i18n';
 
 const SUBSECTOR_IMAGE_OVERRIDES = {
   'la chanchería':
@@ -47,7 +48,7 @@ function starToEmoji(stars) {
   return ratingScale.slice(0, totalIcons).reverse().join('');
 }
 
-function RouteRow({ route, onSelect }) {
+function RouteRow({ route, onSelect, locale, gradeSystem }) {
   const hasImage = Boolean(route.image);
   const ratingEmojis = starToEmoji(route.stars);
   const routeMetrics = [
@@ -84,15 +85,15 @@ function RouteRow({ route, onSelect }) {
         {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
       </div>
       <div className="shrink-0 text-right">
-        <p className="font-semibold text-sunset">{route.grade}</p>
+        <p className="font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
         {hasImage || ratingEmojis ? (
           <div className="flex items-center justify-end gap-2 whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
             {hasImage ? (
               <span className="rounded-full border border-sunset/70 bg-sunset/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sunset">
-                Foto
+                {t(locale, 'noPhoto')}
               </span>
             ) : null}
-            {ratingEmojis ? <p aria-label={`Valoración ${route.stars} de 5`}>{ratingEmojis}</p> : null}
+            {ratingEmojis ? <p aria-label={`${t(locale, 'ratingAria')} ${route.stars} de 5`}>{ratingEmojis}</p> : null}
           </div>
         ) : null}
       </div>
@@ -116,7 +117,7 @@ function subsectorCover(subsector) {
   return `https://placehold.co/720x1280/020617/e2e8f0?text=${safeName}`;
 }
 
-export default function SubsectorAccordion({ subsectors }) {
+export default function SubsectorAccordion({ subsectors = [], locale = 'es', gradeSystem = 'french' }) {
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
 
@@ -147,11 +148,11 @@ export default function SubsectorAccordion({ subsectors }) {
             type="button"
             className="group relative aspect-[3/4] overflow-hidden bg-slate-900 text-left"
             onClick={() => setSelectedSubsectorId(subsector.id)}
-            aria-label={`Ver rutas del subsector ${subsector.name}`}
+            aria-label={`${t(locale, 'viewSubsectorRoutes')} ${subsector.name}`}
           >
             <Image
               src={subsectorCover(subsector)}
-              alt={`Imagen del subsector ${subsector.name}`}
+              alt={`${t(locale, 'subsectorImageAlt')} ${subsector.name}`}
               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
               width={720}
               height={1280}
@@ -160,12 +161,12 @@ export default function SubsectorAccordion({ subsectors }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/10 to-transparent" />
             <div className="absolute bottom-3 right-3 h-1/3 w-1/2">
-              <GradeDistributionChart routes={subsector.routes} compact barsOnly className="pointer-events-none" />
+              <GradeDistributionChart routes={subsector.routes} compact barsOnly className="pointer-events-none" locale={locale} gradeSystem={gradeSystem} />
             </div>
             <div className="absolute inset-x-0 bottom-0 p-3 pr-[52%]">
               <p className="line-clamp-2 text-sm font-semibold text-white drop-shadow">{subsector.name}</p>
               <p className="mt-1 text-xs text-slate-100/95">
-                ▶ {subsector.routes.length} {subsector.routes.length === 1 ? 'ruta' : 'rutas'}
+                ▶ {subsector.routes.length} {subsector.routes.length === 1 ? t(locale, 'routeSingle') : t(locale, 'routePlural')}
               </p>
             </div>
           </button>
@@ -193,7 +194,7 @@ export default function SubsectorAccordion({ subsectors }) {
                   {selectedSubsector.name}
                 </h3>
                 <p className="text-xs text-slate-400">
-                  {selectedSubsector.routes.length} {selectedSubsector.routes.length === 1 ? 'ruta' : 'rutas'}
+                  {selectedSubsector.routes.length} {selectedSubsector.routes.length === 1 ? t(locale, 'routeSingle') : t(locale, 'routePlural')}
                 </p>
               </div>
               <button
@@ -204,15 +205,17 @@ export default function SubsectorAccordion({ subsectors }) {
                   setSelectedRoute(null);
                 }}
               >
-                Cerrar
+                {t(locale, 'closeButton')}
               </button>
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
               <GradeDistributionChart
                 routes={selectedSubsector.routes}
-                title={`Grados en ${selectedSubsector.name}`}
+                title={`${t(locale, 'gradesIn')} ${selectedSubsector.name}`}
                 className="mb-4"
+                locale={locale}
+                gradeSystem={gradeSystem}
               />
 
               {selectedSubsector.routes.length ? (
@@ -222,11 +225,13 @@ export default function SubsectorAccordion({ subsectors }) {
                       key={route.id ?? `${selectedSubsector.id}-${route.name}`}
                       route={route}
                       onSelect={setSelectedRoute}
+                      locale={locale}
+                      gradeSystem={gradeSystem}
                     />
                   ))}
                 </ul>
               ) : (
-                <p className="py-4 text-sm text-slate-400">Sin vías registradas en este subsector.</p>
+                <p className="py-4 text-sm text-slate-400">{t(locale, 'noRoutesInSubsector')}</p>
               )}
             </div>
           </section>
@@ -244,7 +249,7 @@ export default function SubsectorAccordion({ subsectors }) {
           >
             <Image
               src={routeImage(selectedRoute)}
-              alt={`Imagen de la vía ${selectedRoute.name}`}
+              alt={`${t(locale, 'routeImageAlt')} ${selectedRoute.name}`}
               className="h-full w-full object-contain"
               fill
               sizes="100vw"
@@ -255,18 +260,18 @@ export default function SubsectorAccordion({ subsectors }) {
               className="absolute right-4 top-4 z-10 rounded-full border border-slate-600 bg-slate-950/60 px-3 py-1 text-sm text-slate-100 backdrop-blur hover:bg-slate-900"
               onClick={() => setSelectedRoute(null)}
             >
-              Cerrar
+              {t(locale, 'closeButton')}
             </button>
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-16">
               <h4 id="selected-route-title" className="text-lg font-semibold text-white">
                 {selectedRoute.name}
               </h4>
               <p className="text-sm text-slate-300">
-                {selectedRoute.grade}
+                {convertGrade(selectedRoute.grade, gradeSystem) ?? t(locale, 'noGrade')}
                 {selectedRoute.type ? ` · ${selectedRoute.type}` : ''}
               </p>
               <p className="mt-3 text-sm text-slate-200">
-                {selectedRoute.description ?? 'Todavía no hay una descripción cargada para esta vía.'}
+                {selectedRoute.description ?? t(locale, 'noDescription')}
               </p>
             </div>
           </section>

@@ -1,14 +1,80 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
+import { detectPreferredLocale, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
+
+const GRADE_CONVERSION_ROWS = [
+  ['V+', '5.9', 'VI-', '17'],
+  ['6a', '5.10a', 'VI+', '18'],
+  ['6a+', '5.10b', 'VII-', '19'],
+  ['6b', '5.10c', 'VII', '20'],
+  ['6b+', '5.10d', 'VII+', '21'],
+  ['6c', '5.11a', 'VIII-', '22'],
+  ['6c/+', '5.11b', 'VIII', '23'],
+  ['6c+', '5.11c', 'VIII+', '24'],
+  ['7a', '5.11d', 'IX-', '25'],
+  ['7a+', '5.12a', 'IX', '26'],
+  ['7b', '5.12b', 'IX+', '27'],
+  ['7b+', '5.12c', 'X-', '28'],
+  ['7c', '5.12d', 'X', '29'],
+  ['7c+', '5.13a', 'X+', '30'],
+  ['8a', '5.13b', 'XI-', '31'],
+  ['8a+', '5.13c', 'XI', '32'],
+  ['8b', '5.13d', 'XI+', '33'],
+  ['8b+', '5.14a', 'XII-', '34'],
+  ['8c', '5.14b', 'XII', '35'],
+  ['8c+', '5.14c', 'XII+', '36'],
+  ['9a', '5.14d', 'XIII-', '37'],
+  ['9a+', '5.15a', 'XIII', '38'],
+  ['9b', '5.15b', 'XIII+', '39'],
+  ['9b+', '5.15c', 'XIV-', '40'],
+  ['9c', '5.15d', 'XIV', '41']
+];
 
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
+  const [locale, setLocale] = useState('es');
+  const [gradeSystem, setGradeSystem] = useState('french');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const savedLocale = window.localStorage.getItem('potrero-locale');
+    const savedGradeSystem = window.localStorage.getItem('potrero-grade-system');
+
+    if (savedLocale && LANGUAGE_OPTIONS.some((option) => option.code === savedLocale)) {
+      setLocale(savedLocale);
+    } else {
+      setLocale(detectPreferredLocale());
+    }
+
+    if (savedGradeSystem && GRADE_SYSTEM_OPTIONS.some((option) => option.code === savedGradeSystem)) {
+      setGradeSystem(savedGradeSystem);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem('potrero-locale', locale);
+  }, [locale]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem('potrero-grade-system', gradeSystem);
+  }, [gradeSystem]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
@@ -16,28 +82,33 @@ export default function HomeContent({ data, error }) {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         subsectors={data?.subsectors ?? []}
+        locale={locale}
+        onLocaleChange={setLocale}
+        gradeSystem={gradeSystem}
+        onGradeSystemChange={setGradeSystem}
       />
 
       {activeSection === 'inicio' && (
         <>
           {error ? (
             <section className="card border-red-500/30 bg-red-900/20">
-              <h2 className="text-xl font-semibold text-red-200">No se pudo cargar la información en este entorno</h2>
+              <h2 className="text-xl font-semibold text-red-200">{t(locale, 'loadErrorTitle')}</h2>
               <p className="mt-2 text-red-100">{error}</p>
               <p className="mt-4 text-sm text-red-100/80">
-                En tu entorno local ejecuta <code className="rounded bg-red-950 px-1 py-0.5">npm install</code> y
-                verifica acceso de red y disponibilidad de la API pública de theCrag.
+                {t(locale, 'loadErrorHintBefore')} <code className="rounded bg-red-950 px-1 py-0.5">npm install</code>{' '}
+                {t(locale, 'loadErrorHintAfter')}
               </p>
             </section>
           ) : (
             <section className="space-y-6" aria-label="Subsectores de Potrero Alto">
-
-            <GradeDistributionChart
-              routes={data.subsectors.flatMap((subsector) => subsector.routes)}
-              title="Potrero Alto"
-              className="mb-6"
-            />
-              <SubsectorAccordion subsectors={data.subsectors} />
+              <GradeDistributionChart
+                routes={data.subsectors.flatMap((subsector) => subsector.routes)}
+                title="Potrero Alto"
+                className="mb-6"
+                locale={locale}
+                gradeSystem={gradeSystem}
+              />
+              <SubsectorAccordion subsectors={data.subsectors} locale={locale} gradeSystem={gradeSystem} />
             </section>
           )}
         </>
@@ -45,14 +116,11 @@ export default function HomeContent({ data, error }) {
 
       {activeSection === 'como-llegar' && (
         <section className="card">
-          <h2 className="text-2xl font-bold text-white">Cómo llegar</h2>
-          <p className="mt-3 max-w-3xl text-slate-200">
-            Potrero Alto está ubicado en <span className="font-semibold">Q8370 San Martín de los Andes, Neuquén</span>.
-            Podés usar el siguiente mapa para ver el punto exacto del sector.
-          </p>
+          <h2 className="text-2xl font-bold text-white">{t(locale, 'howToGetThere')}</h2>
+          <p className="mt-3 max-w-3xl text-slate-200">{t(locale, 'howToGetThereText')}</p>
           <div className="mt-5 overflow-hidden rounded-xl border border-slate-700/60">
             <iframe
-              title="Mapa de Potrero Alto"
+              title={t(locale, 'mapTitle')}
               src="https://maps.google.com/maps?q=-40.13691962008833,-71.2525320779115&z=14&output=embed"
               className="h-80 w-full md:h-96"
               loading="lazy"
@@ -65,108 +133,61 @@ export default function HomeContent({ data, error }) {
       {activeSection === 'faq' && (
         <section className="space-y-6">
           <article className="card">
-            <h2 className="text-2xl font-bold text-white">Sistema de puntuación</h2>
+            <h2 className="text-2xl font-bold text-white">{t(locale, 'faqRatingTitle')}</h2>
             <p className="mt-3 text-slate-200">
-              En los resultados de búsqueda, la valoración de cada vía aparece con una combinación de emojis en este orden:
+              {t(locale, 'faqRatingBody1')}
               <span className="font-semibold text-slate-100"> ⭐ 🧉 🍺 🍕 🚬</span>.
             </p>
-            <p className="mt-3 text-slate-200">
-              A mayor cantidad de símbolos, mejor puntuada está la vía por la comunidad. Si no ves emojis, significa que
-              todavía no tiene puntuación cargada.
-            </p>
+            <p className="mt-3 text-slate-200">{t(locale, 'faqRatingBody2')}</p>
           </article>
 
           <article className="card">
-            <h2 className="text-2xl font-bold text-white">FAQ: cómo entender la guía de escalada</h2>
+            <h2 className="text-2xl font-bold text-white">{t(locale, 'faqClimbingGuideTitle')}</h2>
             <div className="mt-4 space-y-4 text-slate-200">
               <div>
-                <h3 className="text-lg font-semibold text-white">Distribución de subsectores en el predio</h3>
-                <p className="mt-1">
-                  Esta imagen muestra la distribución de los subsectores dentro del Predio Potrero Alto para que puedas
-                  ubicarte más rápido al llegar.
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'faqDistributionTitle')}</h3>
+                <p className="mt-1">{t(locale, 'faqDistributionBody')}</p>
                 <button
                   type="button"
                   onClick={() => setIsSectorMapOpen(true)}
                   className="mt-3 block w-full overflow-hidden rounded-xl border border-slate-700/60 bg-slate-900/40 text-left transition hover:border-slate-500/80"
-                  aria-label="Abrir en grande la imagen de distribución de subsectores"
+                  aria-label={t(locale, 'openLargeImage')}
                 >
                   <Image
                     src="/WhatsApp Image 2026-03-03 at 3.20.04 PM.jpeg"
-                    alt="Distribución de los subsectores dentro del Predio Potrero Alto"
+                    alt={t(locale, 'sectorImageAlt')}
                     width={1600}
                     height={1200}
                     className="h-auto w-full"
                     priority={false}
                   />
                 </button>
-                <p className="mt-2 text-xs text-slate-400">Hacé click en la imagen para verla en grande.</p>
+                <p className="mt-2 text-xs text-slate-400">{t(locale, 'clickImageToZoom')}</p>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">¿Qué muestra cada subsector?</h3>
-                <p className="mt-1">
-                  Cada subsector agrupa las vías por pared o zona. Ahí vas a encontrar cantidad de rutas, dificultad,
-                  descripciones y, cuando está disponible, foto de referencia.
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'faqSubsectorTitle')}</h3>
+                <p className="mt-1">{t(locale, 'faqSubsectorBody')}</p>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">¿Cómo uso el histograma de grados?</h3>
-                <p className="mt-1">
-                  El gráfico de distribución te ayuda a ver rápidamente si el sector tiene más rutas fáciles, intermedias
-                  o duras. Es ideal para planificar una jornada según tu nivel y el de tu cordada.
-                </p>
-                <p className="mt-2">
-                  Escala de colores por dificultad en el histograma:{' '}
-                  <span className="font-semibold text-green-400">verde</span> para grados más fáciles,{' '}
-                  <span className="font-semibold text-blue-400">azul</span> para intermedios,{' '}
-                  <span className="font-semibold text-red-400">rojo</span> para difíciles y{' '}
-                  <span className="font-semibold text-red-900">rojo oscuro</span> para los más exigentes.
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'faqHistogramTitle')}</h3>
+                <p className="mt-1">{t(locale, 'faqHistogramBody1')}</p>
+                <p className="mt-2">{t(locale, 'gradeColorSentence')}</p>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Tabla de conversión de grados (aproximada)</h3>
-                <p className="mt-1">
-                  En Potrero Alto usamos principalmente el sistema francés, pero acá tenés una guía rápida para comparar
-                  con otros sistemas comunes: Yosemite (YDS), UIAA y Ewbank (Australia/Nueva Zelanda).
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'faqConversionTitle')}</h3>
+                <p className="mt-1">{t(locale, 'faqConversionBody')}</p>
                 <div className="mt-3 overflow-x-auto rounded-xl border border-slate-700/60">
                   <table className="min-w-full divide-y divide-slate-700/70 text-left text-sm">
                     <thead className="bg-slate-900/70 text-slate-100">
                       <tr>
-                        <th className="px-3 py-2 font-semibold">Francés</th>
-                        <th className="px-3 py-2 font-semibold">Yosemite (YDS)</th>
-                        <th className="px-3 py-2 font-semibold">UIAA</th>
-                        <th className="px-3 py-2 font-semibold">Ewbank</th>
+                        <th className="px-3 py-2 font-semibold">{t(locale, 'conversionFrench')}</th>
+                        <th className="px-3 py-2 font-semibold">{t(locale, 'conversionYds')}</th>
+                        <th className="px-3 py-2 font-semibold">{t(locale, 'conversionUiaa')}</th>
+                        <th className="px-3 py-2 font-semibold">{t(locale, 'conversionEwbank')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800 bg-slate-950/40 text-slate-200">
-                      {[
-                        ['V+', '5.9', 'VI-', '17'],
-                        ['6a', '5.10a', 'VI+', '18'],
-                        ['6a+', '5.10b', 'VII-', '19'],
-                        ['6b', '5.10c', 'VII', '20'],
-                        ['6b+', '5.10d', 'VII+', '21'],
-                        ['6c', '5.11a', 'VIII-', '22'],
-                        ['6c/+', '5.11b', 'VIII', '23'],
-                        ['6c+', '5.11c', 'VIII+', '24'],
-                        ['7a', '5.11d', 'IX-', '25'],
-                        ['7a+', '5.12a', 'IX', '26'],
-                        ['7b', '5.12b', 'IX+', '27'],
-                        ['7b+', '5.12c', 'X-', '28'],
-                        ['7c', '5.12d', 'X', '29'],
-                        ['7c+', '5.13a', 'X+', '30'],
-                        ['8a', '5.13b', 'XI-', '31'],
-                        ['8a+', '5.13c', 'XI', '32'],
-                        ['8b', '5.13d', 'XI+', '33'],
-                        ['8b+', '5.14a', 'XII-', '34'],
-                        ['8c', '5.14b', 'XII', '35'],
-                        ['8c+', '5.14c', 'XII+', '36'],
-                        ['9a', '5.14d', 'XIII-', '37'],
-                        ['9a+', '5.15a', 'XIII', '38'],
-                        ['9b', '5.15b', 'XIII+', '39'],
-                        ['9b+', '5.15c', 'XIV-', '40'],
-                        ['9c', '5.15d', 'XIV', '41']
-                      ].map(([french, yds, uiaa, ewbank]) => (
+                      {GRADE_CONVERSION_ROWS.map(([french, yds, uiaa, ewbank]) => (
                         <tr key={french}>
                           <td className="px-3 py-2 font-medium text-slate-100">{french}</td>
                           <td className="px-3 py-2">{yds}</td>
@@ -177,72 +198,61 @@ export default function HomeContent({ data, error }) {
                     </tbody>
                   </table>
                 </div>
-                <p className="mt-2 text-xs text-slate-400">
-                  Nota: las conversiones entre sistemas son orientativas y pueden variar según el estilo de escalada y
-                  la región.
-                </p>
+                <p className="mt-2 text-xs text-slate-400">{t(locale, 'conversionNote')}</p>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">¿Para qué sirve el buscador de vías?</h3>
-                <p className="mt-1">
-                  Podés escribir el nombre de una vía y el buscador te sugiere coincidencias similares. En cada resultado
-                  vas a ver subsector, grado, descripción y puntuación.
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'faqSearchTitle')}</h3>
+                <p className="mt-1">{t(locale, 'faqSearchBody')}</p>
               </div>
             </div>
           </article>
 
           <article className="card">
-            <h2 className="text-2xl font-bold text-white">Reglamento del sector — Potrero Alto</h2>
+            <h2 className="text-2xl font-bold text-white">{t(locale, 'rulesTitle')}</h2>
             <div className="mt-4 space-y-4 text-slate-200">
               <div>
-                <h3 className="text-lg font-semibold text-white">1️⃣ 🏕️ No acampar</h3>
-                <p className="mt-1">🚫 No está permitido acampar dentro del sector de escalada.</p>
-                <p className="mt-1">🌿 Ayudamos a reducir el impacto ambiental y visual.</p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'rules1Title')}</h3>
+                <p className="mt-1">{t(locale, 'rules1Line1')}</p>
+                <p className="mt-1">{t(locale, 'rules1Line2')}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white">2️⃣ 🔥 No hacer fuego</h3>
-                <p className="mt-1">🚫 Prohibido hacer fuego o fogatas.</p>
-                <p className="mt-1">🌲 Zona sensible a incendios.</p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'rules2Title')}</h3>
+                <p className="mt-1">{t(locale, 'rules2Line1')}</p>
+                <p className="mt-1">{t(locale, 'rules2Line2')}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white">3️⃣ 🗑️ Basura</h3>
-                <p className="mt-1">♻️ Todo lo que entra, sale.</p>
-                <p className="mt-1">🧹 Llevarse siempre la basura propia.</p>
-                <p className="mt-1">💚 Si podés, llevar también basura que encuentres.</p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'rules3Title')}</h3>
+                <p className="mt-1">{t(locale, 'rules3Line1')}</p>
+                <p className="mt-1">{t(locale, 'rules3Line2')}</p>
+                <p className="mt-1">{t(locale, 'rules3Line3')}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white">4️⃣ 🧗 Respeto por el sector</h3>
-                <p className="mt-1">🤫 Mantener volumen bajo y ambiente tranquilo.</p>
-                <p className="mt-1">🌱 Respetar la flora y el entorno natural.</p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'rules4Title')}</h3>
+                <p className="mt-1">{t(locale, 'rules4Line1')}</p>
+                <p className="mt-1">{t(locale, 'rules4Line2')}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white">5️⃣ 🤝 Comunidad</h3>
-                <p className="mt-1">🛠️ Si disfrutás del lugar, ayudá a mejorarlo.</p>
-                <p className="mt-1">🚶 Podés colaborar limpiando senderos o moviendo piedras sueltas.</p>
-                <p className="mt-1">💬 Compartí buenas prácticas con otros escaladores.</p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'rules5Title')}</h3>
+                <p className="mt-1">{t(locale, 'rules5Line1')}</p>
+                <p className="mt-1">{t(locale, 'rules5Line2')}</p>
+                <p className="mt-1">{t(locale, 'rules5Line3')}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white">6️⃣ 🚙 Estacionamiento responsable🅿️</h3>
-                <p className="mt-1">↔️ Estacionar pensando en ocupar la menor parte posible del camino.</p>
-                <p className="mt-1">🚗 Dejar espacio suficiente para el paso de otros vehículos.</p>
-                <p className="mt-1">🚜 Mantener libre el acceso para vecinos, servicios y emergencias.</p>
-                <p className="mt-1">
-                  El acceso depende del respeto y la buena convivencia con los vecinos. Estacionar bien es parte de cuidar
-                  el sector.
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'rules6Title')}</h3>
+                <p className="mt-1">{t(locale, 'rules6Line1')}</p>
+                <p className="mt-1">{t(locale, 'rules6Line2')}</p>
+                <p className="mt-1">{t(locale, 'rules6Line3')}</p>
+                <p className="mt-1">{t(locale, 'rules6Line4')}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white">⭐ Espíritu del lugar</h3>
-                <p className="mt-1">
-                  Potrero Alto es un espacio construido entre todos. Cuidarlo es responsabilidad compartida.
-                </p>
+                <h3 className="text-lg font-semibold text-white">{t(locale, 'spiritTitle')}</h3>
+                <p className="mt-1">{t(locale, 'spiritBody')}</p>
               </div>
             </div>
           </article>
@@ -254,7 +264,7 @@ export default function HomeContent({ data, error }) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="Imagen ampliada de distribución de subsectores"
+          aria-label={t(locale, 'zoomedImageLabel')}
           onClick={() => setIsSectorMapOpen(false)}
         >
           <button
@@ -262,12 +272,12 @@ export default function HomeContent({ data, error }) {
             onClick={() => setIsSectorMapOpen(false)}
             className="absolute right-4 top-4 rounded-md border border-slate-600 bg-slate-900/90 px-3 py-1 text-sm font-medium text-slate-100 transition hover:border-slate-300"
           >
-            Cerrar
+            {t(locale, 'close')}
           </button>
           <div className="max-h-[90vh] max-w-6xl" onClick={(event) => event.stopPropagation()}>
             <Image
               src="/WhatsApp Image 2026-03-03 at 3.20.04 PM.jpeg"
-              alt="Distribución de los subsectores dentro del Predio Potrero Alto ampliada"
+              alt={t(locale, 'zoomedImageAlt')}
               width={2400}
               height={1800}
               className="max-h-[90vh] w-auto rounded-xl border border-slate-700"
@@ -278,14 +288,14 @@ export default function HomeContent({ data, error }) {
       )}
 
       <footer className="mt-10 border-t border-slate-700/60 pt-6 text-center text-slate-300">
-        <p className="text-sm">Hecho con 💪 para la comunidad ❤️</p>
+        <p className="text-sm">{t(locale, 'footerMadeWith')}</p>
         <a
           href="https://link.mercadopago.com.ar/potreroalto"
           target="_blank"
           rel="noreferrer"
           className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
         >
-          Regalame una 🍺
+          {t(locale, 'footerGiftBeer')}
         </a>
       </footer>
     </main>
