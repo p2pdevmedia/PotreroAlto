@@ -8,6 +8,7 @@ import GradeDistributionChart from '@/app/grade-distribution-chart';
 
 export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
+  const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
@@ -84,7 +85,12 @@ export default function HomeContent({ data, error }) {
                   Esta imagen muestra la distribución de los subsectores dentro del Predio Potrero Alto para que puedas
                   ubicarte más rápido al llegar.
                 </p>
-                <div className="mt-3 overflow-hidden rounded-xl border border-slate-700/60 bg-slate-900/40">
+                <button
+                  type="button"
+                  onClick={() => setIsSectorMapOpen(true)}
+                  className="mt-3 block w-full overflow-hidden rounded-xl border border-slate-700/60 bg-slate-900/40 text-left transition hover:border-slate-500/80"
+                  aria-label="Abrir en grande la imagen de distribución de subsectores"
+                >
                   <Image
                     src="/WhatsApp Image 2026-03-03 at 3.20.04 PM.jpeg"
                     alt="Distribución de los subsectores dentro del Predio Potrero Alto"
@@ -93,7 +99,8 @@ export default function HomeContent({ data, error }) {
                     className="h-auto w-full"
                     priority={false}
                   />
-                </div>
+                </button>
+                <p className="mt-2 text-xs text-slate-400">Hacé click en la imagen para verla en grande.</p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">¿Qué muestra cada subsector?</h3>
@@ -240,6 +247,34 @@ export default function HomeContent({ data, error }) {
             </div>
           </article>
         </section>
+      )}
+
+      {isSectorMapOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Imagen ampliada de distribución de subsectores"
+          onClick={() => setIsSectorMapOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setIsSectorMapOpen(false)}
+            className="absolute right-4 top-4 rounded-md border border-slate-600 bg-slate-900/90 px-3 py-1 text-sm font-medium text-slate-100 transition hover:border-slate-300"
+          >
+            Cerrar
+          </button>
+          <div className="max-h-[90vh] max-w-6xl" onClick={(event) => event.stopPropagation()}>
+            <Image
+              src="/WhatsApp Image 2026-03-03 at 3.20.04 PM.jpeg"
+              alt="Distribución de los subsectores dentro del Predio Potrero Alto ampliada"
+              width={2400}
+              height={1800}
+              className="max-h-[90vh] w-auto rounded-xl border border-slate-700"
+              priority={false}
+            />
+          </div>
+        </div>
       )}
 
       <footer className="mt-10 border-t border-slate-700/60 pt-6 text-center text-slate-300">
