@@ -61,20 +61,76 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       name: 'El Derrumbe',
       description: 'Sector deportivo con desplome y vías largas.',
       routes: [
-        { id: 'derrumbe-1', name: 'MatematicamenteposibleChipped', grade: '7b+/c', stars: null, type: 'Sport' },
-        { id: 'derrumbe-2', name: 'Generación Z', grade: '6c/c+', stars: 5, type: 'Sport' },
-        { id: 'derrumbe-3', name: 'Diamante', grade: '7a', stars: 5, type: 'Sport' },
-        { id: 'derrumbe-4', name: 'Trébol', grade: '6b+/c', stars: null, type: 'Sport' },
+        {
+          id: 'derrumbe-1',
+          name: 'MatematicamenteposibleChipped',
+          grade: '7b+/c',
+          stars: 2,
+          type: 'Sport',
+          description: 'SICADA.',
+          lengthMeters: 25,
+          quickdraws: 13
+        },
+        {
+          id: 'derrumbe-2',
+          name: 'Generación Z',
+          grade: '6c/c+',
+          stars: 4,
+          type: 'Sport',
+          lengthMeters: 22,
+          quickdraws: 12,
+          equippedBy: 'иван & juan Ramon',
+          equippedDate: '12 Sep 2026'
+        },
+        {
+          id: 'derrumbe-3',
+          name: 'Diamante',
+          grade: '7a',
+          stars: 4,
+          type: 'Sport',
+          description: 'En bruto',
+          lengthMeters: 20,
+          quickdraws: 10,
+          equippedBy: 'иван & JP',
+          equippedDate: '15 May 2024'
+        },
+        {
+          id: 'derrumbe-4',
+          name: 'Trébol',
+          grade: '6b+/c',
+          stars: 1,
+          type: 'Sport',
+          description: 'Es un terremoto(?)',
+          lengthMeters: 50,
+          quickdraws: 24,
+          equippedBy: 'иван & ATMAN',
+          equippedDate: '12 Apr 2023'
+        },
         {
           id: 'derrumbe-5',
           name: 'Corazón',
           grade: '7a+',
-          stars: 5,
+          stars: 2,
           type: 'Sport',
-          description: 'Línea de 5 estrellas con agujeros y bidedos sostenidos.',
-          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/ee/ff/eeff0a21f93bc5522a6e2d1d84046068790662d6'
+          description: '¡PIM! ¡PAM! ¡PUM! ¡PLAS! ¡BOOM! ¡CRASH! ¡BANG! ¡ZAS! ¡BROOM! ¡CLANK! ¡TAC! ¡FLASH! 🚀',
+          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/ee/ff/eeff0a21f93bc5522a6e2d1d84046068790662d6',
+          lengthMeters: 20,
+          quickdraws: 11,
+          equippedBy: 'иван',
+          equippedDate: '25 Feb 2025'
         },
-        { id: 'derrumbe-6', name: 'Grandes Amigos', grade: '7c', stars: 5, type: 'Sport' }
+        {
+          id: 'derrumbe-6',
+          name: 'Grandes Amigos',
+          grade: '7c',
+          stars: 3,
+          type: 'Sport',
+          lengthMeters: 18,
+          equippedBy: 'Tomy genova',
+          equippedDate: '1 Apr 2025',
+          firstAscentBy: 'Juan de la Canal',
+          firstAscentDate: '10 May 2025'
+        }
       ]
     },
     {
