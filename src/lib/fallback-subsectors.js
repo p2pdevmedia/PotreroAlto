@@ -226,9 +226,9 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 14,
           quickdraws: 11,
           firstAscentBy: 'Eche & e',
-          firstAscentDate: '8 Feb',
+          firstAscentDate: '8 Feb 2026',
           equippedBy: 'иван',
-          equippedDate: '8 Feb'
+          equippedDate: '8 Feb 2026'
         },
         {
           id: 'croto-4',
@@ -248,7 +248,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 18,
           quickdraws: 11,
           equippedBy: 'Cata Pinel',
-          equippedDate: '8 Feb'
+          equippedDate: '8 Feb 2026'
         },
         {
           id: 'croto-6',
@@ -259,9 +259,9 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           lengthMeters: 13,
           quickdraws: 9,
           firstAscentBy: 'juan Ramon',
-          firstAscentDate: '9 Feb',
+          firstAscentDate: '9 Feb 2026',
           equippedBy: 'juan Ramon',
-          equippedDate: '9 Feb'
+          equippedDate: '9 Feb 2026'
         }
       ]
     }
