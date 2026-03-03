@@ -4,7 +4,7 @@ export const metadata = {
   title: 'Potrero Alto | Guía de Escalada',
   description: 'Información del sector Potrero Alto, subsectores y vías desde theCrag.',
   icons: {
-    icon: '/potrero-alto-favicon.ico'
+    icon: '/potrero-alto-carabiner-orange.ico'
   }
 };
 
