@@ -7,7 +7,7 @@ const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
 const pageTitle = 'Potrero Alto | Escalada deportiva en San Martín de los Andes';
 const pageDescription =
-  'Guía del sector de escalada deportiva Potrero Alto en San Martín de los Andes, Neuquén, Argentina. Información de subsectores, vías, grados y ubicación para planificar tu visita.';
+  'Potrero Alto, escalada en San Martín de los Andes: guía del sector de escalada deportiva en Neuquén, Argentina. Información de subsectores, vías, grados y ubicación para planificar tu visita.';
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -44,6 +44,9 @@ export const metadata = {
     'Potrero Alto',
     'escalada deportiva',
     'San Martín de los Andes',
+    'escalada San Martín de los Andes',
+    'escalada san martin de los andes',
+    'escalada en San Martín de los Andes',
     'escalada en Neuquén',
     'guía de escalada',
     'vías de escalada',
