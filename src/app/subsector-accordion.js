@@ -70,34 +70,41 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
     <li>
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-4 border-b border-slate-700/60 py-3 text-left last:border-0 disabled:cursor-default disabled:opacity-70"
+        className="flex w-full items-start gap-3 border-b border-slate-700/60 py-3 text-left last:border-0 disabled:cursor-default disabled:opacity-70"
         onClick={() => onSelect(route)}
         disabled={!hasImage}
       >
-      <div className="min-w-0">
-        <p className="font-medium text-slate-100">
-          {route.name}
-        </p>
-        {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
-        {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
-        {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
-        {equipped ? <p className="text-xs text-slate-300">{equipped}</p> : null}
-        {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
-      </div>
-      <div className="shrink-0 text-right">
-        <p className="font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
-        {hasImage || ratingEmojis ? (
-          <div className="flex items-center justify-end gap-2 whitespace-nowrap text-xs text-slate-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
-            {hasImage ? (
-              <span className="inline-flex min-w-14 flex-col items-center rounded-lg border border-sunset/70 bg-sunset/15 px-2 py-1 text-[10px] font-semibold uppercase leading-tight tracking-wide text-sunset">
-                <span aria-hidden="true">📷</span>
-                <span>{t(locale, 'photo')}</span>
-              </span>
-            ) : null}
-            {ratingEmojis ? <p aria-label={`${t(locale, 'ratingAria')} ${route.stars} de 5`}>{ratingEmojis}</p> : null}
+        {hasImage ? (
+          <Image
+            src={route.image}
+            alt={`${t(locale, 'routeImageAlt')} ${route.name}`}
+            width={80}
+            height={80}
+            className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+            {t(locale, 'noPhoto')}
           </div>
-        ) : null}
-      </div>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <p className="min-w-0 truncate font-medium text-slate-100">{route.name}</p>
+            <p className="shrink-0 font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
+          </div>
+          {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
+          {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
+          {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
+          {equipped ? <p className="text-xs text-slate-300">{equipped}</p> : null}
+          {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
+          {ratingEmojis ? (
+            <p className="mt-1 text-xs text-slate-100" aria-label={`${t(locale, 'ratingAria')} ${route.stars} de 5`}>
+              {ratingEmojis}
+            </p>
+          ) : null}
+        </div>
       </button>
     </li>
   );
