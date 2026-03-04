@@ -1,5 +1,6 @@
 import './globals.css';
 import PWARegister from './pwa-register';
+import { Analytics } from '@vercel/analytics/next';
 
 const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
 
@@ -109,6 +110,7 @@ export default function RootLayout({ children }) {
         />
         <PWARegister />
         {children}
+        <Analytics />
       </body>
     </html>
   );
