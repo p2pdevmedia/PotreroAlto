@@ -28,6 +28,8 @@ THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
 ```
 
 - `THECRAG_API_RESOURCE_STEM` es el *OAuth protected API resource stem* (ejemplo: `/api`).
+
+`NEXT_PUBLIC_SITE_URL=https://tu-dominio.com` también es recomendable para SEO: se usa para generar `sitemap.xml` y `robots.txt` con URLs canónicas indexables.
 - Si `THECRAG_OAUTH_ACCESS_TOKEN` no está definido, la app intentará consumir el API sin header `Authorization`.
 
 ## Notas
