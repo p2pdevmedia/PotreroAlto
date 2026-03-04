@@ -62,6 +62,7 @@ export default function HomeContent({ data, error }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
   const [selectedGradeBucket, setSelectedGradeBucket] = useState(null);
+  const [selectedGradeRoute, setSelectedGradeRoute] = useState(null);
   const [locale, setLocale] = useState('es');
   const [gradeSystem, setGradeSystem] = useState('french');
   const sectorMapStatePushedRef = useRef(false);
@@ -146,6 +147,7 @@ export default function HomeContent({ data, error }) {
 
   const closeSelectedGradeBucket = () => {
     setSelectedGradeBucket(null);
+    setSelectedGradeRoute(null);
   };
 
   const allRoutesWithSubsector = (data?.subsectors ?? []).flatMap((subsector) =>
@@ -407,6 +409,23 @@ export default function HomeContent({ data, error }) {
                       <div className="min-w-0">
                         <p className="font-medium text-slate-100">{route.name}</p>
                         <p className="text-xs uppercase tracking-wide text-slate-400">Subsector: {route.subsectorName ?? '-'}</p>
+                        {route.image ? (
+                          <button
+                            type="button"
+                            className="mt-2 overflow-hidden rounded-lg border border-slate-700/80 transition hover:border-sunset/60"
+                            onClick={() => setSelectedGradeRoute(route)}
+                            aria-label={`${t(locale, 'photo')}: ${route.name}`}
+                          >
+                            <Image
+                              src={route.image}
+                              alt={`${t(locale, 'routeImageAlt')} ${route.name}`}
+                              width={176}
+                              height={112}
+                              className="h-20 w-32 object-cover"
+                              unoptimized
+                            />
+                          </button>
+                        ) : null}
                         {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
                         {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
                         {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
@@ -423,6 +442,34 @@ export default function HomeContent({ data, error }) {
               })}
             </ul>
           </div>
+        </div>
+      ) : null}
+
+      {selectedGradeRoute?.image ? (
+        <div className="fixed inset-0 z-[60] bg-slate-950/95" onClick={() => setSelectedGradeRoute(null)}>
+          <section
+            className="relative h-full w-full overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${t(locale, 'routeImageAlt')} ${selectedGradeRoute.name}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Image
+              src={selectedGradeRoute.image}
+              alt={`${t(locale, 'routeImageAlt')} ${selectedGradeRoute.name}`}
+              className="h-full w-full object-contain"
+              fill
+              sizes="100vw"
+              unoptimized
+            />
+            <button
+              type="button"
+              className="absolute right-4 top-4 z-10 rounded-full border border-slate-600 bg-slate-950/60 px-3 py-1 text-sm text-slate-100 backdrop-blur hover:bg-slate-900"
+              onClick={() => setSelectedGradeRoute(null)}
+            >
+              {t(locale, 'closeButton')}
+            </button>
+          </section>
         </div>
       ) : null}
 
