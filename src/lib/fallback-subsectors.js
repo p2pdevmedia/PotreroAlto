@@ -485,7 +485,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           quickdraws: 7,
           firstAscentBy: 'Tomas Genova',
           firstAscentDate: '1 Abr 2025',
-          image: 'https://image.thecrag.com/1280x960/filters:rotate(270)/c3/6f/c36f6dad63f4a93876e600031a459dca0a8229b1'
+          image: 'https://image.thecrag.com/960x2080/fa/49/fa49e54a00d2ac541f325e4c39b5f06c076187d7'
         },
         {
           id: 'arco-8',
