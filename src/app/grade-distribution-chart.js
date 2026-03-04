@@ -100,6 +100,7 @@ export default function GradeDistributionChart({
   gradeSystem = 'french',
   onGradeSelect
 }) {
+  const ContainerTag = barsOnly ? 'div' : 'section';
   const { counts: distribution, bucketedRoutes } = buildDistribution(routes);
   const maxCount = Math.max(...Object.values(distribution), 1);
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
@@ -114,7 +115,7 @@ export default function GradeDistributionChart({
       : `rounded-xl border border-slate-700/70 bg-slate-950/60 p-4 ${className}`;
 
   return (
-    <section className={containerClass}>
+    <ContainerTag className={containerClass}>
       {!barsOnly ? (
         <header className={`flex items-end justify-between gap-4 ${compact ? 'mb-2' : 'mb-4'}`}>
           <div>
@@ -122,7 +123,9 @@ export default function GradeDistributionChart({
               <h3 className={`${compact ? 'text-[10px]' : 'text-sm'} font-semibold uppercase tracking-wide text-slate-200`}>
                 {title}
               </h3>
-            ) : null}
+            ) : (
+              <h3 className="sr-only">{t(locale, 'distributionByGrade')}</h3>
+            )}
             {!compact ? <p className="text-xs text-slate-400">{t(locale, 'distributionByGrade')}</p> : null}
           </div>
           <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-slate-300`}>
@@ -144,7 +147,9 @@ export default function GradeDistributionChart({
               className={`group relative flex min-w-0 flex-col items-center rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 ${
                 isSelectable ? 'cursor-pointer' : 'cursor-default'
               } ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'}`}
-              aria-label={`${count} ${t(locale, 'gradeLabel').toLowerCase()} ${getBucketGradeLabel(grade, gradeSystem)}`}
+              aria-label={
+                isSelectable ? `${count} ${t(locale, 'gradeLabel').toLowerCase()} ${getBucketGradeLabel(grade, gradeSystem)}` : undefined
+              }
               title={`${getBucketGradeLabel(grade, gradeSystem)}: ${count}`}
               role={isSelectable ? 'button' : undefined}
               tabIndex={isSelectable ? 0 : undefined}
@@ -202,6 +207,6 @@ export default function GradeDistributionChart({
           );
         })}
       </div>
-    </section>
+    </ContainerTag>
   );
 }
