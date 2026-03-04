@@ -1,4 +1,5 @@
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import PWARegister from './pwa-register';
 
 const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
@@ -108,6 +109,7 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <PWARegister />
+        <Analytics />
         {children}
       </body>
     </html>
