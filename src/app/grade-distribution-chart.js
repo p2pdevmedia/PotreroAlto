@@ -131,7 +131,7 @@ export default function GradeDistributionChart({
         </header>
       ) : null}
 
-      <div className={compact ? '' : 'overflow-x-auto'}>
+      <div className={compact ? '' : 'overflow-hidden'}>
         <div className={chartWrapperClass}>
           {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
