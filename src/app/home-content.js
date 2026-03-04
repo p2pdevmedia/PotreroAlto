@@ -479,7 +479,7 @@ export default function HomeContent({ data, error }) {
           href="https://link.mercadopago.com.ar/potreroalto"
           target="_blank"
           rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
+          className="animate-logo-breathe mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
         >
           {t(locale, 'footerGiftBeer')}
         </a>
