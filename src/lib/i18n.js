@@ -9,10 +9,10 @@ export const LANGUAGE_OPTIONS = [
 ];
 
 export const GRADE_SYSTEM_OPTIONS = [
-  { code: 'french', label: 'Español / Alemán / Francés / Portugués (French)' },
-  { code: 'yds', label: 'Inglés (YDS)' },
-  { code: 'uiaa', label: 'Ruso (UIAA)' },
-  { code: 'ewbank', label: 'Chino (Ewbank)' }
+  { code: 'french', label: 'Frances' },
+  { code: 'yds', label: 'YDS' },
+  { code: 'uiaa', label: 'UIAA' },
+  { code: 'ewbank', label: 'EWbank' }
 ];
 
 const BASE_ES = {

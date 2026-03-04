@@ -76,20 +76,31 @@ function normalizeGrade(grade) {
 
 function buildDistribution(routes = []) {
   const counts = Object.fromEntries(GRADE_BUCKETS.map((grade) => [grade, 0]));
+  const bucketedRoutes = Object.fromEntries(GRADE_BUCKETS.map((grade) => [grade, []]));
 
   for (const route of routes) {
     const grade = normalizeGrade(route.grade);
 
     if (grade && grade in counts) {
       counts[grade] += 1;
+      bucketedRoutes[grade].push(route);
     }
   }
 
-  return counts;
+  return { counts, bucketedRoutes };
 }
 
-export default function GradeDistributionChart({ routes = [], title, className = '', compact = false, barsOnly = false, locale = 'es', gradeSystem = 'french' }) {
-  const distribution = buildDistribution(routes);
+export default function GradeDistributionChart({
+  routes = [],
+  title,
+  className = '',
+  compact = false,
+  barsOnly = false,
+  locale = 'es',
+  gradeSystem = 'french',
+  onGradeSelect
+}) {
+  const { counts: distribution, bucketedRoutes } = buildDistribution(routes);
   const maxCount = Math.max(...Object.values(distribution), 1);
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
   const chartHeightClass = compact ? 'h-10 sm:h-12' : 'h-20 sm:h-24';
@@ -125,13 +136,42 @@ export default function GradeDistributionChart({ routes = [], title, className =
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
           const difficultyColor = getDifficultyColor(gradeIndex);
+          const isSelectable = typeof onGradeSelect === 'function' && count > 0;
 
           return (
             <div
               key={grade}
-              className={`group relative flex min-w-0 cursor-default flex-col items-center rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'}`}
+              className={`group relative flex min-w-0 flex-col items-center rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 ${
+                isSelectable ? 'cursor-pointer' : 'cursor-default'
+              } ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'}`}
               aria-label={`${count} ${t(locale, 'gradeLabel').toLowerCase()} ${getBucketGradeLabel(grade, gradeSystem)}`}
               title={`${getBucketGradeLabel(grade, gradeSystem)}: ${count}`}
+              role={isSelectable ? 'button' : undefined}
+              tabIndex={isSelectable ? 0 : undefined}
+              onClick={
+                isSelectable
+                  ? () =>
+                      onGradeSelect({
+                        gradeBucket: grade,
+                        gradeLabel: getBucketGradeLabel(grade, gradeSystem),
+                        routes: bucketedRoutes[grade]
+                      })
+                  : undefined
+              }
+              onKeyDown={
+                isSelectable
+                  ? (event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onGradeSelect({
+                          gradeBucket: grade,
+                          gradeLabel: getBucketGradeLabel(grade, gradeSystem),
+                          routes: bucketedRoutes[grade]
+                        });
+                      }
+                    }
+                  : undefined
+              }
             >
               <div className={`flex w-full items-end ${barsOnly ? 'h-full bg-transparent px-0 pb-0' : `rounded bg-slate-900/70 ${chartHeightClass} ${compact ? 'px-0 pb-0.5' : 'px-0.5 pb-1 sm:px-1'}`}`}>
                 <div

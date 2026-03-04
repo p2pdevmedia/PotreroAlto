@@ -69,16 +69,19 @@ export default function Navbar({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCompact, setIsCompact] = useState(false);
+  const [selectedSearchRoute, setSelectedSearchRoute] = useState(null);
   const compactStateRef = useRef(false);
 
   useEffect(() => {
-    const compactThreshold = 100;
+    const compactThreshold = 96;
     // On Android, collapsing this navbar can reduce layout height enough to
     // briefly lower scrollY and cause rapid compact/expand loops. Requiring the
     // user to return very close to the top before expanding avoids that jitter.
     const expandThreshold = 6;
+
     let rafId = null;
 
     const updateCompactState = () => {
@@ -136,6 +139,11 @@ export default function Navbar({
   const handleSectionChange = (sectionId) => {
     onSectionChange(sectionId);
     setIsMobileMenuOpen(false);
+    setIsMobileUserMenuOpen(false);
+  };
+
+  const closeSelectedSearchRoute = () => {
+    setSelectedSearchRoute(null);
   };
 
   return (
@@ -250,6 +258,45 @@ export default function Navbar({
           id="mobile-navbar-menu"
           className="relative z-20 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
         >
+          <li>
+            <button
+              type="button"
+              onClick={() => setIsMobileUserMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-900/70 text-lg transition hover:border-sunset"
+              aria-label={t(locale, 'userPreferences')}
+              aria-expanded={isMobileUserMenuOpen}
+            >
+              👤
+            </button>
+          </li>
+          {isMobileUserMenuOpen ? (
+            <li className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
+              <label className="block text-xs text-slate-300">
+                {t(locale, 'language')}
+                <select
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+                  value={locale}
+                  onChange={(event) => onLocaleChange(event.target.value)}
+                >
+                  {LANGUAGE_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="mt-2 block text-xs text-slate-300">
+                {t(locale, 'gradeSystem')}
+                <select
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+                  value={gradeSystem}
+                  onChange={(event) => onGradeSystemChange(event.target.value)}
+                >
+                  {GRADE_SYSTEM_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            </li>
+          ) : null}
           {navItems.map((item) => (
             <li key={item.id}>
               <button
@@ -265,32 +312,6 @@ export default function Navbar({
               </button>
             </li>
           ))}
-          <li className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
-            <label className="block text-xs text-slate-300">
-              {t(locale, 'language')}
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
-                value={locale}
-                onChange={(event) => onLocaleChange(event.target.value)}
-              >
-                {LANGUAGE_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="mt-2 block text-xs text-slate-300">
-              {t(locale, 'gradeSystem')}
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
-                value={gradeSystem}
-                onChange={(event) => onGradeSystemChange(event.target.value)}
-              >
-                {GRADE_SYSTEM_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-          </li>
         </ul>
       )}
 
@@ -312,8 +333,14 @@ export default function Navbar({
             routeSearchResults.length ? (
               <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
                 {routeSearchResults.map((route) => (
-                  <li key={route.id ?? `${route.subsectorName}-${route.name}`} className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2">
-                    <div className="flex gap-3">
+                  <li key={route.id ?? `${route.subsectorName}-${route.name}`}>
+                    <button
+                      type="button"
+                      className="w-full rounded-xl border border-slate-700/70 bg-slate-900/70 p-2 text-left transition hover:border-sunset/60 disabled:cursor-default disabled:hover:border-slate-700/70"
+                      onClick={() => setSelectedSearchRoute(route)}
+                      disabled={!route.image}
+                    >
+                      <div className="flex gap-3">
                       {route.image ? (
                         <Image
                           src={route.image}
@@ -339,7 +366,8 @@ export default function Navbar({
                           <p className="mt-1 text-xs text-slate-100">{ratingEmojis(route.stars)}</p>
                         ) : null}
                       </div>
-                    </div>
+                      </div>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -347,6 +375,46 @@ export default function Navbar({
               <p className="mt-3 text-sm text-slate-400">{t(locale, 'noSimilarRoutes')}</p>
             )
           ) : null}
+        </div>
+      ) : null}
+
+      {selectedSearchRoute?.image ? (
+        <div className="fixed inset-0 z-50 bg-slate-950/95" onClick={closeSelectedSearchRoute}>
+          <section
+            className="relative h-full w-full overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="selected-search-route-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Image
+              src={selectedSearchRoute.image}
+              alt={`${t(locale, 'routeImageAlt')} ${selectedSearchRoute.name}`}
+              className="h-full w-full object-contain"
+              fill
+              sizes="100vw"
+              unoptimized
+            />
+            <button
+              type="button"
+              className="absolute right-4 top-4 z-10 rounded-full border border-slate-600 bg-slate-950/60 px-3 py-1 text-sm text-slate-100 backdrop-blur hover:bg-slate-900"
+              onClick={closeSelectedSearchRoute}
+            >
+              {t(locale, 'closeButton')}
+            </button>
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-16">
+              <h4 id="selected-search-route-title" className="text-lg font-semibold text-white">
+                {selectedSearchRoute.name}
+              </h4>
+              <p className="text-sm text-slate-300">{selectedSearchRoute.subsectorName}</p>
+              <p className="mt-1 text-sm text-slate-300">
+                {t(locale, 'gradeLabel')}: {convertGrade(selectedSearchRoute.grade, gradeSystem) ?? t(locale, 'noGrade')}
+              </p>
+              <p className="mt-3 text-sm text-slate-200">
+                {selectedSearchRoute.description ?? t(locale, 'noDescription')}
+              </p>
+            </div>
+          </section>
         </div>
       ) : null}
     </nav>
