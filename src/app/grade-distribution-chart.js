@@ -1,6 +1,7 @@
 import { getBucketGradeLabel, t } from '@/lib/i18n';
 
 const GRADE_BUCKETS = ['<5a', '5a', '5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c', '9a', '>9a'];
+const MOBILE_HIDDEN_BUCKETS = new Set(['<5a', '9a', '>9a']);
 
 const DIFFICULTY_COLOR_STOPS = [
   { stop: 0, color: '34 197 94' }, // verde: muy fácil
@@ -104,9 +105,10 @@ export default function GradeDistributionChart({
   const maxCount = Math.max(...Object.values(distribution), 1);
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
   const chartHeightClass = compact ? 'h-10 sm:h-12' : 'h-20 sm:h-24';
+  const mobileColumnCount = GRADE_BUCKETS.length - MOBILE_HIDDEN_BUCKETS.size;
   const chartWrapperClass = compact
-    ? `grid h-full grid-cols-[repeat(15,minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
-    : 'grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4';
+    ? `grid h-full grid-cols-[repeat(${mobileColumnCount},minmax(0,1fr))] sm:grid-cols-[repeat(${GRADE_BUCKETS.length},minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
+    : `grid grid-cols-[repeat(${mobileColumnCount},minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:grid-cols-[repeat(${GRADE_BUCKETS.length},minmax(0,1fr))] sm:gap-x-2 sm:gap-y-4`;
   const containerClass = barsOnly
     ? `h-full w-full ${className}`
     : compact
@@ -137,13 +139,14 @@ export default function GradeDistributionChart({
           const heightPercent = (count / maxCount) * 100;
           const difficultyColor = getDifficultyColor(gradeIndex);
           const isSelectable = typeof onGradeSelect === 'function' && count > 0;
+          const hiddenOnMobile = MOBILE_HIDDEN_BUCKETS.has(grade);
 
           return (
             <div
               key={grade}
               className={`group relative flex min-w-0 flex-col items-center rounded-md px-0.5 py-1 transition-colors duration-200 hover:bg-slate-900/60 ${
                 isSelectable ? 'cursor-pointer' : 'cursor-default'
-              } ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'}`}
+              } ${compact ? 'gap-1' : 'gap-1.5 sm:gap-2'} ${hiddenOnMobile ? 'hidden sm:flex' : ''}`}
               aria-label={`${count} ${t(locale, 'gradeLabel').toLowerCase()} ${getBucketGradeLabel(grade, gradeSystem)}`}
               title={`${getBucketGradeLabel(grade, gradeSystem)}: ${count}`}
               role={isSelectable ? 'button' : undefined}
