@@ -1,6 +1,6 @@
 import './globals.css';
 
-const DEFAULT_SITE_URL = 'https://potreroalto.vercel.app';
+const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
 const pageTitle = 'Potrero Alto | Escalada deportiva en San Martín de los Andes';

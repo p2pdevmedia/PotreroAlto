@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = 'https://potreroalto.vercel.app';
+const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
 
 export default function robots() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
