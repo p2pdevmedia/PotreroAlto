@@ -127,7 +127,14 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
         { id: 'tablero-2', name: 'La Chaquetuda', grade: '5c+', stars: 2, type: 'Sport' },
         { id: 'tablero-3', name: 'Vino & Keterolac', grade: '6c/c+', stars: null, type: 'Sport' },
         { id: 'tablero-4', name: 'Biciequipadores', grade: '7b', stars: null, type: 'Sport' },
-        { id: 'tablero-5', name: 'KuKuruch', grade: '6b', stars: 3, type: 'Sport' },
+        {
+          id: 'tablero-5',
+          name: 'KuKuruch',
+          grade: '6b',
+          stars: 3,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/960x1610/ad/26/ad26db1358a13ee970fac42f8cbf8aa05ee454a0'
+        },
         { id: 'tablero-6', name: 'Banquito para dos', grade: '5b', stars: 2, type: 'Sport' },
         { id: 'tablero-7', name: 'el banquito', grade: '6a', stars: null, type: 'Sport' },
         { id: 'tablero-8', name: 'El sheriff', grade: '6a', stars: 4, type: 'Sport' },
