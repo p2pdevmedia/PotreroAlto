@@ -106,7 +106,7 @@ export default function GradeDistributionChart({
   const chartHeightClass = compact ? 'h-10 sm:h-12' : 'h-20 sm:h-24';
   const chartWrapperClass = compact
     ? `grid h-full grid-cols-[repeat(15,minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
-    : 'grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4';
+    : 'grid min-w-[32rem] grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:min-w-0 sm:gap-x-2 sm:gap-y-4';
   const containerClass = barsOnly
     ? `h-full w-full ${className}`
     : compact
@@ -131,8 +131,9 @@ export default function GradeDistributionChart({
         </header>
       ) : null}
 
-      <div className={chartWrapperClass}>
-        {GRADE_BUCKETS.map((grade, gradeIndex) => {
+      <div className={compact ? '' : 'overflow-x-auto'}>
+        <div className={chartWrapperClass}>
+          {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
           const difficultyColor = getDifficultyColor(gradeIndex);
@@ -200,7 +201,8 @@ export default function GradeDistributionChart({
               ) : null}
             </div>
           );
-        })}
+          })}
+        </div>
       </div>
     </section>
   );
