@@ -19,6 +19,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           description: 'comparte descuelgue con "oveja negra"',
           lengthMeters: 19,
           quickdraws: 9,
+          image: 'https://image.thecrag.com/900x1600/99/1f/991f771cecdd3c54bd69eb340666dafdd7336140',
           equippedBy: 'Pelu Ka',
           equippedDate: '9 May 2025'
         },
@@ -91,6 +92,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           description: 'comparte descuelgue con "Presto Pronta"',
           lengthMeters: 15,
           quickdraws: 9,
+          image: 'https://image.thecrag.com/900x1600/30/41/3041dc67cc6fc99e68402ccde2b7a6d65fee5a58',
           equippedBy: 'Pelu Ka',
           equippedDate: '22 May 2025'
         },
@@ -100,6 +102,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           grade: '6a',
           stars: 2,
           type: 'Sport',
+          image: 'https://image.thecrag.com/745x1600/cd/d8/cdd8ed757d48f2e89fa84416df64aadd8a8481bd',
           lengthMeters: 15,
           quickdraws: 7,
           equippedBy: 'Pelu Ka',
@@ -123,10 +126,38 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       image:
         'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Chess_board_with_chess_set_in_opening_position_2012_PD_03.jpg/250px-Chess_board_with_chess_set_in_opening_position_2012_PD_03.jpg',
       routes: [
-        { id: 'tablero-1', name: 'Duro al Pedal!', grade: '5b', stars: 2, type: 'Sport' },
-        { id: 'tablero-2', name: 'La Chaquetuda', grade: '5c+', stars: 2, type: 'Sport' },
-        { id: 'tablero-3', name: 'Vino & Keterolac', grade: '6c/c+', stars: null, type: 'Sport' },
-        { id: 'tablero-4', name: 'Biciequipadores', grade: '7b', stars: null, type: 'Sport' },
+        {
+          id: 'tablero-1',
+          name: 'Duro al Pedal!',
+          grade: '5b',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/e0/75/e075c88b4812dd53da3c0b722d2941753af4cddf'
+        },
+        {
+          id: 'tablero-2',
+          name: 'La Chaquetuda',
+          grade: '5c+',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/e0/75/e075c88b4812dd53da3c0b722d2941753af4cddf'
+        },
+        {
+          id: 'tablero-3',
+          name: 'Vino & Keterolac',
+          grade: '6c/+',
+          stars: null,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/08/3e/083e09dcb3a3aa64df555d84c12104ecef1e01de'
+        },
+        {
+          id: 'tablero-4',
+          name: 'Biciequipadores',
+          grade: '7b/+',
+          stars: null,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/08/3e/083e09dcb3a3aa64df555d84c12104ecef1e01de'
+        },
         {
           id: 'tablero-5',
           name: 'KuKuruch',
