@@ -19,6 +19,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           description: 'comparte descuelgue con "oveja negra"',
           lengthMeters: 19,
           quickdraws: 9,
+          image: 'https://image.thecrag.com/900x1600/99/1f/991f771cecdd3c54bd69eb340666dafdd7336140',
           equippedBy: 'Pelu Ka',
           equippedDate: '9 May 2025'
         },
@@ -31,6 +32,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           description: 'comparte descuelgue con "viento este"',
           lengthMeters: 20,
           quickdraws: 11,
+          image: 'https://image.thecrag.com/900x1600/1d/ea/1dea28823fdd91f74aff205dd45094a03b855f7b',
           equippedBy: 'Pelu Ka',
           equippedDate: '14 May 2025'
         },
@@ -40,33 +42,36 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           grade: '6a+',
           stars: 2,
           type: 'Sport',
-          description: 'comparte descuelgue con "Lucheti quien te conoce"',
+          description: 'comparte descuelgue con "Luchetti quien te conoce"',
           lengthMeters: 20,
           quickdraws: 10,
+          image: 'https://image.thecrag.com/900x1600/1d/ea/1dea28823fdd91f74aff205dd45094a03b855f7b',
           equippedBy: 'Fede Aragno',
           equippedDate: '9 May 2025'
         },
         {
           id: 'pared-este-4',
-          name: 'Lucheti quien te conoce',
+          name: 'Luchetti quien te conoce',
           grade: '6a+',
           stars: 2,
           type: 'Sport',
           description: 'comparte descuelgue con "Forza Giacomo"',
           lengthMeters: 20,
           quickdraws: 10,
+          image: 'https://image.thecrag.com/900x1600/1d/ea/1dea28823fdd91f74aff205dd45094a03b855f7b',
           equippedBy: 'Fede Aragno',
           equippedDate: '14 May 2025'
         },
         {
           id: 'pared-este-5',
-          name: 'Eh Japanesse!',
+          name: 'Eh Japanese!',
           grade: '6b',
           stars: 2,
           type: 'Sport',
           description: 'comparte primeras 3 chapas con "Presto Pronta" y luego hacia la izquierda',
           lengthMeters: 22,
           quickdraws: 12,
+          image: 'https://image.thecrag.com/526x1600/98/13/98137902bc6f397f159ce7f76d21f253ddf206bb',
           equippedBy: 'Fede Aragno',
           equippedDate: '22 May 2025'
         },
@@ -76,9 +81,10 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           grade: '6b',
           stars: 2,
           type: 'Sport',
-          description: 'comparte primeras 3 chapas con "Eh Japanesse!" y luego hacia la derecha',
+          description: 'comparte primeras 3 chapas con "Eh Japanese!" y luego hacia la derecha',
           lengthMeters: 15,
           quickdraws: 9,
+          image: 'https://image.thecrag.com/981x960/e1/bf/e1bf1371e852f43653297d897899d254c973f779',
           equippedBy: 'Fede Aragno',
           equippedDate: '20 May 2025'
         },
@@ -91,6 +97,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           description: 'comparte descuelgue con "Presto Pronta"',
           lengthMeters: 15,
           quickdraws: 9,
+          image: 'https://image.thecrag.com/900x1600/30/41/3041dc67cc6fc99e68402ccde2b7a6d65fee5a58',
           equippedBy: 'Pelu Ka',
           equippedDate: '22 May 2025'
         },
@@ -100,6 +107,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           grade: '6a',
           stars: 2,
           type: 'Sport',
+          image: 'https://image.thecrag.com/745x1600/cd/d8/cdd8ed757d48f2e89fa84416df64aadd8a8481bd',
           lengthMeters: 15,
           quickdraws: 7,
           equippedBy: 'Pelu Ka',
@@ -123,10 +131,38 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       image:
         'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Chess_board_with_chess_set_in_opening_position_2012_PD_03.jpg/250px-Chess_board_with_chess_set_in_opening_position_2012_PD_03.jpg',
       routes: [
-        { id: 'tablero-1', name: 'Duro al Pedal!', grade: '5b', stars: 2, type: 'Sport' },
-        { id: 'tablero-2', name: 'La Chaquetuda', grade: '5c+', stars: 2, type: 'Sport' },
-        { id: 'tablero-3', name: 'Vino & Keterolac', grade: '6c/c+', stars: null, type: 'Sport' },
-        { id: 'tablero-4', name: 'Biciequipadores', grade: '7b', stars: null, type: 'Sport' },
+        {
+          id: 'tablero-1',
+          name: 'Duro al Pedal!',
+          grade: '5b',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/e0/75/e075c88b4812dd53da3c0b722d2941753af4cddf'
+        },
+        {
+          id: 'tablero-2',
+          name: 'La Chaquetuda',
+          grade: '5c+',
+          stars: 2,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/e0/75/e075c88b4812dd53da3c0b722d2941753af4cddf'
+        },
+        {
+          id: 'tablero-3',
+          name: 'Vino & Keterolac',
+          grade: '6c/+',
+          stars: null,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/08/3e/083e09dcb3a3aa64df555d84c12104ecef1e01de'
+        },
+        {
+          id: 'tablero-4',
+          name: 'Biciequipadores',
+          grade: '7b/+',
+          stars: null,
+          type: 'Sport',
+          image: 'https://image.thecrag.com/900x1600/08/3e/083e09dcb3a3aa64df555d84c12104ecef1e01de'
+        },
         {
           id: 'tablero-5',
           name: 'KuKuruch',
