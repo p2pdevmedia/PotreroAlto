@@ -105,8 +105,8 @@ export default function GradeDistributionChart({
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
   const chartHeightClass = compact ? 'h-10 sm:h-12' : 'h-20 sm:h-24';
   const chartWrapperClass = compact
-    ? `grid h-full grid-cols-[repeat(${GRADE_BUCKETS.length},minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
-    : `grid grid-cols-[repeat(${GRADE_BUCKETS.length},minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4`;
+    ? `grid h-full grid-cols-[repeat(15,minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
+    : 'grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4';
   const containerClass = barsOnly
     ? `h-full w-full ${className}`
     : compact
