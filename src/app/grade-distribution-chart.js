@@ -1,6 +1,6 @@
 import { getBucketGradeLabel, t } from '@/lib/i18n';
 
-const GRADE_BUCKETS = ['<5a', '5a', '5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c', '9a', '>9a'];
+const GRADE_BUCKETS = ['5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c'];
 
 const DIFFICULTY_COLOR_STOPS = [
   { stop: 0, color: '34 197 94' }, // verde: muy fácil
@@ -105,8 +105,9 @@ export default function GradeDistributionChart({
   const totalRoutesWithGrade = Object.values(distribution).reduce((sum, count) => sum + count, 0);
   const chartHeightClass = compact ? 'h-10 sm:h-12' : 'h-20 sm:h-24';
   const chartWrapperClass = compact
-    ? `grid h-full grid-cols-[repeat(15,minmax(0,1fr))] ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
-    : 'grid grid-cols-[repeat(15,minmax(0,1fr))] gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4';
+    ? `grid h-full ${barsOnly ? 'gap-x-0.5' : 'gap-x-1 pb-0.5'}`
+    : 'grid w-full gap-x-1.5 gap-y-3 pb-1 sm:gap-x-2 sm:gap-y-4';
+  const chartGridStyle = { gridTemplateColumns: `repeat(${GRADE_BUCKETS.length}, minmax(0, 1fr))` };
   const containerClass = barsOnly
     ? `h-full w-full ${className}`
     : compact
@@ -131,7 +132,7 @@ export default function GradeDistributionChart({
         </header>
       ) : null}
 
-      <div className={chartWrapperClass}>
+      <div className={chartWrapperClass} style={chartGridStyle}>
         {GRADE_BUCKETS.map((grade, gradeIndex) => {
           const count = distribution[grade];
           const heightPercent = (count / maxCount) * 100;
