@@ -9,30 +9,66 @@ const pageTitle = 'Potrero Alto | Escalada deportiva en San Martín de los Andes
 const pageDescription =
   'Potrero Alto, escalada en San Martín de los Andes: guía del sector de escalada deportiva en Neuquén, Argentina. Información de subsectores, vías, grados y ubicación para planificar tu visita.';
 
+const pageKeywords = [
+  'Potrero Alto',
+  'escalada deportiva',
+  'San Martín de los Andes',
+  'escalada San Martín de los Andes',
+  'escalada san martin de los andes',
+  'escalada en San Martín de los Andes',
+  'escalada en Neuquén',
+  'guía de escalada',
+  'vías de escalada',
+  'subsectores de escalada',
+  'sport climbing Argentina',
+  'rock climbing san martin de los andes',
+  'potrero alto escalada',
+  'climbing argentina patagonia',
+  'vias escalada lanin',
+  'climbing topo argentina',
+  'sport climbing san martin de los andes',
+  'sma',
+  'sanmarland',
+  'kletten',
+  'grampe'
+];
+
 const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'Potrero Alto',
-  url: siteUrl,
-  inLanguage: ['es-AR', 'en', 'pt', 'fr', 'de', 'it'],
-  description: pageDescription,
-  about: {
-    '@type': 'SportsActivityLocation',
-    name: 'Potrero Alto',
-    description: 'Sector de escalada deportiva en San Martín de los Andes, Neuquén, Argentina.',
-    sport: 'Climbing',
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'San Martín de los Andes',
-      addressRegion: 'Neuquén',
-      addressCountry: 'AR'
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      name: 'Potrero Alto',
+      url: siteUrl,
+      inLanguage: ['es-AR', 'en', 'pt', 'fr', 'de', 'it'],
+      description: pageDescription,
+      keywords: pageKeywords.join(', ')
     },
-    geo: {
-      '@type': 'GeoCoordinates',
-      latitude: -40.13691962008833,
-      longitude: -71.2525320779115
+    {
+      '@type': 'SportsActivityLocation',
+      '@id': `${siteUrl}/#climbing-sector`,
+      name: 'Potrero Alto',
+      description: 'Sector de escalada deportiva en San Martín de los Andes, Neuquén, Argentina.',
+      sport: 'Sport climbing',
+      url: siteUrl,
+      isPartOf: {
+        '@id': `${siteUrl}/#website`
+      },
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'San Martín de los Andes',
+        addressRegion: 'Neuquén',
+        addressCountry: 'AR'
+      },
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: -40.13691962008833,
+        longitude: -71.2525320779115
+      },
+      keywords: pageKeywords.join(', ')
     }
-  }
+  ],
 };
 
 export const metadata = {
@@ -40,19 +76,7 @@ export const metadata = {
   title: pageTitle,
   description: pageDescription,
   applicationName: 'Potrero Alto',
-  keywords: [
-    'Potrero Alto',
-    'escalada deportiva',
-    'San Martín de los Andes',
-    'escalada San Martín de los Andes',
-    'escalada san martin de los andes',
-    'escalada en San Martín de los Andes',
-    'escalada en Neuquén',
-    'guía de escalada',
-    'vías de escalada',
-    'subsectores de escalada',
-    'sport climbing Argentina'
-  ],
+  keywords: pageKeywords,
   alternates: {
     canonical: '/',
     languages: {
