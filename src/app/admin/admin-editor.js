@@ -22,6 +22,41 @@ const EMPTY_ROUTE = {
   firstAscentDate: ''
 };
 
+const ROUTE_TYPE_OPTIONS = ['Sport', 'Trad', 'Boulder', 'Proyecto'];
+const STAR_OPTIONS = ['', '0', '1', '2', '3', '4', '5'];
+
+function fallbackSectorFromSubsectorId(subsectorId) {
+  if (!subsectorId) {
+    return 'subsector';
+  }
+
+  return String(subsectorId).replace(/^fallback-/, '') || 'subsector';
+}
+
+function splitRouteId(routeId, defaultFallbackSector) {
+  const normalized = String(routeId ?? '').trim();
+  const matched = normalized.match(/^(.*?)-(\d+)$/);
+
+  if (matched) {
+    return {
+      fallbackSector: matched[1] || defaultFallbackSector,
+      routeNumber: matched[2]
+    };
+  }
+
+  return {
+    fallbackSector: normalized || defaultFallbackSector,
+    routeNumber: ''
+  };
+}
+
+function buildRouteId(fallbackSector, routeNumber) {
+  const normalizedFallbackSector = String(fallbackSector ?? '').trim() || 'subsector';
+  const normalizedRouteNumber = String(routeNumber ?? '').replace(/\D/g, '');
+
+  return normalizedRouteNumber ? `${normalizedFallbackSector}-${normalizedRouteNumber}` : normalizedFallbackSector;
+}
+
 export default function AdminEditor() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
@@ -35,6 +70,24 @@ export default function AdminEditor() {
   const selectedSubsector = useMemo(
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
     [selectedSubsectorId, subsectors]
+  );
+
+  const sectorOptions = useMemo(() => {
+    const options = Array.from(new Set(subsectors.map((subsector) => String(subsector.sector ?? '').trim()).filter(Boolean)));
+
+    if (!options.length) {
+      return ['Potrero Alto'];
+    }
+
+    return options;
+  }, [subsectors]);
+
+  const fallbackSectorOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(subsectors.map((subsector) => fallbackSectorFromSubsectorId(subsector.id)).filter(Boolean))
+      ),
+    [subsectors]
   );
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
@@ -91,6 +144,7 @@ export default function AdminEditor() {
     const next = {
       id,
       name: 'Nuevo subsector',
+      sector: 'Potrero Alto',
       description: '',
       image: '',
       routes: []
@@ -110,14 +164,51 @@ export default function AdminEditor() {
   };
 
   const addRoute = (subsectorId) => {
-    const newRoute = { ...EMPTY_ROUTE, id: createId('route') };
+    setSubsectors((current) =>
+      current.map((subsector) => {
+        if (subsector.id !== subsectorId) {
+          return subsector;
+        }
+
+        const fallbackSector = fallbackSectorFromSubsectorId(subsectorId);
+        const nextRouteNumber = String((subsector.routes ?? []).length + 1);
+        const newRoute = { ...EMPTY_ROUTE, id: buildRouteId(fallbackSector, nextRouteNumber) };
+
+        return { ...subsector, routes: [...(subsector.routes ?? []), newRoute] };
+      })
+    );
+  };
+
+  const updateRouteIdPart = (subsectorId, routeId, field, value) => {
+    const defaultFallbackSector = fallbackSectorFromSubsectorId(subsectorId);
+    const partKey = field === 'fallbackSector' ? 'fallbackSector' : 'routeNumber';
 
     setSubsectors((current) =>
-      current.map((subsector) =>
-        subsector.id === subsectorId
-          ? { ...subsector, routes: [...(subsector.routes ?? []), newRoute] }
-          : subsector
-      )
+      current.map((subsector) => {
+        if (subsector.id !== subsectorId) {
+          return subsector;
+        }
+
+        return {
+          ...subsector,
+          routes: (subsector.routes ?? []).map((route) => {
+            if (route.id !== routeId) {
+              return route;
+            }
+
+            const currentParts = splitRouteId(route.id, defaultFallbackSector);
+            const nextParts = {
+              ...currentParts,
+              [partKey]: value
+            };
+
+            return {
+              ...route,
+              id: buildRouteId(nextParts.fallbackSector, nextParts.routeNumber)
+            };
+          })
+        };
+      })
     );
   };
 
@@ -232,6 +323,20 @@ export default function AdminEditor() {
                       />
                     </label>
                     <label className="text-sm text-slate-200">
+                      Sector
+                      <select
+                        value={selectedSubsector.sector ?? 'Potrero Alto'}
+                        onChange={(event) => updateSubsector(selectedSubsector.id, 'sector', event.target.value)}
+                        className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                      >
+                        {sectorOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="text-sm text-slate-200">
                       Nombre
                       <input
                         value={selectedSubsector.name ?? ''}
@@ -282,12 +387,40 @@ export default function AdminEditor() {
                     {(selectedSubsector.routes ?? []).map((route) => (
                       <article key={route.id} className="rounded-xl border border-slate-700 bg-slate-950/40 p-3">
                         <div className="mb-2 grid gap-2 md:grid-cols-4">
-                          <input
-                            value={route.id ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'id', event.target.value)}
-                            placeholder="ID"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100"
-                          />
+                          {(() => {
+                            const defaultFallbackSector = fallbackSectorFromSubsectorId(selectedSubsector.id);
+                            const routeIdParts = splitRouteId(route.id, defaultFallbackSector);
+                            const routeIdFallbackOptions = Array.from(
+                              new Set([...fallbackSectorOptions, defaultFallbackSector, routeIdParts.fallbackSector].filter(Boolean))
+                            );
+
+                            return (
+                              <>
+                                <select
+                                  value={routeIdParts.fallbackSector}
+                                  onChange={(event) =>
+                                    updateRouteIdPart(selectedSubsector.id, route.id, 'fallbackSector', event.target.value)
+                                  }
+                                  className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100"
+                                >
+                                  {routeIdFallbackOptions.map((option) => (
+                                    <option key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                                <input
+                                  value={routeIdParts.routeNumber}
+                                  onChange={(event) =>
+                                    updateRouteIdPart(selectedSubsector.id, route.id, 'routeNumber', event.target.value)
+                                  }
+                                  placeholder="N° vía"
+                                  inputMode="numeric"
+                                  className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100"
+                                />
+                              </>
+                            );
+                          })()}
                           <input
                             value={route.name ?? ''}
                             onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'name', event.target.value)}
@@ -300,20 +433,31 @@ export default function AdminEditor() {
                             placeholder="Grado"
                             className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
                           />
-                          <input
+                          <select
                             value={route.stars ?? ''}
                             onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'stars', event.target.value)}
-                            placeholder="Stars"
                             className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
+                          >
+                            <option value="">Stars</option>
+                            {STAR_OPTIONS.filter((option) => option !== '').map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="mb-2 grid gap-2 md:grid-cols-3">
-                          <input
-                            value={route.type ?? ''}
+                          <select
+                            value={route.type ?? 'Sport'}
                             onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'type', event.target.value)}
-                            placeholder="Tipo"
                             className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
+                          >
+                            {ROUTE_TYPE_OPTIONS.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
                           <input
                             value={route.lengthMeters ?? ''}
                             onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'lengthMeters', event.target.value)}

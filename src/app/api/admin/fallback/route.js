@@ -32,6 +32,7 @@ function sanitizeSubsectors(subsectors) {
     return {
       id: String(subsector.id || `fallback-subsector-${subsectorIndex + 1}`),
       name: String(subsector.name || 'Subsector sin nombre'),
+      sector: String(subsector.sector || 'Potrero Alto'),
       description: subsector.description ? String(subsector.description) : '',
       image: subsector.image ? String(subsector.image) : undefined,
       routes: routes.map((route, routeIndex) => ({
