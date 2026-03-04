@@ -1,4 +1,5 @@
 import './globals.css';
+import PWARegister from './pwa-register';
 
 const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
 
@@ -87,7 +88,14 @@ export const metadata = {
     }
   },
   icons: {
-    icon: '/potrero-alto-carabiner-orange-large.ico'
+    icon: '/potrero-alto-carabiner-orange-large.ico',
+    apple: '/potrero-alto-carabiner-orange-large.ico'
+  },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Potrero Alto'
   }
 };
 
@@ -99,6 +107,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
+        <PWARegister />
         {children}
       </body>
     </html>
