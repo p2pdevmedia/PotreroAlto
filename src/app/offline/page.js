@@ -1,6 +1,13 @@
 export const metadata = {
   title: 'Sin conexión | Potrero Alto',
-  description: 'No tenés conexión a internet. Revisá tu red e intentá nuevamente.'
+  description: 'No tenés conexión a internet. Revisá tu red e intentá nuevamente.',
+  alternates: {
+    canonical: '/offline'
+  },
+  robots: {
+    index: false,
+    follow: false
+  }
 };
 
 export default function OfflinePage() {
