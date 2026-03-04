@@ -253,11 +253,12 @@ export default function Navbar({
         </ul>
       </div>
 
-      {isMobileMenuOpen && (
-        <ul
-          id="mobile-navbar-menu"
-          className="relative z-20 mt-3 flex flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden"
-        >
+      <ul
+        id="mobile-navbar-menu"
+        className={`relative z-20 mt-3 flex-col gap-2 text-sm font-semibold text-slate-200 md:hidden ${
+          isMobileMenuOpen ? 'flex' : 'hidden'
+        }`}
+      >
           <li>
             <button
               type="button"
@@ -312,8 +313,7 @@ export default function Navbar({
               </button>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
 
       {!isCompact ? (
         <div className="relative z-0 mt-3 border-t border-slate-700/70 pt-3">

@@ -238,11 +238,18 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
     <>
       <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
         {subsectors.map((subsector) => (
-          <button
+          <div
             key={subsector.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             className="group relative aspect-[3/4] overflow-hidden bg-slate-900 text-left"
             onClick={() => setSelectedSubsectorId(subsector.id)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setSelectedSubsectorId(subsector.id);
+              }
+            }}
             aria-label={`${t(locale, 'viewSubsectorRoutes')} ${subsector.name}`}
           >
             <Image
@@ -264,7 +271,7 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
                 ▶ {subsector.routes.length} {subsector.routes.length === 1 ? t(locale, 'routeSingle') : t(locale, 'routePlural')}
               </p>
             </div>
-          </button>
+          </div>
         ))}
       </div>
 
