@@ -21,6 +21,23 @@ function parseFallbackObject(content) {
   return Function(`"use strict"; return (${objectLiteral});`)();
 }
 
+function normalizeSubsectors(subsectors) {
+  if (!Array.isArray(subsectors)) {
+    return [];
+  }
+
+  return subsectors.map((subsector) => ({
+    ...subsector,
+    routes: Array.isArray(subsector.routes)
+      ? subsector.routes.map((route) => ({
+          ...route,
+          latitude: route?.latitude == null ? null : Number(route.latitude),
+          longitude: route?.longitude == null ? null : Number(route.longitude)
+        }))
+      : []
+  }));
+}
+
 function sanitizeSubsectors(subsectors) {
   if (!Array.isArray(subsectors)) {
     throw new Error('Subsectores inválidos.');
@@ -46,6 +63,8 @@ function sanitizeSubsectors(subsectors) {
           route.lengthMeters === '' || route.lengthMeters == null ? undefined : Number(route.lengthMeters),
         quickdraws: route.quickdraws === '' || route.quickdraws == null ? undefined : Number(route.quickdraws),
         image: route.image ? String(route.image) : undefined,
+        latitude: route.latitude === '' || route.latitude == null ? null : Number(route.latitude),
+        longitude: route.longitude === '' || route.longitude == null ? null : Number(route.longitude),
         equippedBy: route.equippedBy ? String(route.equippedBy) : undefined,
         equippedDate: route.equippedDate ? String(route.equippedDate) : undefined,
         firstAscentBy: route.firstAscentBy ? String(route.firstAscentBy) : undefined,
@@ -74,7 +93,7 @@ export async function GET(request) {
       name: fallbackData.name,
       location: fallbackData.location,
       description: fallbackData.description,
-      subsectors: Array.isArray(fallbackData.subsectors) ? fallbackData.subsectors : []
+      subsectors: normalizeSubsectors(fallbackData.subsectors)
     });
   } catch (error) {
     return NextResponse.json(

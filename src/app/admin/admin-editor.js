@@ -19,7 +19,9 @@ const EMPTY_ROUTE = {
   equippedBy: '',
   equippedDate: '',
   firstAscentBy: '',
-  firstAscentDate: ''
+  firstAscentDate: '',
+  latitude: '',
+  longitude: ''
 };
 
 const ROUTE_TYPE_OPTIONS = ['Sport', 'Trad', 'Boulder', 'Proyecto'];
@@ -66,6 +68,7 @@ export default function AdminEditor() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [locatingRouteId, setLocatingRouteId] = useState('');
 
   const selectedSubsector = useMemo(
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
@@ -219,6 +222,37 @@ export default function AdminEditor() {
           ? { ...subsector, routes: (subsector.routes ?? []).filter((route) => route.id !== routeId) }
           : subsector
       )
+    );
+  };
+
+  const captureRouteLocation = (subsectorId, routeId) => {
+    setError('');
+    setMessage('');
+
+    if (typeof window === 'undefined' || !window.navigator?.geolocation) {
+      setError('Este dispositivo no soporta geolocalización.');
+      return;
+    }
+
+    setLocatingRouteId(routeId);
+
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        updateRoute(subsectorId, routeId, 'latitude', String(latitude));
+        updateRoute(subsectorId, routeId, 'longitude', String(longitude));
+        setMessage('Ubicación capturada para la vía.');
+        setLocatingRouteId('');
+      },
+      () => {
+        setError('No se pudo obtener la ubicación. Verificá permisos/GPS.');
+        setLocatingRouteId('');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
     );
   };
 
@@ -470,6 +504,30 @@ export default function AdminEditor() {
                             placeholder="Expreses"
                             className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
                           />
+                        </div>
+                        <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                          <input
+                            value={route.latitude ?? ''}
+                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'latitude', event.target.value)}
+                            placeholder="Latitud"
+                            inputMode="decimal"
+                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                          />
+                          <input
+                            value={route.longitude ?? ''}
+                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'longitude', event.target.value)}
+                            placeholder="Longitud"
+                            inputMode="decimal"
+                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => captureRouteLocation(selectedSubsector.id, route.id)}
+                            disabled={locatingRouteId === route.id}
+                            className="rounded border border-sky-500/60 bg-sky-700/20 px-3 py-1 text-xs font-semibold text-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {locatingRouteId === route.id ? 'Ubicando...' : 'Usar mi ubicación'}
+                          </button>
                         </div>
                         <div className="mb-2 grid gap-2 md:grid-cols-2">
                           <input
