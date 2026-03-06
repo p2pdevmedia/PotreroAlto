@@ -22,6 +22,25 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
     'https://videos.openai.com/az/vg-assets/task_01kjr8tt0reqg8gnc14tkmtdgx%2F1772488627_img_0.webp?se=2026-03-08T00%3A00%3A00Z&sp=r&sv=2026-02-06&sr=b&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-03-02T03%3A20%3A41Z&ske=2026-03-09T03%3A25%3A41Z&sks=b&skv=2026-02-06&sig=g35vAsdXdOupQW7/Mgi%2BdyAzrBKNWtYiZuFmGsZ%2BqY4%3D&ac=oaivgprodscus2'
 };
 
+function slugifySegment(value, fallback = 'item') {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return normalized || fallback;
+}
+
+function buildSubsectorPath(subsectorName) {
+  return `/sector/${slugifySegment(subsectorName, 'subsector')}`;
+}
+
+function buildRoutePath(subsectorName, routeName) {
+  return `${buildSubsectorPath(subsectorName)}/ruta/${slugifySegment(routeName, 'ruta')}`;
+}
+
 function routeImage(route) {
   return route.image;
 }
@@ -192,30 +211,38 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
       return;
     }
 
-    if (selectedSubsectorId && !subsectorStatePushedRef.current) {
-      window.history.pushState({ potreroOverlay: 'subsector' }, '', window.location.href);
+    if (selectedSubsector && !subsectorStatePushedRef.current) {
+      window.history.pushState(
+        { potreroOverlay: 'subsector' },
+        '',
+        buildSubsectorPath(selectedSubsector.name)
+      );
       subsectorStatePushedRef.current = true;
     }
 
     if (!selectedSubsectorId) {
       subsectorStatePushedRef.current = false;
     }
-  }, [selectedSubsectorId]);
+  }, [selectedSubsector, selectedSubsectorId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    if (selectedRoute && !routeStatePushedRef.current) {
-      window.history.pushState({ potreroOverlay: 'route' }, '', window.location.href);
+    if (selectedRoute && selectedSubsector && !routeStatePushedRef.current) {
+      window.history.pushState(
+        { potreroOverlay: 'route' },
+        '',
+        buildRoutePath(selectedSubsector.name, selectedRoute.name)
+      );
       routeStatePushedRef.current = true;
     }
 
     if (!selectedRoute) {
       routeStatePushedRef.current = false;
     }
-  }, [selectedRoute]);
+  }, [selectedRoute, selectedSubsector]);
 
   const closeSelectedRoute = () => {
     if (typeof window !== 'undefined' && routeStatePushedRef.current) {

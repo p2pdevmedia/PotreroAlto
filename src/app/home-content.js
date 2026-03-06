@@ -36,6 +36,24 @@ const GRADE_CONVERSION_ROWS = [
 ];
 
 
+function slugifySegment(value, fallback = 'item') {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return normalized || fallback;
+}
+
+function buildRoutePath(subsectorName, routeName) {
+  const sectorSlug = slugifySegment(subsectorName, 'subsector');
+  const routeSlug = slugifySegment(routeName, 'ruta');
+
+  return `/sector/${sectorSlug}/ruta/${routeSlug}`;
+}
+
 function ratingIconCount(stars) {
   const numericStars = Number.parseFloat(stars);
 
@@ -66,6 +84,10 @@ export default function HomeContent({ data, error }) {
   const [locale, setLocale] = useState('es');
   const [gradeSystem, setGradeSystem] = useState('french');
   const sectorMapStatePushedRef = useRef(false);
+  const gradeBucketStatePushedRef = useRef(false);
+  const gradeRouteStatePushedRef = useRef(false);
+  const selectedGradeBucketRef = useRef(null);
+  const selectedGradeRouteRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -102,12 +124,35 @@ export default function HomeContent({ data, error }) {
     window.localStorage.setItem('potrero-grade-system', gradeSystem);
   }, [gradeSystem]);
 
+
+  useEffect(() => {
+    selectedGradeBucketRef.current = selectedGradeBucket;
+  }, [selectedGradeBucket]);
+
+  useEffect(() => {
+    selectedGradeRouteRef.current = selectedGradeRoute;
+  }, [selectedGradeRoute]);
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return undefined;
     }
 
     const handlePopState = () => {
+      if (selectedGradeRouteRef.current) {
+        gradeRouteStatePushedRef.current = false;
+        setSelectedGradeRoute(null);
+        return;
+      }
+
+      if (selectedGradeBucketRef.current) {
+        gradeRouteStatePushedRef.current = false;
+        gradeBucketStatePushedRef.current = false;
+        setSelectedGradeRoute(null);
+        setSelectedGradeBucket(null);
+        return;
+      }
+
       if (isSectorMapOpen) {
         sectorMapStatePushedRef.current = false;
         setIsSectorMapOpen(false);
@@ -146,9 +191,54 @@ export default function HomeContent({ data, error }) {
   };
 
   const closeSelectedGradeBucket = () => {
+    if (typeof window !== 'undefined' && selectedGradeRoute) {
+      window.history.back();
+      return;
+    }
+
+    if (typeof window !== 'undefined' && selectedGradeBucket) {
+      window.history.back();
+      return;
+    }
+
     setSelectedGradeBucket(null);
     setSelectedGradeRoute(null);
   };
+
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (selectedGradeBucket && !gradeBucketStatePushedRef.current) {
+      window.history.pushState({ potreroOverlay: 'grade-bucket' }, '', '/grados');
+      gradeBucketStatePushedRef.current = true;
+    }
+
+    if (!selectedGradeBucket) {
+      gradeBucketStatePushedRef.current = false;
+    }
+  }, [selectedGradeBucket]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (selectedGradeRoute && !gradeRouteStatePushedRef.current) {
+      window.history.pushState(
+        { potreroOverlay: 'grade-route' },
+        '',
+        buildRoutePath(selectedGradeRoute.subsectorName, selectedGradeRoute.name)
+      );
+      gradeRouteStatePushedRef.current = true;
+    }
+
+    if (!selectedGradeRoute) {
+      gradeRouteStatePushedRef.current = false;
+    }
+  }, [selectedGradeRoute]);
 
   const allRoutesWithSubsector = (data?.subsectors ?? []).flatMap((subsector) =>
     (subsector.routes ?? []).map((route) => ({ ...route, subsectorName: subsector.name }))
@@ -446,7 +536,17 @@ export default function HomeContent({ data, error }) {
       ) : null}
 
       {selectedGradeRoute?.image ? (
-        <div className="fixed inset-0 z-[60] bg-slate-950/95" onClick={() => setSelectedGradeRoute(null)}>
+        <div
+          className="fixed inset-0 z-[60] bg-slate-950/95"
+          onClick={() => {
+            if (typeof window !== 'undefined' && gradeRouteStatePushedRef.current) {
+              window.history.back();
+              return;
+            }
+
+            setSelectedGradeRoute(null);
+          }}
+        >
           <section
             className="relative h-full w-full overflow-hidden"
             role="dialog"
@@ -465,7 +565,14 @@ export default function HomeContent({ data, error }) {
             <button
               type="button"
               className="absolute right-4 top-4 z-10 rounded-full border border-slate-600 bg-slate-950/60 px-3 py-1 text-sm text-slate-100 backdrop-blur hover:bg-slate-900"
-              onClick={() => setSelectedGradeRoute(null)}
+              onClick={() => {
+                if (typeof window !== 'undefined' && gradeRouteStatePushedRef.current) {
+                  window.history.back();
+                  return;
+                }
+
+                setSelectedGradeRoute(null);
+              }}
             >
               {t(locale, 'closeButton')}
             </button>
