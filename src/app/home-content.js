@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useWallet } from '@/app/wallet-provider';
 import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
@@ -109,6 +110,8 @@ export default function HomeContent({ data, error }) {
   const [gradeSystem, setGradeSystem] = useState('french');
   const [isCheckingLocation, setIsCheckingLocation] = useState(false);
   const [locationCheckMessage, setLocationCheckMessage] = useState('');
+  const [walletError, setWalletError] = useState('');
+  const { address, isConnected, connectWallet, disconnectWallet } = useWallet();
   const sectorMapStatePushedRef = useRef(false);
   const gradeBucketStatePushedRef = useRef(false);
   const gradeRouteStatePushedRef = useRef(false);
@@ -120,8 +123,11 @@ export default function HomeContent({ data, error }) {
       return;
     }
 
-    const savedLocale = window.localStorage.getItem('potrero-locale');
-    const savedGradeSystem = window.localStorage.getItem('potrero-grade-system');
+    const accountKey = isConnected && address ? address.toLowerCase() : null;
+    const localeStorageKey = accountKey ? `potrero-locale:${accountKey}` : 'potrero-locale';
+    const gradeStorageKey = accountKey ? `potrero-grade-system:${accountKey}` : 'potrero-grade-system';
+    const savedLocale = window.localStorage.getItem(localeStorageKey);
+    const savedGradeSystem = window.localStorage.getItem(gradeStorageKey);
 
     if (savedLocale && LANGUAGE_OPTIONS.some((option) => option.code === savedLocale)) {
       setLocale(savedLocale);
@@ -131,24 +137,30 @@ export default function HomeContent({ data, error }) {
 
     if (savedGradeSystem && GRADE_SYSTEM_OPTIONS.some((option) => option.code === savedGradeSystem)) {
       setGradeSystem(savedGradeSystem);
+    } else {
+      setGradeSystem('french');
     }
-  }, []);
+  }, [address, isConnected]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    window.localStorage.setItem('potrero-locale', locale);
-  }, [locale]);
+    const accountKey = isConnected && address ? address.toLowerCase() : null;
+    const localeStorageKey = accountKey ? `potrero-locale:${accountKey}` : 'potrero-locale';
+    window.localStorage.setItem(localeStorageKey, locale);
+  }, [address, isConnected, locale]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    window.localStorage.setItem('potrero-grade-system', gradeSystem);
-  }, [gradeSystem]);
+    const accountKey = isConnected && address ? address.toLowerCase() : null;
+    const gradeStorageKey = accountKey ? `potrero-grade-system:${accountKey}` : 'potrero-grade-system';
+    window.localStorage.setItem(gradeStorageKey, gradeSystem);
+  }, [address, isConnected, gradeSystem]);
 
 
   useEffect(() => {
@@ -214,6 +226,20 @@ export default function HomeContent({ data, error }) {
     }
 
     setIsSectorMapOpen(false);
+  };
+
+  const handleConnectWallet = async () => {
+    try {
+      setWalletError('');
+      await connectWallet();
+    } catch {
+      setWalletError(t(locale, 'walletConnectionError'));
+    }
+  };
+
+  const handleDisconnectWallet = () => {
+    setWalletError('');
+    disconnectWallet();
   };
 
   const closeSelectedGradeBucket = () => {
@@ -318,6 +344,9 @@ export default function HomeContent({ data, error }) {
         onLocaleChange={setLocale}
         gradeSystem={gradeSystem}
         onGradeSystemChange={setGradeSystem}
+        onConnectWallet={handleConnectWallet}
+        onDisconnectWallet={handleDisconnectWallet}
+        walletError={walletError}
       />
 
       {activeSection === 'inicio' && (

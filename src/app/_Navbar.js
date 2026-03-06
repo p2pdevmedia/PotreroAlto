@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useWallet } from '@/app/wallet-provider';
 import { convertGrade, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
 
 const navItems = [
@@ -65,7 +66,10 @@ export default function Navbar({
   locale,
   onLocaleChange,
   gradeSystem,
-  onGradeSystemChange
+  onGradeSystemChange,
+  onConnectWallet,
+  onDisconnectWallet,
+  walletError
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -74,6 +78,8 @@ export default function Navbar({
   const [isCompact, setIsCompact] = useState(false);
   const [selectedSearchRoute, setSelectedSearchRoute] = useState(null);
   const compactStateRef = useRef(false);
+  const { address, isConnected } = useWallet();
+  const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   useEffect(() => {
     const compactThreshold = 96;
@@ -247,6 +253,32 @@ export default function Navbar({
                     ))}
                   </select>
                 </label>
+                <div className="space-y-2 border-t border-slate-700/70 pt-2">
+                  {isConnected ? (
+                    <>
+                      <p className="text-xs text-slate-300">{t(locale, 'walletConnectedAs').replace('{address}', shortAddress)}</p>
+                      <button
+                        type="button"
+                        onClick={onDisconnectWallet}
+                        className="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-100 transition hover:border-sunset"
+                      >
+                        {t(locale, 'disconnectWallet')}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-slate-400">{t(locale, 'walletNotConnected')}</p>
+                      <button
+                        type="button"
+                        onClick={onConnectWallet}
+                        className="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-100 transition hover:border-sunset"
+                      >
+                        {t(locale, 'connectWallet')}
+                      </button>
+                    </>
+                  )}
+                  {walletError ? <p className="text-xs text-red-300">{walletError}</p> : null}
+                </div>
               </div>
             ) : null}
           </li>
@@ -296,6 +328,32 @@ export default function Navbar({
                   ))}
                 </select>
               </label>
+              <div className="mt-2 space-y-2 border-t border-slate-700/70 pt-2">
+                {isConnected ? (
+                  <>
+                    <p className="text-xs text-slate-300">{t(locale, 'walletConnectedAs').replace('{address}', shortAddress)}</p>
+                    <button
+                      type="button"
+                      onClick={onDisconnectWallet}
+                      className="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-100 transition hover:border-sunset"
+                    >
+                      {t(locale, 'disconnectWallet')}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-slate-400">{t(locale, 'walletNotConnected')}</p>
+                    <button
+                      type="button"
+                      onClick={onConnectWallet}
+                      className="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-100 transition hover:border-sunset"
+                    >
+                      {t(locale, 'connectWallet')}
+                    </button>
+                  </>
+                )}
+                {walletError ? <p className="text-xs text-red-300">{walletError}</p> : null}
+              </div>
             </li>
           ) : null}
           {navItems.map((item) => (
