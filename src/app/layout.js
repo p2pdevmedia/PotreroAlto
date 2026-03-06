@@ -1,6 +1,7 @@
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import PWARegister from './pwa-register';
+import WalletProvider from './wallet-provider';
 
 const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
 
@@ -135,9 +136,11 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <PWARegister />
-        <Analytics />
-        {children}
+        <WalletProvider>
+          <PWARegister />
+          <Analytics />
+          {children}
+        </WalletProvider>
       </body>
     </html>
   );
