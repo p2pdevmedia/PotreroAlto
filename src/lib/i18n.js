@@ -116,7 +116,14 @@ const BASE_ES = {
   gradesIn: 'Grados en',
   noRoutesInSubsector: 'Sin vías registradas en este subsector.',
   routeImageAlt: 'Imagen de la vía',
-  ratingAria: 'Valoración'
+  ratingAria: 'Valoración',
+  checkRouteLocation: '¿Estoy parado en esta vía?',
+  checkingRouteLocation: 'Chequeando ubicación en la vía...',
+  routeLocationMissing: 'Esta vía todavía no tiene coordenadas cargadas.',
+  routeLocationNotSupported: 'Tu dispositivo o navegador no soporta geolocalización.',
+  routeLocationPermissionError: 'No pudimos obtener tu ubicación. Revisá los permisos de geolocalización.',
+  routeLocationInside: '¡Sí! Estás parado muy cerca de esta vía.',
+  routeLocationOutside: 'Todavía no estás en esta vía. Estás a {distance} metros.'
 };
 
 const BASE_EN = {
@@ -220,7 +227,14 @@ const BASE_EN = {
   gradesIn: 'Grades in',
   noRoutesInSubsector: 'No routes registered in this subsector.',
   routeImageAlt: 'Route image',
-  ratingAria: 'Rating'
+  ratingAria: 'Rating',
+  checkRouteLocation: 'Am I standing at this route?',
+  checkingRouteLocation: 'Checking route location...',
+  routeLocationMissing: 'This route does not have coordinates yet.',
+  routeLocationNotSupported: 'Your device or browser does not support geolocation.',
+  routeLocationPermissionError: 'We could not get your location. Please review geolocation permissions.',
+  routeLocationInside: 'Yes! You are standing very close to this route.',
+  routeLocationOutside: 'You are not at this route yet. You are {distance} meters away.'
 };
 
 const COPY = {
