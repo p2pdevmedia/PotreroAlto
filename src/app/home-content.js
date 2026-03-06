@@ -6,6 +6,7 @@ import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
 import { convertGrade, detectPreferredLocale, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
+import SectorLeafletMap from '@/app/sector-leaflet-map';
 
 const GRADE_CONVERSION_ROWS = [
   ['V+', '5.9', 'VI-', '17'],
@@ -197,14 +198,9 @@ export default function HomeContent({ data, error }) {
           <h2 className="text-2xl font-bold text-white">{t(locale, 'howToGetThere')}</h2>
           <p className="mt-3 max-w-3xl text-slate-200">{t(locale, 'howToGetThereText')}</p>
           <div className="mt-5 overflow-hidden rounded-xl border border-slate-700/60">
-            <iframe
-              title={t(locale, 'mapTitle')}
-              src="https://maps.google.com/maps?q=-40.13691962008833,-71.2525320779115&z=14&output=embed"
-              className="h-80 w-full md:h-96"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+            <SectorLeafletMap subsectors={data?.subsectors ?? []} locale={locale} />
           </div>
+          <p className="mt-3 text-sm text-slate-300">{t(locale, 'mapLegend')}</p>
         </section>
       )}
 
