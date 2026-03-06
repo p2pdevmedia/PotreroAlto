@@ -35,6 +35,30 @@ const GRADE_CONVERSION_ROWS = [
   ['9c', '5.15d', 'XIV', '41']
 ];
 
+const SECTOR_COORDINATES = {
+  lat: -40.13691962008833,
+  lng: -71.2525320779115
+};
+
+const SECTOR_RADIUS_METERS = 1000;
+
+
+function toRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function calculateDistanceInMeters(fromLat, fromLng, toLat, toLng) {
+  const earthRadiusInMeters = 6371000;
+  const latDistanceInRadians = toRadians(toLat - fromLat);
+  const lngDistanceInRadians = toRadians(toLng - fromLng);
+  const a =
+    Math.sin(latDistanceInRadians / 2) * Math.sin(latDistanceInRadians / 2) +
+    Math.cos(toRadians(fromLat)) * Math.cos(toRadians(toLat)) * Math.sin(lngDistanceInRadians / 2) * Math.sin(lngDistanceInRadians / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadiusInMeters * c;
+}
+
 
 function slugifySegment(value, fallback = 'item') {
   const normalized = String(value ?? '')
@@ -83,6 +107,8 @@ export default function HomeContent({ data, error }) {
   const [selectedGradeRoute, setSelectedGradeRoute] = useState(null);
   const [locale, setLocale] = useState('es');
   const [gradeSystem, setGradeSystem] = useState('french');
+  const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+  const [locationCheckMessage, setLocationCheckMessage] = useState('');
   const sectorMapStatePushedRef = useRef(false);
   const gradeBucketStatePushedRef = useRef(false);
   const gradeRouteStatePushedRef = useRef(false);
@@ -244,6 +270,44 @@ export default function HomeContent({ data, error }) {
     (subsector.routes ?? []).map((route) => ({ ...route, subsectorName: subsector.name }))
   );
 
+  const checkIfUserIsNearSector = () => {
+    if (typeof window === 'undefined' || !window.navigator?.geolocation) {
+      setLocationCheckMessage(t(locale, 'locationNotSupported'));
+      return;
+    }
+
+    setIsCheckingLocation(true);
+    setLocationCheckMessage('');
+
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLatitude = position.coords.latitude;
+        const userLongitude = position.coords.longitude;
+        const distanceInMeters = calculateDistanceInMeters(
+          userLatitude,
+          userLongitude,
+          SECTOR_COORDINATES.lat,
+          SECTOR_COORDINATES.lng
+        );
+
+        if (distanceInMeters <= SECTOR_RADIUS_METERS) {
+          setLocationCheckMessage(t(locale, 'insideClimbingSector'));
+        } else {
+          setLocationCheckMessage(
+            t(locale, 'outsideClimbingSector').replace('{distance}', Math.round(distanceInMeters).toString())
+          );
+        }
+
+        setIsCheckingLocation(false);
+      },
+      () => {
+        setLocationCheckMessage(t(locale, 'locationPermissionError'));
+        setIsCheckingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <Navbar
@@ -294,6 +358,17 @@ export default function HomeContent({ data, error }) {
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
+          </div>
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={checkIfUserIsNearSector}
+              disabled={isCheckingLocation}
+              className="rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCheckingLocation ? t(locale, 'checkingLocation') : t(locale, 'checkMyLocation')}
+            </button>
+            {locationCheckMessage && <p className="mt-3 text-sm text-slate-200">{locationCheckMessage}</p>}
           </div>
         </section>
       )}
