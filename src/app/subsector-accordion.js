@@ -67,8 +67,29 @@ function starToEmoji(stars) {
   return ratingScale.slice(0, totalIcons).reverse().join('');
 }
 
+function toRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function calculateDistanceInMeters(fromLat, fromLng, toLat, toLng) {
+  const earthRadiusInMeters = 6371000;
+  const latDistanceInRadians = toRadians(toLat - fromLat);
+  const lngDistanceInRadians = toRadians(toLng - fromLng);
+  const haversineValue =
+    Math.sin(latDistanceInRadians / 2) * Math.sin(latDistanceInRadians / 2) +
+    Math.cos(toRadians(fromLat)) * Math.cos(toRadians(toLat)) * Math.sin(lngDistanceInRadians / 2) * Math.sin(lngDistanceInRadians / 2);
+
+  const angularDistance = 2 * Math.atan2(Math.sqrt(haversineValue), Math.sqrt(1 - haversineValue));
+
+  return earthRadiusInMeters * angularDistance;
+}
+
 function RouteRow({ route, onSelect, locale, gradeSystem }) {
+  const [checkingLocation, setCheckingLocation] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
+
   const hasImage = Boolean(route.image);
+  const hasCoordinates = Number.isFinite(route.latitude) && Number.isFinite(route.longitude);
   const ratingEmojis = starToEmoji(route.stars);
   const routeMetrics = [
     route.lengthMeters ? `${route.lengthMeters}m` : null,
@@ -85,46 +106,104 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
     ? `Equip: ${route.equippedBy}${route.equippedDate ? `, ${route.equippedDate}` : ''}`
     : null;
 
+  const checkIfStandingOnRoute = () => {
+    if (!hasCoordinates) {
+      setLocationMessage(t(locale, 'routeLocationMissing'));
+      return;
+    }
+
+    if (typeof window === 'undefined' || !window.navigator?.geolocation) {
+      setLocationMessage(t(locale, 'routeLocationNotSupported'));
+      return;
+    }
+
+    setCheckingLocation(true);
+    setLocationMessage('');
+
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const distanceInMeters = calculateDistanceInMeters(
+          position.coords.latitude,
+          position.coords.longitude,
+          route.latitude,
+          route.longitude
+        );
+
+        const standingThresholdInMeters = 80;
+
+        if (distanceInMeters <= standingThresholdInMeters) {
+          setLocationMessage(t(locale, 'routeLocationInside'));
+        } else {
+          setLocationMessage(t(locale, 'routeLocationOutside').replace('{distance}', Math.round(distanceInMeters)));
+        }
+
+        setCheckingLocation(false);
+      },
+      () => {
+        setLocationMessage(t(locale, 'routeLocationPermissionError'));
+        setCheckingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   return (
     <li>
-      <button
-        type="button"
-        className="flex w-full items-start gap-3 border-b border-slate-700/60 py-3 text-left last:border-0 disabled:cursor-default disabled:opacity-70"
-        onClick={() => onSelect(route)}
-        disabled={!hasImage}
-      >
-        {hasImage ? (
-          <Image
-            src={route.image}
-            alt={`${t(locale, 'routeImageAlt')} ${route.name}`}
-            width={80}
-            height={80}
-            className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
-            unoptimized
-          />
-        ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
-            {t(locale, 'noPhoto')}
-          </div>
-        )}
+      <div className="border-b border-slate-700/60 py-3 last:border-0">
+        <button
+          type="button"
+          className="flex w-full items-start gap-3 text-left disabled:cursor-default disabled:opacity-70"
+          onClick={() => onSelect(route)}
+          disabled={!hasImage}
+        >
+          {hasImage ? (
+            <Image
+              src={route.image}
+              alt={`${t(locale, 'routeImageAlt')} ${route.name}`}
+              width={80}
+              height={80}
+              className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+              {t(locale, 'noPhoto')}
+            </div>
+          )}
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <p className="min-w-0 truncate font-medium text-slate-100">{route.name}</p>
-            <p className="shrink-0 font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <p className="min-w-0 truncate font-medium text-slate-100">{route.name}</p>
+              <p className="shrink-0 font-semibold text-sunset">{convertGrade(route.grade, gradeSystem) ?? t(locale, 'noGrade')}</p>
+            </div>
+            {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
+            {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
+            {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
+            {equipped ? <p className="text-xs text-slate-300">{equipped}</p> : null}
+            {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
+            {ratingEmojis ? (
+              <p className="mt-1 text-xs text-slate-100" aria-label={`${t(locale, 'ratingAria')} ${route.stars} de 5`}>
+                {ratingEmojis}
+              </p>
+            ) : null}
           </div>
-          {route.type ? <p className="text-[11px] uppercase tracking-wide text-slate-400">{route.type}</p> : null}
-          {routeMetrics ? <p className="text-xs text-slate-300">{routeMetrics}</p> : null}
-          {firstAscent ? <p className="text-xs text-slate-300">{firstAscent}</p> : null}
-          {equipped ? <p className="text-xs text-slate-300">{equipped}</p> : null}
-          {route.description ? <p className="mt-1 line-clamp-1 text-xs text-slate-300">{route.description}</p> : null}
-          {ratingEmojis ? (
-            <p className="mt-1 text-xs text-slate-100" aria-label={`${t(locale, 'ratingAria')} ${route.stars} de 5`}>
-              {ratingEmojis}
-            </p>
-          ) : null}
+        </button>
+        <div className="mt-2 pl-[92px]">
+          <button
+            type="button"
+            onClick={checkIfStandingOnRoute}
+            disabled={checkingLocation}
+            className="rounded-md border border-slate-600 px-2 py-1 text-xs font-medium text-slate-100 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {checkingLocation ? t(locale, 'checkingRouteLocation') : t(locale, 'checkRouteLocation')}
+          </button>
+          {locationMessage ? <p className="mt-1 text-xs text-slate-300">{locationMessage}</p> : null}
         </div>
-      </button>
+      </div>
     </li>
   );
 }
