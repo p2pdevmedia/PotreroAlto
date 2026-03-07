@@ -30,6 +30,7 @@ THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
 - `THECRAG_API_RESOURCE_STEM` es el *OAuth protected API resource stem* (ejemplo: `/api`).
 
 `NEXT_PUBLIC_SITE_URL=https://tu-dominio.com` también es recomendable para SEO: se usa para generar `sitemap.xml` y `robots.txt` con URLs canónicas indexables.
+- `NEXT_PUBLIC_PRIVY_APP_ID=tu_privy_app_id` habilita autenticación con Privy (email + wallet embebida).
 - Si `THECRAG_OAUTH_ACCESS_TOKEN` no está definido, la app intentará consumir el API sin header `Authorization`.
 
 ## Notas
@@ -42,3 +43,7 @@ THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
   - `/api/node/id/{nodeID}/children/area`
   - `/api/node/id/{nodeID}/children/route`
 - La integración está en `src/lib/thecrag.js`.
+
+## Autenticación y wallets
+
+La app usa **Privy** para el flujo de autenticación (`signup/signin`) y para provisionar wallet por usuario con soporte de email y wallet externa.

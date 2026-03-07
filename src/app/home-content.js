@@ -237,9 +237,14 @@ export default function HomeContent({ data, error }) {
     }
   };
 
-  const handleDisconnectWallet = () => {
+  const handleDisconnectWallet = async () => {
     setWalletError('');
-    disconnectWallet();
+
+    try {
+      await disconnectWallet();
+    } catch {
+      setWalletError(t(locale, 'walletConnectionError'));
+    }
   };
 
   const closeSelectedGradeBucket = () => {

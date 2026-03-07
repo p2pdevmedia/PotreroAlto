@@ -1,82 +1,53 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 
 const WalletContext = createContext({
   address: null,
   isConnected: false,
   connectWallet: async () => false,
-  disconnectWallet: () => {}
+  disconnectWallet: async () => {}
 });
 
-async function connectWithInjectedProvider() {
-  if (typeof window === 'undefined' || !window.ethereum?.request) {
-    throw new Error('No injected wallet provider found');
+function pickConnectedWalletAddress(wallets) {
+  if (!Array.isArray(wallets) || wallets.length === 0) {
+    return null;
   }
 
-  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  const primary = Array.isArray(accounts) ? accounts[0] : null;
+  const readyWallet = wallets.find((wallet) => wallet.walletClientType !== 'unknown') ?? wallets[0];
 
-  if (!primary) {
-    throw new Error('No account returned by wallet provider');
-  }
-
-  return primary;
+  return readyWallet?.address ?? null;
 }
 
 export default function WalletProvider({ children }) {
-  const [address, setAddress] = useState(null);
+  const { ready, authenticated, login, logout } = usePrivy();
+  const { wallets } = useWallets();
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.ethereum?.request) {
-      return undefined;
-    }
-
-    let isMounted = true;
-
-    const loadInitialAccount = async () => {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const primary = Array.isArray(accounts) ? accounts[0] : null;
-
-        if (isMounted) {
-          setAddress(primary ?? null);
-        }
-      } catch {
-        if (isMounted) {
-          setAddress(null);
-        }
-      }
-    };
-
-    const handleAccountsChanged = (accounts) => {
-      const primary = Array.isArray(accounts) ? accounts[0] : null;
-      setAddress(primary ?? null);
-    };
-
-    loadInitialAccount();
-    window.ethereum.on?.('accountsChanged', handleAccountsChanged);
-
-    return () => {
-      isMounted = false;
-      window.ethereum.removeListener?.('accountsChanged', handleAccountsChanged);
-    };
-  }, []);
+  const address = pickConnectedWalletAddress(wallets);
+  const isConnected = authenticated && Boolean(address);
 
   const value = useMemo(
     () => ({
       address,
-      isConnected: Boolean(address),
+      isConnected,
       connectWallet: async () => {
-        const nextAddress = await connectWithInjectedProvider();
-        setAddress(nextAddress);
+        if (!ready) {
+          throw new Error('Privy auth is not ready');
+        }
+
+        await login();
         return true;
       },
-      disconnectWallet: () => {
-        setAddress(null);
+      disconnectWallet: async () => {
+        if (!authenticated) {
+          return;
+        }
+
+        await logout();
       }
     }),
-    [address]
+    [address, authenticated, isConnected, login, logout, ready]
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
