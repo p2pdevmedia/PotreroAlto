@@ -94,6 +94,7 @@ export default function AdminEditor() {
   );
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
+  const hasFeedback = Boolean(error || message);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -324,6 +325,20 @@ export default function AdminEditor() {
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>
+
+            {hasFeedback ? (
+              <p
+                role={error ? 'alert' : 'status'}
+                aria-live="polite"
+                className={`rounded-lg border px-3 py-2 text-sm ${
+                  error
+                    ? 'border-red-500/50 bg-red-900/20 text-red-200'
+                    : 'border-emerald-500/50 bg-emerald-900/20 text-emerald-200'
+                }`}
+              >
+                {error || message}
+              </p>
+            ) : null}
 
             <div className="grid gap-4 md:grid-cols-[280px_1fr]">
               <aside className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-3">
@@ -589,8 +604,8 @@ export default function AdminEditor() {
           </div>
         )}
 
-        {error ? <p className="text-sm text-red-300">{error}</p> : null}
-        {message ? <p className="text-sm text-emerald-300">{message}</p> : null}
+        {!authenticated && error ? <p className="text-sm text-red-300">{error}</p> : null}
+        {!authenticated && message ? <p className="text-sm text-emerald-300">{message}</p> : null}
       </section>
     </main>
   );
