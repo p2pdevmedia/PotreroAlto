@@ -61,6 +61,7 @@ function buildRouteId(fallbackSector, routeNumber) {
 
 export default function AdminEditor() {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [subsectors, setSubsectors] = useState([]);
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
@@ -294,12 +295,34 @@ export default function AdminEditor() {
           <form onSubmit={handleLogin} className="space-y-3">
             <label className="block text-sm text-slate-200">
               Password
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
-              />
+              <div className="relative mt-1">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 pr-10 text-sm text-slate-100 outline-none transition focus:border-sunset"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-300 transition hover:text-white"
+                  aria-label={showPassword ? 'Ocultar password' : 'Mostrar password'}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M3 3l18 18" />
+                      <path d="M10.58 10.58a2 2 0 002.83 2.83" />
+                      <path d="M9.88 5.09A9.77 9.77 0 0112 4c5 0 9.27 3.11 11 8a11.83 11.83 0 01-3.03 4.36" />
+                      <path d="M6.61 6.61A11.9 11.9 0 001 12c1.73 4.89 6 8 11 8a10.2 10.2 0 005.39-1.61" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </label>
             <button
               type="submit"
