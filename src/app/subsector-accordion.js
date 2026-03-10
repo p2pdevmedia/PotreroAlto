@@ -17,7 +17,7 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
   'el tablero':
     '/images/tablero.jpeg',
   'cañadón':
-    '/images/tablero.jpeg',
+    '/images/caniadon.jpeg',
   'el derrumbe':
     '/images/derrumbe.jpeg'
 };
