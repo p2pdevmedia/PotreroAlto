@@ -59,6 +59,25 @@ function ratingEmojis(stars) {
   const ratingScale = ['⭐', '🧉', '🍺', '🍕', '🚬'];
   return ratingScale.slice(0, Math.min(5, Math.round(numericStars))).reverse().join('');
 }
+
+
+function toRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function calculateDistanceInMeters(fromLat, fromLng, toLat, toLng) {
+  const earthRadiusInMeters = 6371000;
+  const latDistanceInRadians = toRadians(toLat - fromLat);
+  const lngDistanceInRadians = toRadians(toLng - fromLng);
+  const haversineValue =
+    Math.sin(latDistanceInRadians / 2) * Math.sin(latDistanceInRadians / 2) +
+    Math.cos(toRadians(fromLat)) * Math.cos(toRadians(toLat)) * Math.sin(lngDistanceInRadians / 2) * Math.sin(lngDistanceInRadians / 2);
+
+  const angularDistance = 2 * Math.atan2(Math.sqrt(haversineValue), Math.sqrt(1 - haversineValue));
+
+  return earthRadiusInMeters * angularDistance;
+}
+
 export default function Navbar({
   activeSection,
   onSectionChange,
@@ -77,6 +96,10 @@ export default function Navbar({
   const [searchTerm, setSearchTerm] = useState('');
   const [isCompact, setIsCompact] = useState(false);
   const [selectedSearchRoute, setSelectedSearchRoute] = useState(null);
+  const [currentStandingRouteName, setCurrentStandingRouteName] = useState('');
+  const [nearestRouteInfo, setNearestRouteInfo] = useState(null);
+  const [nearestRouteMessage, setNearestRouteMessage] = useState('');
+  const [routeLocatorError, setRouteLocatorError] = useState('');
   const compactStateRef = useRef(false);
   const { address, isConnected } = useWallet();
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
@@ -142,6 +165,106 @@ export default function Navbar({
       .slice(0, 6);
   }, [searchTerm, subsectors]);
 
+  const routesWithCoordinates = useMemo(
+    () =>
+      (subsectors ?? []).flatMap((subsector) =>
+        (subsector.routes ?? [])
+          .map((route) => ({
+            routeName: route.name,
+            subsectorName: subsector.name,
+            latitude: Number(route.latitude),
+            longitude: Number(route.longitude)
+          }))
+          .filter((route) => Number.isFinite(route.latitude) && Number.isFinite(route.longitude))
+      ),
+    [subsectors]
+  );
+
+  useEffect(() => {
+    if (!routesWithCoordinates.length) {
+      setCurrentStandingRouteName('');
+      setNearestRouteInfo(null);
+      setRouteLocatorError('');
+      return undefined;
+    }
+
+    if (typeof window === 'undefined' || !window.navigator?.geolocation) {
+      setCurrentStandingRouteName('');
+      setNearestRouteInfo(null);
+      setRouteLocatorError(t(locale, 'routeLocatorNotSupported'));
+      return undefined;
+    }
+
+    const standingThresholdInMeters = 5;
+
+    const watchId = window.navigator.geolocation.watchPosition(
+      (position) => {
+        const nearestRoute = routesWithCoordinates.reduce(
+          (nearest, route) => {
+            const distanceInMeters = calculateDistanceInMeters(
+              position.coords.latitude,
+              position.coords.longitude,
+              route.latitude,
+              route.longitude
+            );
+
+            if (distanceInMeters < nearest.distanceInMeters) {
+              return { route, distanceInMeters };
+            }
+
+            return nearest;
+          },
+          { route: null, distanceInMeters: Number.POSITIVE_INFINITY }
+        );
+
+        if (nearestRoute.route && nearestRoute.distanceInMeters <= standingThresholdInMeters) {
+          setCurrentStandingRouteName(nearestRoute.route.routeName);
+          setNearestRouteInfo(nearestRoute);
+          setRouteLocatorError('');
+          return;
+        }
+
+        setCurrentStandingRouteName('');
+        setNearestRouteInfo(nearestRoute.route ? nearestRoute : null);
+        setRouteLocatorError('');
+      },
+      () => {
+        setCurrentStandingRouteName('');
+        setNearestRouteInfo(null);
+        setRouteLocatorError(t(locale, 'routeLocatorPermissionError'));
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+
+    return () => {
+      window.navigator.geolocation.clearWatch(watchId);
+    };
+  }, [locale, routesWithCoordinates]);
+
+  const handleRouteLocatorClick = () => {
+    if (routeLocatorError) {
+      setNearestRouteMessage(routeLocatorError);
+      return;
+    }
+
+    if (!routesWithCoordinates.length) {
+      setNearestRouteMessage(t(locale, 'routeLocatorNoRoutesWithCoordinates'));
+      return;
+    }
+
+    if (!nearestRouteInfo?.route) {
+      setNearestRouteMessage(t(locale, 'routeLocatorWaitingPosition'));
+      return;
+    }
+
+    setNearestRouteMessage(
+      t(locale, 'routeLocatorNearestRoute')
+        .replace('{route}', nearestRouteInfo.route.routeName)
+        .replace('{subsector}', nearestRouteInfo.route.subsectorName)
+        .replace('{distance}', Math.round(nearestRouteInfo.distanceInMeters).toString())
+    );
+  };
+
   const handleSectionChange = (sectionId) => {
     onSectionChange(sectionId);
     setIsMobileMenuOpen(false);
@@ -174,21 +297,41 @@ export default function Navbar({
       </p>
 
       <div className="relative z-30 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => handleSectionChange('inicio')}
-          className="p-0 transition-opacity hover:opacity-90"
-          aria-label={t(locale, 'goHome')}
-        >
-          <Image
-            src="/ChatGPT%20Image%20Mar%203,%202026%20at%2002_13_58%20PM.png"
-            alt="Logo Potrero Alto"
-            width={48}
-            height={48}
-            className="animate-logo-breathe h-10 w-10 rounded-lg object-cover md:h-12 md:w-12"
-            priority
-          />
-        </button>
+        <div className="flex shrink-0 flex-col items-start gap-1">
+          <button
+            type="button"
+            onClick={() => handleSectionChange('inicio')}
+            className="p-0 transition-opacity hover:opacity-90"
+            aria-label={t(locale, 'goHome')}
+          >
+            <Image
+              src="/ChatGPT%20Image%20Mar%203,%202026%20at%2002_13_58%20PM.png"
+              alt="Logo Potrero Alto"
+              width={48}
+              height={48}
+              className="animate-logo-breathe h-10 w-10 rounded-lg object-cover md:h-12 md:w-12"
+              priority
+            />
+          </button>
+          <button
+            type="button"
+            onClick={handleRouteLocatorClick}
+            className="rounded-md border border-emerald-300/40 bg-slate-950/80 px-2 py-1 text-sm leading-none text-emerald-200 transition hover:border-emerald-200"
+            aria-label={t(locale, 'routeLocatorButtonAria')}
+          >
+            📍
+          </button>
+          {currentStandingRouteName ? (
+            <p className="max-w-44 rounded-md border border-emerald-300/40 bg-slate-950/80 px-2 py-1 text-[10px] font-medium leading-tight text-emerald-200 md:max-w-56 md:text-xs">
+              {currentStandingRouteName}
+            </p>
+          ) : null}
+          {nearestRouteMessage ? (
+            <p className="max-w-56 rounded-md border border-slate-500/60 bg-slate-950/80 px-2 py-1 text-[10px] font-medium leading-tight text-slate-200 md:text-xs">
+              {nearestRouteMessage}
+            </p>
+          ) : null}
+        </div>
 
         <button
           type="button"
