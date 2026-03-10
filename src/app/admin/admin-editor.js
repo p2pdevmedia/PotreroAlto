@@ -388,6 +388,29 @@ export default function AdminEditor() {
     }
   };
 
+  const copyCodexMessage = async () => {
+    if (typeof window === 'undefined' || !window.navigator?.clipboard) {
+      setError('No se pudo copiar automáticamente. Copiá el texto manualmente.');
+      return false;
+    }
+
+    await window.navigator.clipboard.writeText(codexMessage);
+    setMessage('Mensaje para Codex copiado al portapapeles.');
+    return true;
+  };
+
+  const sendMessageToCodex = async () => {
+    const copied = await copyCodexMessage();
+
+    if (!copied || typeof window === 'undefined') {
+      return;
+    }
+
+    const codexUrl = `https://chatgpt.com/?hints=codex&prompt=${encodeURIComponent(codexMessage)}`;
+    window.open(codexUrl, '_blank', 'noopener,noreferrer');
+    setMessage('Abrí Codex en una pestaña nueva y dejé el mensaje listo (si no aparece, pegalo desde el portapapeles).');
+  };
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <section className="card space-y-4">
@@ -446,21 +469,28 @@ export default function AdminEditor() {
               <section className="space-y-2 rounded-xl border border-emerald-500/40 bg-emerald-900/10 p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-sm font-semibold text-emerald-100">Mensaje para Codex</h2>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (typeof window === 'undefined' || !window.navigator?.clipboard) {
-                        setError('No se pudo copiar automáticamente. Copiá el texto manualmente.');
-                        return;
-                      }
-
-                      await window.navigator.clipboard.writeText(codexMessage);
-                      setMessage('Mensaje para Codex copiado al portapapeles.');
-                    }}
-                    className="rounded border border-emerald-400/60 px-3 py-1 text-xs font-semibold text-emerald-100"
-                  >
-                    Copiar mensaje
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={copyCodexMessage}
+                      className="inline-flex items-center gap-1 rounded border border-emerald-400/60 px-3 py-1 text-xs font-semibold text-emerald-100"
+                    >
+                      <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5 fill-current">
+                        <path d="M4 2a2 2 0 0 0-2 2v9h2V4h8V2H4Zm3 4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H7Zm0 2h9v8H7V8Z" />
+                      </svg>
+                      Copiar mensaje
+                    </button>
+                    <button
+                      type="button"
+                      onClick={sendMessageToCodex}
+                      className="inline-flex items-center gap-1 rounded border border-cyan-400/60 bg-cyan-900/20 px-3 py-1 text-xs font-semibold text-cyan-100"
+                    >
+                      <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5 fill-current">
+                        <path d="M2.7 2.2a1 1 0 0 1 1.04-.13l13 6a1 1 0 0 1 0 1.82l-13 6A1 1 0 0 1 2 15V11.3a1 1 0 0 1 .78-.97l5.52-1.2-5.52-1.2A1 1 0 0 1 2 6.96V3a1 1 0 0 1 .7-.8Z" />
+                      </svg>
+                      Enviar a Codex
+                    </button>
+                  </div>
                 </div>
                 <textarea
                   readOnly
