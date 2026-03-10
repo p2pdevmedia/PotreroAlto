@@ -480,8 +480,8 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
           "equippedDate": "27 Jan 2023",
           "firstAscentBy": "simon de la Canal",
           "firstAscentDate": "31 Jan 2023",
-          "latitude": null,
-          "longitude": null
+          "latitude": -40.13690463357635,
+          "longitude": -71.2524842958867
         },
         {
           "id": "chancheria-5",
