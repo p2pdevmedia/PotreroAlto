@@ -194,6 +194,43 @@ export default function AdminEditor() {
   );
   const generatedCodexMessage = useMemo(() => buildCodexMessage(pendingChangeLines), [pendingChangeLines]);
 
+  const copyTextToClipboard = async (textToCopy, successMessage) => {
+    if (!textToCopy) {
+      setError('No hay mensaje para copiar todavía.');
+      return;
+    }
+
+    if (typeof window === 'undefined' || !window.navigator?.clipboard) {
+      setError('No se pudo copiar automáticamente. Copiá el texto manualmente.');
+      return;
+    }
+
+    try {
+      await window.navigator.clipboard.writeText(textToCopy);
+      setError('');
+      setMessage(successMessage);
+    } catch {
+      setError('No se pudo acceder al portapapeles. Probá nuevamente.');
+    }
+  };
+
+  const openCodexWithMessage = async (textToSend) => {
+    if (!textToSend) {
+      setError('No hay cambios pendientes para enviar a Codex.');
+      return;
+    }
+
+    await copyTextToClipboard(textToSend, 'Mensaje para Codex copiado al portapapeles.');
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const codexUrl = `https://chatgpt.com/?hints=codex&prompt=${encodeURIComponent(textToSend)}`;
+    window.open(codexUrl, '_blank', 'noopener,noreferrer');
+    setMessage('Abrí Codex en una nueva pestaña con el mensaje listo para pegar/enviar.');
+  };
+
   const handleLogin = async (event) => {
     event.preventDefault();
     setError('');
@@ -430,7 +467,29 @@ export default function AdminEditor() {
             </div>
 
             <section className="space-y-2 rounded-xl border border-slate-700/70 bg-slate-900/50 p-3">
-              <h2 className="text-sm font-semibold text-slate-100">Diferencia antes de guardar</h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold text-slate-100">Diferencia antes de guardar</h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyTextToClipboard(generatedCodexMessage, 'Diferencias copiadas al portapapeles.')}
+                    disabled={!generatedCodexMessage}
+                    aria-label="Copiar diferencias"
+                    title="Copiar diferencias"
+                    className="rounded border border-slate-500 px-2 py-1 text-xs text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    📋
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openCodexWithMessage(generatedCodexMessage)}
+                    disabled={!generatedCodexMessage}
+                    className="rounded border border-cyan-400/70 bg-cyan-700/20 px-3 py-1 text-xs font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Enviar a Codex
+                  </button>
+                </div>
+              </div>
               {pendingChangeLines.length ? (
                 <ul className="max-h-44 list-disc space-y-1 overflow-auto pl-5 text-xs text-slate-300">
                   {pendingChangeLines.map((line) => (
@@ -448,15 +507,7 @@ export default function AdminEditor() {
                   <h2 className="text-sm font-semibold text-emerald-100">Mensaje para Codex</h2>
                   <button
                     type="button"
-                    onClick={async () => {
-                      if (typeof window === 'undefined' || !window.navigator?.clipboard) {
-                        setError('No se pudo copiar automáticamente. Copiá el texto manualmente.');
-                        return;
-                      }
-
-                      await window.navigator.clipboard.writeText(codexMessage);
-                      setMessage('Mensaje para Codex copiado al portapapeles.');
-                    }}
+                    onClick={() => copyTextToClipboard(codexMessage, 'Mensaje para Codex copiado al portapapeles.')}
                     className="rounded border border-emerald-400/60 px-3 py-1 text-xs font-semibold text-emerald-100"
                   >
                     Copiar mensaje
