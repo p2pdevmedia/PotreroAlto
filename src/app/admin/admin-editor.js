@@ -59,16 +59,109 @@ function buildRouteId(fallbackSector, routeNumber) {
   return normalizedRouteNumber ? `${normalizedFallbackSector}-${normalizedRouteNumber}` : normalizedFallbackSector;
 }
 
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function comparableValue(value) {
+  if (value == null) {
+    return '';
+  }
+
+  return String(value).trim();
+}
+
+function summarizeChanges(previousSubsectors, nextSubsectors) {
+  const previousMap = new Map((previousSubsectors ?? []).map((subsector) => [subsector.id, subsector]));
+  const nextMap = new Map((nextSubsectors ?? []).map((subsector) => [subsector.id, subsector]));
+  const lines = [];
+
+  nextMap.forEach((nextSubsector, subsectorId) => {
+    const previousSubsector = previousMap.get(subsectorId);
+
+    if (!previousSubsector) {
+      lines.push(`+ Subsector agregado: ${nextSubsector.name || subsectorId} (${subsectorId})`);
+      return;
+    }
+
+    if (comparableValue(previousSubsector.name) !== comparableValue(nextSubsector.name)) {
+      lines.push(`~ Subsector ${subsectorId}: nombre "${previousSubsector.name || ''}" → "${nextSubsector.name || ''}"`);
+    }
+
+    if (comparableValue(previousSubsector.description) !== comparableValue(nextSubsector.description)) {
+      lines.push(`~ Subsector ${subsectorId}: descripción actualizada`);
+    }
+
+    const previousRoutes = new Map((previousSubsector.routes ?? []).map((route) => [route.id, route]));
+    const nextRoutes = new Map((nextSubsector.routes ?? []).map((route) => [route.id, route]));
+
+    nextRoutes.forEach((nextRoute, routeId) => {
+      const previousRoute = previousRoutes.get(routeId);
+
+      if (!previousRoute) {
+        lines.push(`+ Vía agregada en ${subsectorId}: ${nextRoute.name || routeId} (${routeId})`);
+        return;
+      }
+
+      if (comparableValue(previousRoute.name) !== comparableValue(nextRoute.name)) {
+        lines.push(`~ Vía ${routeId}: nombre "${previousRoute.name || ''}" → "${nextRoute.name || ''}"`);
+      }
+
+      if (comparableValue(previousRoute.grade) !== comparableValue(nextRoute.grade)) {
+        lines.push(`~ Vía ${routeId}: grado "${previousRoute.grade || ''}" → "${nextRoute.grade || ''}"`);
+      }
+
+      if (comparableValue(previousRoute.description) !== comparableValue(nextRoute.description)) {
+        lines.push(`~ Vía ${routeId}: descripción actualizada`);
+      }
+
+      if (comparableValue(previousRoute.latitude) !== comparableValue(nextRoute.latitude) || comparableValue(previousRoute.longitude) !== comparableValue(nextRoute.longitude)) {
+        lines.push(`~ Vía ${routeId}: coordenadas actualizadas`);
+      }
+    });
+
+    previousRoutes.forEach((previousRoute, routeId) => {
+      if (!nextRoutes.has(routeId)) {
+        lines.push(`- Vía eliminada en ${subsectorId}: ${previousRoute.name || routeId} (${routeId})`);
+      }
+    });
+  });
+
+  previousMap.forEach((previousSubsector, subsectorId) => {
+    if (!nextMap.has(subsectorId)) {
+      lines.push(`- Subsector eliminado: ${previousSubsector.name || subsectorId} (${subsectorId})`);
+    }
+  });
+
+  return lines;
+}
+
+function buildCodexMessage(changeLines) {
+  if (!changeLines.length) {
+    return '';
+  }
+
+  return [
+    'Aplicá estos cambios en GitHub para src/lib/fallback-subsectors.js:',
+    '',
+    ...changeLines.map((line) => `- ${line}`),
+    '',
+    'Asegurate de mantener el formato del archivo y actualizar solo los subsectores/vías listados.'
+  ].join('\n');
+}
+
 export default function AdminEditor() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [subsectors, setSubsectors] = useState([]);
+  const [originalSubsectors, setOriginalSubsectors] = useState([]);
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [locatingRouteId, setLocatingRouteId] = useState('');
+  const [codexMessage, setCodexMessage] = useState('');
 
   const selectedSubsector = useMemo(
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
@@ -95,6 +188,11 @@ export default function AdminEditor() {
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
   const hasFeedback = Boolean(error || message);
+  const pendingChangeLines = useMemo(
+    () => summarizeChanges(originalSubsectors, subsectors),
+    [originalSubsectors, subsectors]
+  );
+  const generatedCodexMessage = useMemo(() => buildCodexMessage(pendingChangeLines), [pendingChangeLines]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -112,6 +210,8 @@ export default function AdminEditor() {
 
       const nextSubsectors = Array.isArray(payload.subsectors) ? payload.subsectors : [];
       setSubsectors(nextSubsectors);
+      setOriginalSubsectors(deepClone(nextSubsectors));
+      setCodexMessage('');
       setSelectedSubsectorId(nextSubsectors[0]?.id ?? null);
       setAuthenticated(true);
     } catch (loginError) {
@@ -277,6 +377,9 @@ export default function AdminEditor() {
         throw new Error(payload?.error ?? 'No se pudo guardar.');
       }
 
+      const nextCodexMessage = generatedCodexMessage;
+      setCodexMessage(nextCodexMessage);
+      setOriginalSubsectors(deepClone(subsectors));
       setMessage(`Guardado exitoso. Subsectores: ${payload.subsectorCount}.`);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
@@ -325,6 +428,48 @@ export default function AdminEditor() {
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>
+
+            <section className="space-y-2 rounded-xl border border-slate-700/70 bg-slate-900/50 p-3">
+              <h2 className="text-sm font-semibold text-slate-100">Diferencia antes de guardar</h2>
+              {pendingChangeLines.length ? (
+                <ul className="max-h-44 list-disc space-y-1 overflow-auto pl-5 text-xs text-slate-300">
+                  {pendingChangeLines.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-slate-400">Sin cambios pendientes.</p>
+              )}
+            </section>
+
+            {codexMessage ? (
+              <section className="space-y-2 rounded-xl border border-emerald-500/40 bg-emerald-900/10 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-sm font-semibold text-emerald-100">Mensaje para Codex</h2>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (typeof window === 'undefined' || !window.navigator?.clipboard) {
+                        setError('No se pudo copiar automáticamente. Copiá el texto manualmente.');
+                        return;
+                      }
+
+                      await window.navigator.clipboard.writeText(codexMessage);
+                      setMessage('Mensaje para Codex copiado al portapapeles.');
+                    }}
+                    className="rounded border border-emerald-400/60 px-3 py-1 text-xs font-semibold text-emerald-100"
+                  >
+                    Copiar mensaje
+                  </button>
+                </div>
+                <textarea
+                  readOnly
+                  value={codexMessage}
+                  rows={Math.min(14, Math.max(6, codexMessage.split('\n').length + 1))}
+                  className="w-full rounded-lg border border-emerald-500/30 bg-slate-950 p-2 text-xs text-emerald-100"
+                />
+              </section>
+            ) : null}
 
             {hasFeedback ? (
               <p
