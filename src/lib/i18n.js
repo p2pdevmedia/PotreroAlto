@@ -123,7 +123,13 @@ const BASE_ES = {
   routeLocationNotSupported: 'Tu dispositivo o navegador no soporta geolocalización.',
   routeLocationPermissionError: 'No pudimos obtener tu ubicación. Revisá los permisos de geolocalización.',
   routeLocationInside: '¡Sí! Estás parado muy cerca de esta vía.',
-  routeLocationOutside: 'Todavía no estás en esta vía. Estás a {distance} metros.'
+  routeLocationOutside: 'Todavía no estás en esta vía. Estás a {distance} metros.',
+  routeLocatorButtonAria: 'Ver vía más cercana',
+  routeLocatorNearestRoute: '📍 Vía más cercana: {route} ({subsector}) a {distance} m.',
+  routeLocatorWaitingPosition: '📍 Esperando ubicación para encontrar la vía más cercana...',
+  routeLocatorNoRoutesWithCoordinates: '📍 No hay vías con coordenadas cargadas.',
+  routeLocatorNotSupported: '📍 Tu dispositivo no soporta geolocalización para detectar vías.',
+  routeLocatorPermissionError: '📍 Activá permisos de ubicación para detectar la vía donde estás.'
 };
 
 const BASE_EN = {
@@ -234,7 +240,13 @@ const BASE_EN = {
   routeLocationNotSupported: 'Your device or browser does not support geolocation.',
   routeLocationPermissionError: 'We could not get your location. Please review geolocation permissions.',
   routeLocationInside: 'Yes! You are standing very close to this route.',
-  routeLocationOutside: 'You are not at this route yet. You are {distance} meters away.'
+  routeLocationOutside: 'You are not at this route yet. You are {distance} meters away.',
+  routeLocatorButtonAria: 'Show nearest route',
+  routeLocatorNearestRoute: '📍 Nearest route: {route} ({subsector}) at {distance} m.',
+  routeLocatorWaitingPosition: '📍 Waiting for your location to find the nearest route...',
+  routeLocatorNoRoutesWithCoordinates: '📍 There are no routes with coordinates loaded yet.',
+  routeLocatorNotSupported: '📍 Your device does not support geolocation to detect routes.',
+  routeLocatorPermissionError: '📍 Enable location permissions to detect the route where you are standing.'
 };
 
 const COPY = {
