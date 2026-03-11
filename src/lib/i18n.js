@@ -776,6 +776,10 @@ export function normalizeFrenchGrade(grade) {
 }
 
 export function convertGrade(grade, gradeSystem = 'french') {
+  if (gradeSystem === 'french') {
+    return grade;
+  }
+
   const bucket = normalizeFrenchGrade(grade);
   if (!bucket) return grade;
   return GRADE_BUCKET_TO_SYSTEM[bucket]?.[gradeSystem] ?? GRADE_BUCKET_TO_SYSTEM[bucket]?.french ?? grade;
