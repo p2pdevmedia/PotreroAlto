@@ -1,12 +1,12 @@
-# Potrero Alto - Next.js + Tailwind
+# Potrero Alto - Next.js + Tailwind + Supabase PostgreSQL
 
-Aplicación web para mostrar información de escalada del sector **Potrero Alto** consumiendo la API pública de [theCrag](https://www.thecrag.com).
+Aplicación web para mostrar información de escalada del sector **Potrero Alto** usando **Supabase PostgreSQL** como fuente única de datos.
 
 ## Objetivo
 
-- Cargar el sector con ID `6574670919`.
-- Mostrar subsectores.
-- Mostrar vías dentro de cada subsector.
+- Guardar toda la información de sector, subsectores y vías en Supabase.
+- Eliminar dependencia de theCrag para lectura runtime.
+- Mantener edición desde `/admin`, persistiendo en PostgreSQL.
 
 ## Ejecutar en local
 
@@ -19,26 +19,41 @@ Abrir [http://localhost:3000](http://localhost:3000).
 
 ## Variables de entorno
 
-Para APIs protegidas por OAuth, configurar un archivo `.env.local` con:
+Crear `.env.local` con:
 
 ```bash
-THECRAG_API_HOST=https://www.thecrag.com
-THECRAG_API_RESOURCE_STEM=/api
-THECRAG_OAUTH_ACCESS_TOKEN=tu_access_token
+database_host=YOUR_SUPABASE_HOST:5432
+database_password=YOUR_DB_PASSWORD
+NEXT_PUBLIC_SITE_URL=https://tu-dominio.com
 ```
 
-- `THECRAG_API_RESOURCE_STEM` es el *OAuth protected API resource stem* (ejemplo: `/api`).
+La conexión se construye así:
 
-`NEXT_PUBLIC_SITE_URL=https://tu-dominio.com` también es recomendable para SEO: se usa para generar `sitemap.xml` y `robots.txt` con URLs canónicas indexables.
-- Si `THECRAG_OAUTH_ACCESS_TOKEN` no está definido, la app intentará consumir el API sin header `Authorization`.
+```txt
+postgresql://postgres:[database_password]@[database_host]/postgres
+```
+
+## Migración SQL a Supabase
+
+1. Abrí Supabase SQL Editor.
+2. Ejecutá `db/schema.sql` para crear tablas e índices.
+3. Ejecutá `db/seed.sql` para migrar toda la información existente (generada desde `src/lib/fallback-subsectors.js`).
+
+También podés regenerar el seed con:
+
+```bash
+node scripts/generate-supabase-seed-sql.mjs
+```
+
+## Modelo de datos
+
+- `sectors`: sector principal (Potrero Alto).
+- `subsectors`: subsectores por sector.
+- `routes`: vías por subsector, con metadata técnica (grado, chapas, longitud, equipador, FA, coordenadas, etc).
 
 ## Notas
 
-- Esta app usa App Router de Next.js.
-- Estilos con Tailwind CSS.
-- Los assets estáticos deben ubicarse en la carpeta `public/`.
-- El acceso a datos usa endpoints canónicos de theCrag API, por ejemplo:
-  - `/api/node/id/{nodeID}`
-  - `/api/node/id/{nodeID}/children/area`
-  - `/api/node/id/{nodeID}/children/route`
-- La integración está en `src/lib/thecrag.js`.
+- La lectura principal está en `src/lib/thecrag.js` (ahora conectado a Supabase).
+- Conexión PostgreSQL en `src/lib/supabase.js`.
+- Mapeo de modelos en `src/lib/supabase-models.js`.
+- Edición admin usa `/api/admin/fallback` por compatibilidad de frontend, pero persiste en Supabase.

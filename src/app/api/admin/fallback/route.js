@@ -1,41 +1,17 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { NextResponse } from 'next/server';
+import { mapSubsectorRows } from '@/lib/supabase-models';
+import { query, withTransaction } from '@/lib/supabase';
 
 const ADMIN_PASSWORD = 'Simonalacacaliza!';
-const FALLBACK_FILE_PATH = join(process.cwd(), 'src/lib/fallback-subsectors.js');
-const EXPORT_PREFIX = 'export const POTRERO_ALTO_FALLBACK_DATA = ';
+const POTRERO_ALTO_SECTOR_ID = '6574670919';
 
 function unauthorized() {
   return NextResponse.json({ error: 'Password inválido.' }, { status: 401 });
 }
 
-function parseFallbackObject(content) {
-  const trimmed = content.trim();
-
-  if (!trimmed.startsWith(EXPORT_PREFIX)) {
-    throw new Error('Formato de archivo fallback inválido.');
-  }
-
-  const objectLiteral = trimmed.slice(EXPORT_PREFIX.length).replace(/;\s*$/, '');
-  return Function(`"use strict"; return (${objectLiteral});`)();
-}
-
-function normalizeSubsectors(subsectors) {
-  if (!Array.isArray(subsectors)) {
-    return [];
-  }
-
-  return subsectors.map((subsector) => ({
-    ...subsector,
-    routes: Array.isArray(subsector.routes)
-      ? subsector.routes.map((route) => ({
-          ...route,
-          latitude: route?.latitude == null ? null : Number(route.latitude),
-          longitude: route?.longitude == null ? null : Number(route.longitude)
-        }))
-      : []
-  }));
+function validatePassword(request) {
+  const password = request.headers.get('x-admin-password');
+  return password && password === ADMIN_PASSWORD;
 }
 
 function sanitizeSubsectors(subsectors) {
@@ -47,36 +23,32 @@ function sanitizeSubsectors(subsectors) {
     const routes = Array.isArray(subsector.routes) ? subsector.routes : [];
 
     return {
-      id: String(subsector.id || `fallback-subsector-${subsectorIndex + 1}`),
+      id: String(subsector.id || `subsector-${subsectorIndex + 1}`),
       name: String(subsector.name || 'Subsector sin nombre'),
       sector: String(subsector.sector || 'Potrero Alto'),
       description: subsector.description ? String(subsector.description) : '',
-      image: subsector.image ? String(subsector.image) : undefined,
+      image: subsector.image ? String(subsector.image) : null,
+      sortOrder: subsectorIndex,
       routes: routes.map((route, routeIndex) => ({
-        id: String(route.id || `${subsector.id || `subsector-${subsectorIndex + 1}`}-route-${routeIndex + 1}`),
+        id: String(route.id || `route-${subsectorIndex + 1}-${routeIndex + 1}`),
         name: String(route.name || 'Vía sin nombre'),
         grade: route.grade ? String(route.grade) : 'Sin grado',
         stars: route.stars === '' || route.stars == null ? null : Number(route.stars),
         type: route.type ? String(route.type) : 'Sport',
         description: route.description ? String(route.description) : '',
-        lengthMeters:
-          route.lengthMeters === '' || route.lengthMeters == null ? undefined : Number(route.lengthMeters),
-        quickdraws: route.quickdraws === '' || route.quickdraws == null ? undefined : Number(route.quickdraws),
-        image: route.image ? String(route.image) : undefined,
+        lengthMeters: route.lengthMeters === '' || route.lengthMeters == null ? null : Number(route.lengthMeters),
+        quickdraws: route.quickdraws === '' || route.quickdraws == null ? null : Number(route.quickdraws),
+        image: route.image ? String(route.image) : null,
         latitude: route.latitude === '' || route.latitude == null ? null : Number(route.latitude),
         longitude: route.longitude === '' || route.longitude == null ? null : Number(route.longitude),
-        equippedBy: route.equippedBy ? String(route.equippedBy) : undefined,
-        equippedDate: route.equippedDate ? String(route.equippedDate) : undefined,
-        firstAscentBy: route.firstAscentBy ? String(route.firstAscentBy) : undefined,
-        firstAscentDate: route.firstAscentDate ? String(route.firstAscentDate) : undefined
+        equippedBy: route.equippedBy ? String(route.equippedBy) : null,
+        equippedDate: route.equippedDate ? String(route.equippedDate) : null,
+        firstAscentBy: route.firstAscentBy ? String(route.firstAscentBy) : null,
+        firstAscentDate: route.firstAscentDate ? String(route.firstAscentDate) : null,
+        sortOrder: routeIndex
       }))
     };
   });
-}
-
-function validatePassword(request) {
-  const password = request.headers.get('x-admin-password');
-  return password && password === ADMIN_PASSWORD;
 }
 
 export async function GET(request) {
@@ -85,20 +57,40 @@ export async function GET(request) {
   }
 
   try {
-    const content = await readFile(FALLBACK_FILE_PATH, 'utf8');
-    const fallbackData = parseFallbackObject(content);
+    const [sectorResult, subsectorsResult, routesResult] = await Promise.all([
+      query('SELECT id, name, location, description FROM sectors WHERE id = $1 LIMIT 1', [POTRERO_ALTO_SECTOR_ID]),
+      query(
+        `SELECT id, sector_id, name, sector, description, image, sort_order
+         FROM subsectors WHERE sector_id = $1 ORDER BY sort_order ASC, name ASC`,
+        [POTRERO_ALTO_SECTOR_ID]
+      ),
+      query(
+        `SELECT id, subsector_id, name, grade, stars, type, description, image,
+                length_meters, quickdraws, equipped_by, equipped_date,
+                first_ascent_by, first_ascent_date, latitude, longitude, sort_order
+         FROM routes WHERE sector_id = $1 ORDER BY sort_order ASC, name ASC`,
+        [POTRERO_ALTO_SECTOR_ID]
+      )
+    ]);
+
+    const sector = sectorResult.rows[0] ?? {
+      id: POTRERO_ALTO_SECTOR_ID,
+      name: 'Potrero Alto',
+      location: 'San Luis, Argentina',
+      description: ''
+    };
 
     return NextResponse.json({
-      id: fallbackData.id,
-      name: fallbackData.name,
-      location: fallbackData.location,
-      description: fallbackData.description,
-      subsectors: normalizeSubsectors(fallbackData.subsectors)
+      id: sector.id,
+      name: sector.name,
+      location: sector.location,
+      description: sector.description,
+      subsectors: mapSubsectorRows(subsectorsResult.rows, routesResult.rows)
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: `No se pudo leer el fallback: ${error instanceof Error ? error.message : 'error desconocido'}`
+        error: `No se pudo leer desde Supabase: ${error instanceof Error ? error.message : 'error desconocido'}`
       },
       { status: 500 }
     );
@@ -112,23 +104,75 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const content = await readFile(FALLBACK_FILE_PATH, 'utf8');
-    const currentData = parseFallbackObject(content);
     const subsectors = sanitizeSubsectors(body?.subsectors);
 
-    const updatedData = {
-      ...currentData,
-      subsectors
-    };
+    await withTransaction(async (client) => {
+      await client.query(
+        `INSERT INTO sectors (id, name, location, description)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id)
+         DO UPDATE SET name = EXCLUDED.name, location = EXCLUDED.location, description = EXCLUDED.description`,
+        [POTRERO_ALTO_SECTOR_ID, body?.name || 'Potrero Alto', body?.location || 'San Luis, Argentina', body?.description || '']
+      );
 
-    const serialized = `${EXPORT_PREFIX}${JSON.stringify(updatedData, null, 2)};\n`;
-    await writeFile(FALLBACK_FILE_PATH, serialized, 'utf8');
+      await client.query('DELETE FROM routes WHERE sector_id = $1', [POTRERO_ALTO_SECTOR_ID]);
+      await client.query('DELETE FROM subsectors WHERE sector_id = $1', [POTRERO_ALTO_SECTOR_ID]);
+
+      for (const subsector of subsectors) {
+        await client.query(
+          `INSERT INTO subsectors (id, sector_id, name, sector, description, image, sort_order)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            subsector.id,
+            POTRERO_ALTO_SECTOR_ID,
+            subsector.name,
+            subsector.sector,
+            subsector.description,
+            subsector.image,
+            subsector.sortOrder
+          ]
+        );
+
+        for (const route of subsector.routes) {
+          await client.query(
+            `INSERT INTO routes (
+              id, sector_id, subsector_id, name, grade, stars, type, description, image,
+              length_meters, quickdraws, equipped_by, equipped_date,
+              first_ascent_by, first_ascent_date, latitude, longitude, sort_order
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9,
+              $10, $11, $12, $13, $14, $15, $16, $17, $18
+            )`,
+            [
+              route.id,
+              POTRERO_ALTO_SECTOR_ID,
+              subsector.id,
+              route.name,
+              route.grade,
+              route.stars,
+              route.type,
+              route.description,
+              route.image,
+              route.lengthMeters,
+              route.quickdraws,
+              route.equippedBy,
+              route.equippedDate,
+              route.firstAscentBy,
+              route.firstAscentDate,
+              route.latitude,
+              route.longitude,
+              route.sortOrder
+            ]
+          );
+        }
+      }
+    });
 
     return NextResponse.json({ ok: true, subsectorCount: subsectors.length });
   } catch (error) {
     return NextResponse.json(
       {
-        error: `No se pudo guardar el fallback: ${error instanceof Error ? error.message : 'error desconocido'}`
+        error: `No se pudo guardar en Supabase: ${error instanceof Error ? error.message : 'error desconocido'}`
       },
       { status: 500 }
     );
