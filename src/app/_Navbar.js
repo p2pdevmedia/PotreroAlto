@@ -313,24 +313,6 @@ export default function Navbar({
               priority
             />
           </button>
-          <button
-            type="button"
-            onClick={handleRouteLocatorClick}
-            className="rounded-md border border-emerald-300/40 bg-slate-950/80 px-2 py-1 text-sm leading-none text-emerald-200 transition hover:border-emerald-200"
-            aria-label={t(locale, 'routeLocatorButtonAria')}
-          >
-            📍
-          </button>
-          {currentStandingRouteName ? (
-            <p className="max-w-44 rounded-md border border-emerald-300/40 bg-slate-950/80 px-2 py-1 text-[10px] font-medium leading-tight text-emerald-200 md:max-w-56 md:text-xs">
-              {currentStandingRouteName}
-            </p>
-          ) : null}
-          {nearestRouteMessage ? (
-            <p className="max-w-56 rounded-md border border-slate-500/60 bg-slate-950/80 px-2 py-1 text-[10px] font-medium leading-tight text-slate-200 md:text-xs">
-              {nearestRouteMessage}
-            </p>
-          ) : null}
         </div>
 
         <button
@@ -518,17 +500,41 @@ export default function Navbar({
 
       {!isCompact ? (
         <div className="relative z-0 mt-3 border-t border-slate-700/70 pt-3">
-          <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-            {t(locale, 'searchRoute')}
-          </label>
-          <input
-            id="route-search"
-            type="search"
-            placeholder={t(locale, 'routeNamePlaceholder')}
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
-          />
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <label htmlFor="route-search" className="text-xs font-semibold uppercase tracking-wide text-slate-300">
+                {t(locale, 'searchRoute')}
+              </label>
+              <input
+                id="route-search"
+                type="search"
+                placeholder={t(locale, 'routeNamePlaceholder')}
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleRouteLocatorClick}
+              className="mb-[1px] rounded-xl border border-emerald-300/40 bg-slate-950/80 px-3 py-2 text-lg leading-none text-emerald-200 transition hover:border-emerald-200"
+              aria-label={t(locale, 'routeLocatorButtonAria')}
+              title={t(locale, 'routeLocatorButtonAria')}
+            >
+              📍
+            </button>
+          </div>
+
+          {searchTerm.trim() ? (
+            <p className="mt-2 rounded-md border border-slate-500/60 bg-slate-950/80 px-2 py-1 text-xs font-medium leading-tight text-slate-200">
+              {currentStandingRouteName
+                ? t(locale, 'routeLocatorNearestRoute')
+                    .replace('{route}', currentStandingRouteName)
+                    .replace('{subsector}', nearestRouteInfo?.route?.subsectorName ?? '—')
+                    .replace('{distance}', '0')
+                : nearestRouteMessage || routeLocatorError || t(locale, 'routeLocatorWaitingPosition')}
+            </p>
+          ) : null}
 
           {searchTerm.trim() ? (
             routeSearchResults.length ? (
