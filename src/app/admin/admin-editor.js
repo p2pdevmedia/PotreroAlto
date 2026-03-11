@@ -59,6 +59,20 @@ function buildRouteId(fallbackSector, routeNumber) {
   return normalizedRouteNumber ? `${normalizedFallbackSector}-${normalizedRouteNumber}` : normalizedFallbackSector;
 }
 
+function normalizeCoordinate(value) {
+  const parsed = Number.parseFloat(String(value ?? '').replace(',', '.').trim());
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function buildGoogleMapsUrl(latitude, longitude) {
+  return `https://www.google.com/maps?q=${latitude},${longitude}`;
+}
+
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -631,6 +645,31 @@ export default function AdminEditor() {
 
                     {(selectedSubsector.routes ?? []).map((route) => (
                       <article key={route.id} className="rounded-xl border border-slate-700 bg-slate-950/40 p-3">
+                        {(() => {
+                          const latitude = normalizeCoordinate(route.latitude);
+                          const longitude = normalizeCoordinate(route.longitude);
+                          const hasCoordinates = latitude != null && longitude != null;
+
+                          if (!hasCoordinates) {
+                            return null;
+                          }
+
+                          return (
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded border border-emerald-600/40 bg-emerald-950/20 px-2 py-1.5 text-xs text-emerald-100">
+                              <span>
+                                Coordenadas cargadas: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                              </span>
+                              <a
+                                href={buildGoogleMapsUrl(latitude, longitude)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded border border-emerald-500/60 bg-emerald-700/20 px-2 py-1 font-semibold"
+                              >
+                                Ver en Google Maps
+                              </a>
+                            </div>
+                          );
+                        })()}
                         <div className="mb-2 grid gap-2 md:grid-cols-4">
                           {(() => {
                             const defaultFallbackSector = fallbackSectorFromSubsectorId(selectedSubsector.id);
