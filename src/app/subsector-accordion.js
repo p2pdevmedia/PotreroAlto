@@ -106,6 +106,10 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
     ? `Equip: ${route.equippedBy}${route.equippedDate ? `, ${route.equippedDate}` : ''}`
     : null;
 
+  const directionsUrl = hasCoordinates
+    ? `https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`
+    : null;
+
   const checkIfStandingOnRoute = () => {
     if (!hasCoordinates) {
       setLocationMessage(t(locale, 'routeLocationMissing'));
@@ -192,7 +196,7 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
             ) : null}
           </div>
         </button>
-        <div className="mt-2 pl-[92px]">
+        <div className="mt-2 flex flex-wrap items-center gap-2 pl-[92px]">
           <button
             type="button"
             onClick={checkIfStandingOnRoute}
@@ -201,7 +205,19 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
           >
             {checkingLocation ? t(locale, 'checkingRouteLocation') : t(locale, 'checkRouteLocation')}
           </button>
-          {locationMessage ? <p className="mt-1 text-xs text-slate-300">{locationMessage}</p> : null}
+          {directionsUrl ? (
+            <a
+              href={directionsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded-md border border-slate-600 px-2 py-1 text-xs font-medium text-slate-100 transition hover:border-slate-400"
+              aria-label={`${t(locale, 'getRouteDirections')}: ${route.name}`}
+            >
+              <span aria-hidden="true">🧭</span>
+              <span>{t(locale, 'getRouteDirections')}</span>
+            </a>
+          ) : null}
+          {locationMessage ? <p className="w-full text-xs text-slate-300">{locationMessage}</p> : null}
         </div>
       </div>
     </li>
