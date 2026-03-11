@@ -22,16 +22,13 @@ Abrir [http://localhost:3000](http://localhost:3000).
 Crear `.env.local` con:
 
 ```bash
-database_host=YOUR_SUPABASE_HOST:5432
-database_password=YOUR_DB_PASSWORD
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_xxx
 NEXT_PUBLIC_SITE_URL=https://tu-dominio.com
 ```
 
-La conexión se construye así:
+La app usa la REST API de Supabase (`/rest/v1`) con esas variables para lecturas/escrituras.
 
-```txt
-postgresql://postgres:[database_password]@[database_host]/postgres
-```
 
 ## Migración SQL a Supabase
 
@@ -54,6 +51,6 @@ node scripts/generate-supabase-seed-sql.mjs
 ## Notas
 
 - La lectura principal está en `src/lib/thecrag.js` (ahora conectado a Supabase).
-- Conexión PostgreSQL en `src/lib/supabase.js`.
+- Cliente REST de Supabase en `src/lib/supabase.js`.
 - Mapeo de modelos en `src/lib/supabase-models.js`.
 - Edición admin usa `/api/admin/fallback` por compatibilidad de frontend, pero persiste en Supabase.

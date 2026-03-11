@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { mapSubsectorRows } from '@/lib/supabase-models';
-import { query, withTransaction } from '@/lib/supabase';
+import { deleteRows, selectRows, upsertRows } from '@/lib/supabase';
 
 const ADMIN_PASSWORD = 'Simonalacacaliza!';
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
@@ -57,23 +57,26 @@ export async function GET(request) {
   }
 
   try {
-    const [sectorResult, subsectorsResult, routesResult] = await Promise.all([
-      query('SELECT id, name, location, description FROM sectors WHERE id = $1 LIMIT 1', [POTRERO_ALTO_SECTOR_ID]),
-      query(
-        `SELECT id, sector_id, name, sector, description, image, sort_order
-         FROM subsectors WHERE sector_id = $1 ORDER BY sort_order ASC, name ASC`,
-        [POTRERO_ALTO_SECTOR_ID]
-      ),
-      query(
-        `SELECT id, subsector_id, name, grade, stars, type, description, image,
-                length_meters, quickdraws, equipped_by, equipped_date,
-                first_ascent_by, first_ascent_date, latitude, longitude, sort_order
-         FROM routes WHERE sector_id = $1 ORDER BY sort_order ASC, name ASC`,
-        [POTRERO_ALTO_SECTOR_ID]
-      )
+    const [sectorRows, subsectorsRows, routesRows] = await Promise.all([
+      selectRows('sectors', {
+        select: 'id,name,location,description',
+        id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
+        limit: '1'
+      }),
+      selectRows('subsectors', {
+        select: 'id,sector_id,name,sector,description,image,sort_order',
+        sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
+        order: 'sort_order.asc,name.asc'
+      }),
+      selectRows('routes', {
+        select:
+          'id,subsector_id,name,grade,stars,type,description,image,length_meters,quickdraws,equipped_by,equipped_date,first_ascent_by,first_ascent_date,latitude,longitude,sort_order',
+        sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
+        order: 'sort_order.asc,name.asc'
+      })
     ]);
 
-    const sector = sectorResult.rows[0] ?? {
+    const sector = sectorRows?.[0] ?? {
       id: POTRERO_ALTO_SECTOR_ID,
       name: 'Potrero Alto',
       location: 'San Luis, Argentina',
@@ -85,7 +88,7 @@ export async function GET(request) {
       name: sector.name,
       location: sector.location,
       description: sector.description,
-      subsectors: mapSubsectorRows(subsectorsResult.rows, routesResult.rows)
+      subsectors: mapSubsectorRows(subsectorsRows ?? [], routesRows ?? [])
     });
   } catch (error) {
     return NextResponse.json(
@@ -106,67 +109,62 @@ export async function POST(request) {
     const body = await request.json();
     const subsectors = sanitizeSubsectors(body?.subsectors);
 
-    await withTransaction(async (client) => {
-      await client.query(
-        `INSERT INTO sectors (id, name, location, description)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (id)
-         DO UPDATE SET name = EXCLUDED.name, location = EXCLUDED.location, description = EXCLUDED.description`,
-        [POTRERO_ALTO_SECTOR_ID, body?.name || 'Potrero Alto', body?.location || 'San Luis, Argentina', body?.description || '']
-      );
-
-      await client.query('DELETE FROM routes WHERE sector_id = $1', [POTRERO_ALTO_SECTOR_ID]);
-      await client.query('DELETE FROM subsectors WHERE sector_id = $1', [POTRERO_ALTO_SECTOR_ID]);
-
-      for (const subsector of subsectors) {
-        await client.query(
-          `INSERT INTO subsectors (id, sector_id, name, sector, description, image, sort_order)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [
-            subsector.id,
-            POTRERO_ALTO_SECTOR_ID,
-            subsector.name,
-            subsector.sector,
-            subsector.description,
-            subsector.image,
-            subsector.sortOrder
-          ]
-        );
-
-        for (const route of subsector.routes) {
-          await client.query(
-            `INSERT INTO routes (
-              id, sector_id, subsector_id, name, grade, stars, type, description, image,
-              length_meters, quickdraws, equipped_by, equipped_date,
-              first_ascent_by, first_ascent_date, latitude, longitude, sort_order
-            ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9,
-              $10, $11, $12, $13, $14, $15, $16, $17, $18
-            )`,
-            [
-              route.id,
-              POTRERO_ALTO_SECTOR_ID,
-              subsector.id,
-              route.name,
-              route.grade,
-              route.stars,
-              route.type,
-              route.description,
-              route.image,
-              route.lengthMeters,
-              route.quickdraws,
-              route.equippedBy,
-              route.equippedDate,
-              route.firstAscentBy,
-              route.firstAscentDate,
-              route.latitude,
-              route.longitude,
-              route.sortOrder
-            ]
-          );
+    await upsertRows(
+      'sectors',
+      [
+        {
+          id: POTRERO_ALTO_SECTOR_ID,
+          name: body?.name || 'Potrero Alto',
+          location: body?.location || 'San Luis, Argentina',
+          description: body?.description || ''
         }
-      }
-    });
+      ],
+      { onConflict: 'id' }
+    );
+
+    await deleteRows('routes', { sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
+    await deleteRows('subsectors', { sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
+
+    const subsectorPayload = subsectors.map((subsector) => ({
+      id: subsector.id,
+      sector_id: POTRERO_ALTO_SECTOR_ID,
+      name: subsector.name,
+      sector: subsector.sector,
+      description: subsector.description,
+      image: subsector.image,
+      sort_order: subsector.sortOrder
+    }));
+
+    if (subsectorPayload.length) {
+      await upsertRows('subsectors', subsectorPayload, { onConflict: 'id' });
+    }
+
+    const routesPayload = subsectors.flatMap((subsector) =>
+      subsector.routes.map((route) => ({
+        id: route.id,
+        sector_id: POTRERO_ALTO_SECTOR_ID,
+        subsector_id: subsector.id,
+        name: route.name,
+        grade: route.grade,
+        stars: route.stars,
+        type: route.type,
+        description: route.description,
+        image: route.image,
+        length_meters: route.lengthMeters,
+        quickdraws: route.quickdraws,
+        equipped_by: route.equippedBy,
+        equipped_date: route.equippedDate,
+        first_ascent_by: route.firstAscentBy,
+        first_ascent_date: route.firstAscentDate,
+        latitude: route.latitude,
+        longitude: route.longitude,
+        sort_order: route.sortOrder
+      }))
+    );
+
+    if (routesPayload.length) {
+      await upsertRows('routes', routesPayload, { onConflict: 'id' });
+    }
 
     return NextResponse.json({ ok: true, subsectorCount: subsectors.length });
   } catch (error) {
