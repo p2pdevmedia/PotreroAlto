@@ -338,7 +338,7 @@ export const POTRERO_ALTO_FALLBACK_DATA = {
       "routes": [
         {
           "id": "derrumbe-1",
-          "name": "MatematicamenteposibleChipped",
+          "name": "Matematicamenteposible",
           "grade": "7b+/c",
           "stars": 2,
           "type": "Sport",
