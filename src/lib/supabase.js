@@ -1,7 +1,13 @@
-import { lookup as dnsLookup } from 'node:dns';
+import { lookup as dnsLookup, setDefaultResultOrder } from 'node:dns';
 import { Pool } from 'pg';
 
 const globalForDb = globalThis;
+try {
+  setDefaultResultOrder('ipv4first');
+} catch {
+  // No-op en runtimes que no soportan cambiar el orden de DNS.
+}
+
 
 function normalizeHost(rawHost) {
   const value = String(rawHost ?? '').trim();
