@@ -238,7 +238,13 @@ function subsectorCover(subsector) {
   return '/images/tablero.jpeg';
 }
 
-export default function SubsectorAccordion({ subsectors = [], locale = 'es', gradeSystem = 'french' }) {
+export default function SubsectorAccordion({
+  subsectors = [],
+  locale = 'es',
+  gradeSystem = 'french',
+  initialSubsectorSlug = null,
+  initialRouteSlug = null
+}) {
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
 
@@ -251,6 +257,33 @@ export default function SubsectorAccordion({ subsectors = [], locale = 'es', gra
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
     [selectedSubsectorId, subsectors]
   );
+
+  useEffect(() => {
+    if (!initialSubsectorSlug || !subsectors.length) {
+      return;
+    }
+
+    const matchingSubsector = subsectors.find(
+      (subsector) => slugifySegment(subsector.name, 'subsector') === initialSubsectorSlug
+    );
+
+    if (!matchingSubsector) {
+      return;
+    }
+
+    setSelectedSubsectorId(matchingSubsector.id);
+
+    if (!initialRouteSlug) {
+      return;
+    }
+
+    const matchingRoute = matchingSubsector.routes.find((route) => {
+      const routeSlug = slugifySegment(route.name, 'ruta');
+      return routeSlug === initialRouteSlug && Boolean(routeImage(route));
+    });
+
+    setSelectedRoute(matchingRoute ?? null);
+  }, [initialRouteSlug, initialSubsectorSlug, subsectors]);
 
   useEffect(() => {
     if (!selectedSubsector && !selectedRoute) {

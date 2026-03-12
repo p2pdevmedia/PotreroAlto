@@ -101,7 +101,7 @@ function starToEmoji(stars) {
   return ratingScale.slice(0, totalIcons).reverse().join('');
 }
 
-export default function HomeContent({ data, error }) {
+export default function HomeContent({ data, error, initialSubsectorSlug = null, initialRouteSlug = null }) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
   const [selectedGradeBucket, setSelectedGradeBucket] = useState(null);
@@ -362,7 +362,13 @@ export default function HomeContent({ data, error }) {
                 gradeSystem={gradeSystem}
                 onGradeSelect={setSelectedGradeBucket}
               />
-              <SubsectorAccordion subsectors={data.subsectors} locale={locale} gradeSystem={gradeSystem} />
+              <SubsectorAccordion
+                subsectors={data.subsectors}
+                locale={locale}
+                gradeSystem={gradeSystem}
+                initialSubsectorSlug={initialSubsectorSlug}
+                initialRouteSlug={initialRouteSlug}
+              />
             </section>
           )}
         </>
