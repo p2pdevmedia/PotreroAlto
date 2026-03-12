@@ -1,6 +1,6 @@
 import { getBucketGradeLabel, t } from '@/lib/i18n';
 
-const GRADE_BUCKETS = ['5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c'];
+export const GRADE_BUCKETS = ['5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c'];
 
 const DIFFICULTY_COLOR_STOPS = [
   { stop: 0, color: '34 197 94' }, // verde: muy fácil
@@ -42,7 +42,7 @@ function getDifficultyColor(gradeIndex) {
   return `rgb(${interpolatedColor.join(' ')})`;
 }
 
-function normalizeGrade(grade) {
+export function normalizeGrade(grade) {
   if (!grade) {
     return null;
   }

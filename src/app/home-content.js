@@ -5,8 +5,8 @@ import { useWallet } from '@/app/wallet-provider';
 import Image from 'next/image';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
-import GradeDistributionChart from '@/app/grade-distribution-chart';
-import { convertGrade, detectPreferredLocale, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
+import GradeDistributionChart, { GRADE_BUCKETS, normalizeGrade } from '@/app/grade-distribution-chart';
+import { convertGrade, detectPreferredLocale, getBucketGradeLabel, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
 
 const GRADE_CONVERSION_ROWS = [
   ['V+', '5.9', 'VI-', '17'],
@@ -79,6 +79,21 @@ function buildRoutePath(subsectorName, routeName) {
   return `/sector/${sectorSlug}/ruta/${routeSlug}`;
 }
 
+function gradeBucketToSlug(gradeBucket) {
+  return String(gradeBucket ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/\//g, '-slash-')
+    .replace(/\+/g, '-plus')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function gradeBucketFromSlug(gradeSlug) {
+  return GRADE_BUCKETS.find((gradeBucket) => gradeBucketToSlug(gradeBucket) === gradeSlug) ?? null;
+}
+
 function ratingIconCount(stars) {
   const numericStars = Number.parseFloat(stars);
 
@@ -101,7 +116,13 @@ function starToEmoji(stars) {
   return ratingScale.slice(0, totalIcons).reverse().join('');
 }
 
-export default function HomeContent({ data, error, initialSubsectorSlug = null, initialRouteSlug = null }) {
+export default function HomeContent({
+  data,
+  error,
+  initialSubsectorSlug = null,
+  initialRouteSlug = null,
+  initialGradeSlug = null
+}) {
   const [activeSection, setActiveSection] = useState('inicio');
   const [isSectorMapOpen, setIsSectorMapOpen] = useState(false);
   const [selectedGradeBucket, setSelectedGradeBucket] = useState(null);
@@ -116,6 +137,7 @@ export default function HomeContent({ data, error, initialSubsectorSlug = null, 
   const gradeRouteStatePushedRef = useRef(false);
   const selectedGradeBucketRef = useRef(null);
   const selectedGradeRouteRef = useRef(null);
+  const initialGradeAppliedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -257,7 +279,10 @@ export default function HomeContent({ data, error, initialSubsectorSlug = null, 
     }
 
     if (selectedGradeBucket && !gradeBucketStatePushedRef.current) {
-      window.history.pushState({ potreroOverlay: 'grade-bucket' }, '', '/grados');
+      const gradeSlug = gradeBucketToSlug(selectedGradeBucket.gradeBucket);
+      const gradePath = gradeSlug ? `/grados/${gradeSlug}` : '/grados';
+
+      window.history.pushState({ potreroOverlay: 'grade-bucket' }, '', gradePath);
       gradeBucketStatePushedRef.current = true;
     }
 
@@ -288,6 +313,32 @@ export default function HomeContent({ data, error, initialSubsectorSlug = null, 
   const allRoutesWithSubsector = (data?.subsectors ?? []).flatMap((subsector) =>
     (subsector.routes ?? []).map((route) => ({ ...route, subsectorName: subsector.name }))
   );
+
+  useEffect(() => {
+    if (!initialGradeSlug || initialGradeAppliedRef.current) {
+      return;
+    }
+
+    const gradeBucket = gradeBucketFromSlug(initialGradeSlug);
+
+    if (!gradeBucket) {
+      return;
+    }
+
+    const routesInBucket = allRoutesWithSubsector.filter((route) => normalizeGrade(route.grade) === gradeBucket);
+
+    if (!routesInBucket.length) {
+      return;
+    }
+
+    setSelectedGradeBucket({
+      gradeBucket,
+      gradeLabel: getBucketGradeLabel(gradeBucket, gradeSystem),
+      routes: routesInBucket
+    });
+
+    initialGradeAppliedRef.current = true;
+  }, [allRoutesWithSubsector, gradeSystem, initialGradeSlug]);
 
   const checkIfUserIsNearSector = () => {
     if (typeof window === 'undefined' || !window.navigator?.geolocation) {
