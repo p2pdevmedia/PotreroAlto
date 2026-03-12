@@ -22,7 +22,7 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
     '/images/derrumbe.jpeg'
 };
 
-function slugifySegment(value, fallback = 'item') {
+function slugifySegment(value, defaultValue = 'item') {
   const normalized = String(value ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -30,7 +30,7 @@ function slugifySegment(value, fallback = 'item') {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-  return normalized || fallback;
+  return normalized || defaultValue;
 }
 
 function buildSubsectorPath(subsectorName) {

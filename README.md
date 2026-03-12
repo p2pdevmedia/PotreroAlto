@@ -35,15 +35,10 @@ La app usa la REST API de Supabase (`/rest/v1`) con esas variables para lecturas
 
 1. Abrí Supabase SQL Editor.
 2. Ejecutá `db/schema.sql` para crear tablas e índices.
-3. Ejecutá `db/seed.sql` para migrar toda la información existente (generada desde `src/lib/fallback-subsectors.js`).
+3. Ejecutá `db/seed.sql` para cargar la base inicial en Supabase.
 4. Ejecutá `db/migrations/001_privy_auth_schema.sql` para habilitar login con Privy (wallets + redes sociales).
 5. Ejecutá `db/migrations/002_seed_privy_user.sql` para crear un usuario inicial de ejemplo.
 
-También podés regenerar el seed con:
-
-```bash
-node scripts/generate-supabase-seed-sql.mjs
-```
 
 ## Modelo de datos
 
@@ -53,10 +48,10 @@ node scripts/generate-supabase-seed-sql.mjs
 
 ## Notas
 
-- La lectura principal está en `src/lib/thecrag.js` (ahora conectado a Supabase).
+- La lectura principal está en `src/lib/potrero-alto-data.js` (conectado a Supabase).
 - Cliente REST de Supabase en `src/lib/supabase.js`.
 - Mapeo de modelos en `src/lib/supabase-models.js`.
-- Edición admin usa `/api/admin/fallback` por compatibilidad de frontend, pero persiste en Supabase.
+- Edición admin usa `/api/admin/database` y persiste en Supabase.
 
 
 ## Login con Privy (wallet + social)

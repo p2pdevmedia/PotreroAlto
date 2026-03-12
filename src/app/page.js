@@ -1,4 +1,4 @@
-import { getPotreroAltoData } from '@/lib/thecrag';
+import { getPotreroAltoData } from '@/lib/potrero-alto-data';
 import HomeContent from '@/app/home-content';
 
 export default async function HomePage() {

@@ -32,7 +32,7 @@ function routeSectorFromSubsectorId(subsectorId) {
     return 'subsector';
   }
 
-  return String(subsectorId).replace(/^(fallback-|subsector-)/, '') || 'subsector';
+  return String(subsectorId).replace(/^(subsector-)/, '') || 'subsector';
 }
 
 function splitRouteId(routeId, defaultRouteSector) {
@@ -41,22 +41,22 @@ function splitRouteId(routeId, defaultRouteSector) {
 
   if (matched) {
     return {
-      fallbackSector: matched[1] || defaultRouteSector,
+      routeSector: matched[1] || defaultRouteSector,
       routeNumber: matched[2]
     };
   }
 
   return {
-    fallbackSector: normalized || defaultRouteSector,
+    routeSector: normalized || defaultRouteSector,
     routeNumber: ''
   };
 }
 
-function buildRouteId(fallbackSector, routeNumber) {
-  const normalizedFallbackSector = String(fallbackSector ?? '').trim() || 'subsector';
+function buildRouteId(routeSector, routeNumber) {
+  const normalizedRouteSector = String(routeSector ?? '').trim() || 'subsector';
   const normalizedRouteNumber = String(routeNumber ?? '').replace(/\D/g, '');
 
-  return normalizedRouteNumber ? `${normalizedFallbackSector}-${normalizedRouteNumber}` : normalizedFallbackSector;
+  return normalizedRouteNumber ? `${normalizedRouteSector}-${normalizedRouteNumber}` : normalizedRouteSector;
 }
 
 function normalizeCoordinate(value) {
@@ -228,8 +228,8 @@ export default function AdminEditor() {
   };
 
   const updateRouteIdPart = (subsectorId, routeId, field, value) => {
-    const defaultFallbackSector = routeSectorFromSubsectorId(subsectorId);
-    const partKey = field === 'fallbackSector' ? 'fallbackSector' : 'routeNumber';
+    const defaultRouteSector = routeSectorFromSubsectorId(subsectorId);
+    const partKey = field === 'routeSector' ? 'routeSector' : 'routeNumber';
 
     setSubsectors((current) =>
       current.map((subsector) => {
@@ -244,7 +244,7 @@ export default function AdminEditor() {
               return route;
             }
 
-            const currentParts = splitRouteId(route.id, defaultFallbackSector);
+            const currentParts = splitRouteId(route.id, defaultRouteSector);
             const nextParts = {
               ...currentParts,
               [partKey]: value
@@ -252,7 +252,7 @@ export default function AdminEditor() {
 
             return {
               ...route,
-              id: buildRouteId(nextParts.fallbackSector, nextParts.routeNumber)
+              id: buildRouteId(nextParts.routeSector, nextParts.routeNumber)
             };
           })
         };
@@ -556,18 +556,18 @@ export default function AdminEditor() {
                         })()}
                         <div className="mb-2 grid gap-2 md:grid-cols-4">
                           {(() => {
-                            const defaultFallbackSector = routeSectorFromSubsectorId(selectedSubsector.id);
-                            const routeIdParts = splitRouteId(route.id, defaultFallbackSector);
+                            const defaultRouteSector = routeSectorFromSubsectorId(selectedSubsector.id);
+                            const routeIdParts = splitRouteId(route.id, defaultRouteSector);
                             const routeIdFallbackOptions = Array.from(
-                              new Set([...routeSectorOptions, defaultFallbackSector, routeIdParts.fallbackSector].filter(Boolean))
+                              new Set([...routeSectorOptions, defaultRouteSector, routeIdParts.routeSector].filter(Boolean))
                             );
 
                             return (
                               <>
                                 <select
-                                  value={routeIdParts.fallbackSector}
+                                  value={routeIdParts.routeSector}
                                   onChange={(event) =>
-                                    updateRouteIdPart(selectedSubsector.id, route.id, 'fallbackSector', event.target.value)
+                                    updateRouteIdPart(selectedSubsector.id, route.id, 'routeSector', event.target.value)
                                   }
                                   className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100"
                                 >
