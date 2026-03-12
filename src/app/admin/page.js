@@ -1,4 +1,4 @@
-import AdminEditor from '@/app/admin/admin-editor';
+import AdminHome from '@/app/admin/admin-home';
 
 export const metadata = {
   title: 'Admin | Potrero Alto',
@@ -12,5 +12,5 @@ export const metadata = {
 };
 
 export default function AdminPage() {
-  return <AdminEditor />;
+  return <AdminHome />;
 }
