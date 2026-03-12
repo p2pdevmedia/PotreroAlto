@@ -12,5 +12,5 @@ export const metadata = {
 };
 
 export default function AdminPage() {
-  return <AdminEditor />;
+  return <AdminEditor view="subsectors" />;
 }

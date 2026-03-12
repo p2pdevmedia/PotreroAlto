@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 function createId(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
@@ -26,6 +27,12 @@ const EMPTY_ROUTE = {
 
 const ROUTE_TYPE_OPTIONS = ['Sport', 'Trad', 'Boulder', 'Proyecto'];
 const STAR_OPTIONS = ['', '0', '1', '2', '3', '4', '5'];
+
+const DEFAULT_SECTOR_INFO = {
+  name: 'Potrero Alto',
+  location: 'San Luis, Argentina',
+  description: ''
+};
 
 function routeSectorFromSubsectorId(subsectorId) {
   if (!subsectorId) {
@@ -61,30 +68,18 @@ function buildRouteId(routeSector, routeNumber) {
 
 function normalizeCoordinate(value) {
   const parsed = Number.parseFloat(String(value ?? '').replace(',', '.').trim());
-
-  if (!Number.isFinite(parsed)) {
-    return null;
-  }
-
-  return parsed;
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function buildGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
-const DEFAULT_SECTOR_INFO = {
-  name: 'Potrero Alto',
-  location: 'San Luis, Argentina',
-  description: ''
-};
-
-export default function AdminEditor() {
+export default function AdminEditor({ view = 'subsectors', subsectorId = null, routeId = null }) {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [subsectors, setSubsectors] = useState([]);
   const [sectorInfo, setSectorInfo] = useState(DEFAULT_SECTOR_INFO);
-  const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -92,96 +87,93 @@ export default function AdminEditor() {
   const [lastSaveResult, setLastSaveResult] = useState('idle');
   const [locatingRouteId, setLocatingRouteId] = useState('');
 
-  const selectedSubsector = useMemo(
-    () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
-    [selectedSubsectorId, subsectors]
-  );
-
-  const sectorOptions = useMemo(() => {
-    const options = Array.from(new Set(subsectors.map((subsector) => String(subsector.sector ?? '').trim()).filter(Boolean)));
-
-    if (!options.length) {
-      return ['Potrero Alto'];
-    }
-
-    return options;
-  }, [subsectors]);
-
-  const routeSectorOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(subsectors.map((subsector) => routeSectorFromSubsectorId(subsector.id)).filter(Boolean))
-      ),
-    [subsectors]
-  );
-
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
+
+  const selectedSubsector = useMemo(
+    () => subsectors.find((subsector) => subsector.id === subsectorId) ?? null,
+    [subsectorId, subsectors]
+  );
+
+  const selectedRoute = useMemo(
+    () => (selectedSubsector?.routes ?? []).find((route) => route.id === routeId) ?? null,
+    [routeId, selectedSubsector]
+  );
+
   const hasFeedback = Boolean(error || message);
 
   const saveButtonLabel = useMemo(() => {
-    if (saving) {
-      return 'Guardando...';
-    }
-
-    if (lastSaveResult === 'success') {
-      return 'Guardado con éxito ✅';
-    }
-
-    if (lastSaveResult === 'error') {
-      return 'Error al guardar ❌';
-    }
-
+    if (saving) return 'Guardando...';
+    if (lastSaveResult === 'success') return 'Guardado con éxito ✅';
+    if (lastSaveResult === 'error') return 'Error al guardar ❌';
     return 'Guardar cambios';
   }, [lastSaveResult, saving]);
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
+  const login = useCallback(async (rawPassword) => {
+    const candidate = rawPassword ?? password;
+    if (!candidate) {
+      return;
+    }
+
     setError('');
     setMessage('');
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/database', { headers: authHeaders });
+      const response = await fetch('/api/admin/database', {
+        headers: { 'x-admin-password': candidate }
+      });
       const payload = await response.json();
 
       if (!response.ok) {
         throw new Error(payload?.error ?? 'No se pudo validar el password.');
       }
 
-      const nextSubsectors = Array.isArray(payload.subsectors) ? payload.subsectors : [];
+      setPassword(candidate);
       setSectorInfo({
         name: payload?.name || DEFAULT_SECTOR_INFO.name,
         location: payload?.location || DEFAULT_SECTOR_INFO.location,
         description: payload?.description || ''
       });
-      setSubsectors(nextSubsectors);
-      setSelectedSubsectorId(nextSubsectors[0]?.id ?? null);
+      setSubsectors(Array.isArray(payload.subsectors) ? payload.subsectors : []);
       setAuthenticated(true);
       setLastSaveResult('idle');
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem('potrero-admin-password', candidate);
+      }
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : 'Error desconocido de autenticación.');
       setAuthenticated(false);
     } finally {
       setLoading(false);
     }
-  };
+  }, [password]);
 
-  const updateSubsector = (subsectorId, field, value) => {
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const savedPassword = window.sessionStorage.getItem('potrero-admin-password');
+    if (savedPassword) {
+      setPassword(savedPassword);
+      login(savedPassword);
+    }
+  }, [login]);
+
+  const updateSubsector = (currentSubsectorId, field, value) => {
     setSubsectors((current) =>
-      current.map((subsector) => (subsector.id === subsectorId ? { ...subsector, [field]: value } : subsector))
+      current.map((subsector) => (subsector.id === currentSubsectorId ? { ...subsector, [field]: value } : subsector))
     );
   };
 
-  const updateRoute = (subsectorId, routeId, field, value) => {
+  const updateRoute = (currentSubsectorId, currentRouteId, field, value) => {
     setSubsectors((current) =>
       current.map((subsector) => {
-        if (subsector.id !== subsectorId) {
-          return subsector;
-        }
+        if (subsector.id !== currentSubsectorId) return subsector;
 
         return {
           ...subsector,
-          routes: (subsector.routes ?? []).map((route) => (route.id === routeId ? { ...route, [field]: value } : route))
+          routes: (subsector.routes ?? []).map((route) => (route.id === currentRouteId ? { ...route, [field]: value } : route))
         };
       })
     );
@@ -189,88 +181,71 @@ export default function AdminEditor() {
 
   const addSubsector = () => {
     const id = createId('subsector');
-    const next = {
-      id,
-      name: 'Nuevo subsector',
-      sector: 'Potrero Alto',
-      description: '',
-      image: '',
-      routes: []
-    };
-
-    setSubsectors((current) => [...current, next]);
-    setSelectedSubsectorId(id);
+    setSubsectors((current) => [
+      ...current,
+      { id, name: 'Nuevo subsector', sector: 'Potrero Alto', description: '', image: '', routes: [] }
+    ]);
+    setMessage('Subsector creado. Completá sus datos y guardá cambios.');
   };
 
-  const removeSubsector = (subsectorId) => {
-    setSubsectors((current) => current.filter((subsector) => subsector.id !== subsectorId));
-
-    if (selectedSubsectorId === subsectorId) {
-      const remaining = subsectors.filter((subsector) => subsector.id !== subsectorId);
-      setSelectedSubsectorId(remaining[0]?.id ?? null);
-    }
+  const removeSubsector = (currentSubsectorId) => {
+    setSubsectors((current) => current.filter((subsector) => subsector.id !== currentSubsectorId));
+    setMessage('Subsector eliminado de la edición actual.');
   };
 
-  const addRoute = (subsectorId) => {
+  const addRoute = (currentSubsectorId) => {
+    const routeSector = routeSectorFromSubsectorId(currentSubsectorId);
+    const newId = `${routeSector}-${Math.max(1, (selectedSubsector?.routes ?? []).length + 1)}`;
+
     setSubsectors((current) =>
-      current.map((subsector) => {
-        if (subsector.id !== subsectorId) {
-          return subsector;
-        }
-
-        const routeSector = routeSectorFromSubsectorId(subsectorId);
-        const nextRouteNumber = String((subsector.routes ?? []).length + 1);
-        const newRoute = { ...EMPTY_ROUTE, id: buildRouteId(routeSector, nextRouteNumber) };
-
-        return { ...subsector, routes: [...(subsector.routes ?? []), newRoute] };
-      })
+      current.map((subsector) =>
+        subsector.id === currentSubsectorId
+          ? { ...subsector, routes: [...(subsector.routes ?? []), { ...EMPTY_ROUTE, id: newId, name: 'Nueva vía' }] }
+          : subsector
+      )
     );
+    setMessage('Vía agregada. Editala y guardá cambios.');
   };
 
-  const updateRouteIdPart = (subsectorId, routeId, field, value) => {
-    const defaultRouteSector = routeSectorFromSubsectorId(subsectorId);
+  const updateRouteIdPart = (currentSubsectorId, currentRouteId, field, value) => {
+    const defaultRouteSector = routeSectorFromSubsectorId(currentSubsectorId);
     const partKey = field === 'routeSector' ? 'routeSector' : 'routeNumber';
 
     setSubsectors((current) =>
       current.map((subsector) => {
-        if (subsector.id !== subsectorId) {
+        if (subsector.id !== currentSubsectorId) {
           return subsector;
         }
 
         return {
           ...subsector,
           routes: (subsector.routes ?? []).map((route) => {
-            if (route.id !== routeId) {
+            if (route.id !== currentRouteId) {
               return route;
             }
 
             const currentParts = splitRouteId(route.id, defaultRouteSector);
-            const nextParts = {
-              ...currentParts,
-              [partKey]: value
-            };
+            const nextParts = { ...currentParts, [partKey]: value };
 
-            return {
-              ...route,
-              id: buildRouteId(nextParts.routeSector, nextParts.routeNumber)
-            };
+            return { ...route, id: buildRouteId(nextParts.routeSector, nextParts.routeNumber) };
           })
         };
       })
     );
   };
 
-  const removeRoute = (subsectorId, routeId) => {
+  const removeRoute = (currentSubsectorId, currentRouteId) => {
     setSubsectors((current) =>
       current.map((subsector) =>
-        subsector.id === subsectorId
-          ? { ...subsector, routes: (subsector.routes ?? []).filter((route) => route.id !== routeId) }
+        subsector.id === currentSubsectorId
+          ? { ...subsector, routes: (subsector.routes ?? []).filter((route) => route.id !== currentRouteId) }
           : subsector
       )
     );
+    setMessage('Vía eliminada de la edición actual.');
   };
 
-  const captureRouteLocation = (subsectorId, routeId) => {
+  const captureRouteLocation = (currentSubsectorId, currentRouteId) => {
     setError('');
     setMessage('');
 
@@ -279,13 +254,12 @@ export default function AdminEditor() {
       return;
     }
 
-    setLocatingRouteId(routeId);
+    setLocatingRouteId(currentRouteId);
 
     window.navigator.geolocation.getCurrentPosition(
       (position) => {
-        const { latitude, longitude } = position.coords;
-        updateRoute(subsectorId, routeId, 'latitude', String(latitude));
-        updateRoute(subsectorId, routeId, 'longitude', String(longitude));
+        updateRoute(currentSubsectorId, currentRouteId, 'latitude', String(position.coords.latitude));
+        updateRoute(currentSubsectorId, currentRouteId, 'longitude', String(position.coords.longitude));
         setMessage('Ubicación capturada para la vía.');
         setLocatingRouteId('');
       },
@@ -293,11 +267,7 @@ export default function AdminEditor() {
         setError('No se pudo obtener la ubicación. Verificá permisos/GPS.');
         setLocatingRouteId('');
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 
@@ -314,10 +284,7 @@ export default function AdminEditor() {
           ...authHeaders,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...sectorInfo,
-          subsectors
-        })
+        body: JSON.stringify({ ...sectorInfo, subsectors })
       });
       const payload = await response.json();
 
@@ -325,25 +292,9 @@ export default function AdminEditor() {
         throw new Error(payload?.error ?? 'No se pudo guardar.');
       }
 
-      const refreshResponse = await fetch('/api/admin/database', { headers: authHeaders });
-      const refreshPayload = await refreshResponse.json();
-
-      if (!refreshResponse.ok) {
-        throw new Error(refreshPayload?.error ?? 'Se guardó, pero no se pudo recargar desde la base.');
-      }
-
-      const refreshedSubsectors = Array.isArray(refreshPayload.subsectors) ? refreshPayload.subsectors : [];
-      setSectorInfo({
-        name: refreshPayload?.name || DEFAULT_SECTOR_INFO.name,
-        location: refreshPayload?.location || DEFAULT_SECTOR_INFO.location,
-        description: refreshPayload?.description || ''
-      });
-      setSubsectors(refreshedSubsectors);
-      setSelectedSubsectorId((currentId) =>
-        refreshedSubsectors.some((subsector) => subsector.id === currentId) ? currentId : refreshedSubsectors[0]?.id ?? null
-      );
       setLastSaveResult('success');
       setMessage(`Guardado exitoso. Subsectores: ${payload.subsectorCount}.`);
+      await login(password);
     } catch (saveError) {
       setLastSaveResult('error');
       setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
@@ -356,375 +307,196 @@ export default function AdminEditor() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <section className="card space-y-4">
         <h1 className="text-2xl font-bold text-white">Admin de base de datos</h1>
-        <p className="text-sm text-slate-300">Entrá con password para editar subsectores y vías.</p>
+        <p className="text-sm text-slate-300">Flujo modular: Subsectores → vías → edición de vía.</p>
 
         {!authenticated ? (
-          <form onSubmit={handleLogin} className="space-y-3">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              login();
+            }}
+            className="space-y-3"
+          >
             <label className="block text-sm text-slate-200">
               Password
               <input
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sunset"
+                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
               />
             </label>
             <button
               type="submit"
               disabled={loading || !password}
-              className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-100"
             >
               {loading ? 'Validando...' : 'Entrar'}
             </button>
           </form>
         ) : (
-          <div className="space-y-4">
+          <>
+            <nav className="flex flex-wrap gap-2 text-sm">
+              <Link href="/admin" className="rounded border border-slate-600 px-3 py-1 text-slate-200">
+                Subsectores
+              </Link>
+              {selectedSubsector ? (
+                <Link href={`/admin/${selectedSubsector.id}`} className="rounded border border-slate-600 px-3 py-1 text-slate-200">
+                  Subsector actual
+                </Link>
+              ) : null}
+              {selectedSubsector && selectedRoute ? (
+                <Link
+                  href={`/admin/${selectedSubsector.id}/${selectedRoute.id}`}
+                  className="rounded border border-slate-600 px-3 py-1 text-slate-200"
+                >
+                  Vía actual
+                </Link>
+              ) : null}
+            </nav>
+
             <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={save} disabled={saving} className="rounded-lg border border-emerald-500/60 bg-emerald-700/20 px-3 py-2 text-sm font-semibold text-emerald-100">
+                {saveButtonLabel}
+              </button>
               <button type="button" onClick={addSubsector} className="rounded-lg border border-slate-600 px-3 py-2 text-sm text-slate-100">
                 + Agregar subsector
               </button>
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving}
-                className="rounded-lg border border-emerald-500/60 bg-emerald-700/20 px-3 py-2 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {saveButtonLabel}
-              </button>
             </div>
 
-            <section className="grid gap-3 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 md:grid-cols-3">
-              <label className="text-sm text-slate-200">
-                Sector (nombre)
-                <input
-                  value={sectorInfo.name}
-                  onChange={(event) => setSectorInfo((current) => ({ ...current, name: event.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                />
-              </label>
-              <label className="text-sm text-slate-200">
-                Ubicación
-                <input
-                  value={sectorInfo.location}
-                  onChange={(event) => setSectorInfo((current) => ({ ...current, location: event.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                />
-              </label>
-              <label className="text-sm text-slate-200 md:col-span-3">
-                Descripción general
-                <textarea
-                  value={sectorInfo.description}
-                  onChange={(event) => setSectorInfo((current) => ({ ...current, description: event.target.value }))}
-                  className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                />
-              </label>
-            </section>
+            {view === 'subsectors' ? (
+              <section className="space-y-4">
+                <div className="grid gap-3 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 md:grid-cols-3">
+                  <label className="text-sm text-slate-200">
+                    Sector (nombre)
+                    <input value={sectorInfo.name} onChange={(event) => setSectorInfo((current) => ({ ...current, name: event.target.value }))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                  </label>
+                  <label className="text-sm text-slate-200">
+                    Ubicación
+                    <input value={sectorInfo.location} onChange={(event) => setSectorInfo((current) => ({ ...current, location: event.target.value }))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                  </label>
+                  <label className="text-sm text-slate-200 md:col-span-3">
+                    Descripción general
+                    <textarea value={sectorInfo.description} onChange={(event) => setSectorInfo((current) => ({ ...current, description: event.target.value }))} className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                  </label>
+                </div>
 
-            {hasFeedback ? (
-              <p
-                role={error ? 'alert' : 'status'}
-                aria-live="polite"
-                className={`rounded-lg border px-3 py-2 text-sm ${
-                  error
-                    ? 'border-red-500/50 bg-red-900/20 text-red-200'
-                    : 'border-emerald-500/50 bg-emerald-900/20 text-emerald-200'
-                }`}
-              >
-                {error || message}
-              </p>
-            ) : null}
-
-            <div className="grid gap-4 md:grid-cols-[280px_1fr]">
-              <aside className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-3">
-                <h2 className="mb-2 text-sm font-semibold text-slate-200">Subsectores</h2>
-                <ul className="space-y-2">
+                <ul className="space-y-2 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
                   {subsectors.map((subsector) => (
-                    <li key={subsector.id} className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSubsectorId(subsector.id)}
-                        className={`w-full rounded-lg px-2 py-2 text-left text-sm ${
-                          selectedSubsectorId === subsector.id ? 'bg-slate-200 text-slate-900' : 'bg-slate-800/70 text-slate-100'
-                        }`}
-                      >
-                        {subsector.name || '(sin nombre)'}
-                      </button>
+                    <li key={subsector.id} className="flex items-center justify-between gap-3 rounded border border-slate-700 px-3 py-2">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-100">{subsector.name || '(sin nombre)'}</p>
+                        <p className="text-xs text-slate-400">ID: {subsector.id}</p>
+                      </div>
+                      <Link href={`/admin/${subsector.id}`} className="rounded border border-slate-500 px-3 py-1 text-xs text-slate-200">
+                        Editar subsector
+                      </Link>
                     </li>
                   ))}
                 </ul>
-              </aside>
+              </section>
+            ) : null}
 
-              {selectedSubsector ? (
+            {view === 'subsector' ? (
+              selectedSubsector ? (
                 <section className="space-y-4 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="text-sm text-slate-200">
                       ID
-                      <input
-                        value={selectedSubsector.id ?? ''}
-                        onChange={(event) => updateSubsector(selectedSubsector.id, 'id', event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100"
-                      />
-                    </label>
-                    <label className="text-sm text-slate-200">
-                      Sector
-                      <select
-                        value={selectedSubsector.sector ?? 'Potrero Alto'}
-                        onChange={(event) => updateSubsector(selectedSubsector.id, 'sector', event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                      >
-                        {sectorOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
+                      <input value={selectedSubsector.id ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'id', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100" />
                     </label>
                     <label className="text-sm text-slate-200">
                       Nombre
-                      <input
-                        value={selectedSubsector.name ?? ''}
-                        onChange={(event) => updateSubsector(selectedSubsector.id, 'name', event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                      />
+                      <input value={selectedSubsector.name ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'name', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
                     </label>
                   </div>
-
                   <label className="block text-sm text-slate-200">
                     Descripción
-                    <textarea
-                      value={selectedSubsector.description ?? ''}
-                      onChange={(event) => updateSubsector(selectedSubsector.id, 'description', event.target.value)}
-                      className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                    />
+                    <textarea value={selectedSubsector.description ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'description', event.target.value)} className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
                   </label>
-
-                  <label className="block text-sm text-slate-200">
-                    Imagen (URL)
-                    <input
-                      value={selectedSubsector.image ?? ''}
-                      onChange={(event) => updateSubsector(selectedSubsector.id, 'image', event.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                    />
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={() => removeSubsector(selectedSubsector.id)}
-                    className="rounded-lg border border-red-500/60 bg-red-700/20 px-3 py-2 text-sm font-semibold text-red-200"
-                  >
+                  <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
+                    + Agregar vía
+                  </button>
+                  <ul className="space-y-2">
+                    {(selectedSubsector.routes ?? []).map((route) => (
+                      <li key={route.id} className="flex items-center justify-between gap-3 rounded border border-slate-700 p-2">
+                        <div>
+                          <p className="text-sm text-slate-100">{route.name || '(sin nombre)'}</p>
+                          <p className="text-xs text-slate-400">{route.id}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Link href={`/admin/${selectedSubsector.id}/${route.id}`} className="rounded border border-slate-500 px-3 py-1 text-xs text-slate-200">Editar vía</Link>
+                          <button type="button" onClick={() => removeRoute(selectedSubsector.id, route.id)} className="rounded border border-red-500/60 bg-red-700/20 px-2 py-1 text-xs font-semibold text-red-200">Eliminar</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <button type="button" onClick={() => removeSubsector(selectedSubsector.id)} className="rounded-lg border border-red-500/60 bg-red-700/20 px-3 py-2 text-sm font-semibold text-red-100">
                     Eliminar subsector
                   </button>
-
-                  <div className="space-y-3 border-t border-slate-700 pt-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-slate-100">Vías</h3>
-                      <button
-                        type="button"
-                        onClick={() => addRoute(selectedSubsector.id)}
-                        className="rounded-lg border border-slate-600 px-3 py-2 text-sm text-slate-100"
-                      >
-                        + Agregar vía
-                      </button>
-                    </div>
-
-                    {(selectedSubsector.routes ?? []).map((route) => (
-                      <article key={route.id} className="rounded-xl border border-slate-700 bg-slate-950/40 p-3">
-                        {(() => {
-                          const latitude = normalizeCoordinate(route.latitude);
-                          const longitude = normalizeCoordinate(route.longitude);
-                          const hasCoordinates = latitude != null && longitude != null;
-
-                          if (!hasCoordinates) {
-                            return null;
-                          }
-
-                          return (
-                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded border border-emerald-600/40 bg-emerald-950/20 px-2 py-1.5 text-xs text-emerald-100">
-                              <span>
-                                Coordenadas cargadas: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                              </span>
-                              <a
-                                href={buildGoogleMapsUrl(latitude, longitude)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="rounded border border-emerald-500/60 bg-emerald-700/20 px-2 py-1 font-semibold"
-                              >
-                                Ver en Google Maps
-                              </a>
-                            </div>
-                          );
-                        })()}
-                        <div className="mb-2 grid gap-2 md:grid-cols-4">
-                          {(() => {
-                            const defaultRouteSector = routeSectorFromSubsectorId(selectedSubsector.id);
-                            const routeIdParts = splitRouteId(route.id, defaultRouteSector);
-                            const routeIdFallbackOptions = Array.from(
-                              new Set([...routeSectorOptions, defaultRouteSector, routeIdParts.routeSector].filter(Boolean))
-                            );
-
-                            return (
-                              <>
-                                <select
-                                  value={routeIdParts.routeSector}
-                                  onChange={(event) =>
-                                    updateRouteIdPart(selectedSubsector.id, route.id, 'routeSector', event.target.value)
-                                  }
-                                  className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100"
-                                >
-                                  {routeIdFallbackOptions.map((option) => (
-                                    <option key={option} value={option}>
-                                      {option}
-                                    </option>
-                                  ))}
-                                </select>
-                                <input
-                                  value={routeIdParts.routeNumber}
-                                  onChange={(event) =>
-                                    updateRouteIdPart(selectedSubsector.id, route.id, 'routeNumber', event.target.value)
-                                  }
-                                  placeholder="N° vía"
-                                  inputMode="numeric"
-                                  className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100"
-                                />
-                              </>
-                            );
-                          })()}
-                          <input
-                            value={route.name ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'name', event.target.value)}
-                            placeholder="Nombre"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <input
-                            value={route.grade ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'grade', event.target.value)}
-                            placeholder="Grado"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <select
-                            value={route.stars ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'stars', event.target.value)}
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          >
-                            <option value="">Stars</option>
-                            {STAR_OPTIONS.filter((option) => option !== '').map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="mb-2 grid gap-2 md:grid-cols-3">
-                          <select
-                            value={route.type ?? 'Sport'}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'type', event.target.value)}
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          >
-                            {ROUTE_TYPE_OPTIONS.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            value={route.lengthMeters ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'lengthMeters', event.target.value)}
-                            placeholder="Largo (m)"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <input
-                            value={route.quickdraws ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'quickdraws', event.target.value)}
-                            placeholder="Expreses"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                        </div>
-                        <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
-                          <input
-                            value={route.latitude ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'latitude', event.target.value)}
-                            placeholder="Latitud"
-                            inputMode="decimal"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <input
-                            value={route.longitude ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'longitude', event.target.value)}
-                            placeholder="Longitud"
-                            inputMode="decimal"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => captureRouteLocation(selectedSubsector.id, route.id)}
-                            disabled={locatingRouteId === route.id}
-                            className="rounded border border-sky-500/60 bg-sky-700/20 px-3 py-1 text-xs font-semibold text-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {locatingRouteId === route.id ? 'Ubicando...' : 'Usar mi ubicación'}
-                          </button>
-                        </div>
-                        <div className="mb-2 grid gap-2 md:grid-cols-2">
-                          <input
-                            value={route.equippedBy ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'equippedBy', event.target.value)}
-                            placeholder="Equipada por"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <input
-                            value={route.equippedDate ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'equippedDate', event.target.value)}
-                            placeholder="Fecha equipada"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                        </div>
-                        <div className="mb-2 grid gap-2 md:grid-cols-2">
-                          <input
-                            value={route.firstAscentBy ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'firstAscentBy', event.target.value)}
-                            placeholder="Primera ascensión por"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                          <input
-                            value={route.firstAscentDate ?? ''}
-                            onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'firstAscentDate', event.target.value)}
-                            placeholder="Fecha primera ascensión"
-                            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                          />
-                        </div>
-                        <input
-                          value={route.image ?? ''}
-                          onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'image', event.target.value)}
-                          placeholder="Imagen URL"
-                          className="mb-2 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                        />
-                        <textarea
-                          value={route.description ?? ''}
-                          onChange={(event) => updateRoute(selectedSubsector.id, route.id, 'description', event.target.value)}
-                          placeholder="Descripción"
-                          className="mb-2 min-h-16 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeRoute(selectedSubsector.id, route.id)}
-                          className="rounded border border-red-500/60 bg-red-700/20 px-2 py-1 text-xs font-semibold text-red-200"
-                        >
-                          Eliminar vía
-                        </button>
-                      </article>
-                    ))}
-                  </div>
                 </section>
               ) : (
-                <section className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 text-sm text-slate-300">
-                  No hay subsector seleccionado.
+                <p className="text-sm text-slate-300">Subsector no encontrado.</p>
+              )
+            ) : null}
+
+            {view === 'route' ? (
+              selectedSubsector && selectedRoute ? (
+                <section className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
+                  <h2 className="mb-3 text-lg font-semibold text-slate-100">Editar vía: {selectedRoute.name || selectedRoute.id}</h2>
+                  {(() => {
+                    const defaultRouteSector = routeSectorFromSubsectorId(selectedSubsector.id);
+                    const routeIdParts = splitRouteId(selectedRoute.id, defaultRouteSector);
+                    const latitude = normalizeCoordinate(selectedRoute.latitude);
+                    const longitude = normalizeCoordinate(selectedRoute.longitude);
+                    const hasValidCoordinates = latitude !== null && longitude !== null;
+
+                    return (
+                      <>
+                        <div className="mb-2 grid gap-2 md:grid-cols-[1fr_140px]">
+                          <input value={routeIdParts.routeSector} onChange={(event) => updateRouteIdPart(selectedSubsector.id, selectedRoute.id, 'routeSector', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                          <input value={routeIdParts.routeNumber} onChange={(event) => updateRouteIdPart(selectedSubsector.id, selectedRoute.id, 'routeNumber', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        </div>
+                        <input value={selectedRoute.name ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'name', event.target.value)} placeholder="Nombre" className="mb-2 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        <div className="mb-2 grid gap-2 md:grid-cols-4">
+                          <input value={selectedRoute.grade ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'grade', event.target.value)} placeholder="Grado" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                          <select value={selectedRoute.stars ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'stars', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
+                            {STAR_OPTIONS.map((starOption) => <option key={starOption} value={starOption}>{starOption || 'Sin estrellas'}</option>)}
+                          </select>
+                          <select value={selectedRoute.type ?? 'Sport'} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'type', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
+                            {ROUTE_TYPE_OPTIONS.map((typeOption) => <option key={typeOption} value={typeOption}>{typeOption}</option>)}
+                          </select>
+                          <input value={selectedRoute.lengthMeters ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'lengthMeters', event.target.value)} placeholder="Largo (m)" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        </div>
+                        <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                          <input value={selectedRoute.latitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'latitude', event.target.value)} placeholder="Latitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                          <input value={selectedRoute.longitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'longitude', event.target.value)} placeholder="Longitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                          <button type="button" onClick={() => captureRouteLocation(selectedSubsector.id, selectedRoute.id)} disabled={locatingRouteId === selectedRoute.id} className="rounded border border-sky-500/60 bg-sky-700/20 px-3 py-1 text-xs font-semibold text-sky-100 disabled:cursor-not-allowed disabled:opacity-60">{locatingRouteId === selectedRoute.id ? 'Ubicando...' : 'Usar mi ubicación'}</button>
+                        </div>
+                        {hasValidCoordinates ? <a href={buildGoogleMapsUrl(latitude, longitude)} target="_blank" rel="noreferrer" className="mb-2 inline-block text-xs text-sky-300 underline">Ver en Google Maps</a> : null}
+                        <textarea value={selectedRoute.description ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'description', event.target.value)} placeholder="Descripción" className="mb-2 min-h-16 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                      </>
+                    );
+                  })()}
                 </section>
-              )}
-            </div>
-          </div>
+              ) : (
+                <p className="text-sm text-slate-300">Vía no encontrada.</p>
+              )
+            ) : null}
+          </>
         )}
 
-        {!authenticated && error ? <p className="text-sm text-red-300">{error}</p> : null}
-        {!authenticated && message ? <p className="text-sm text-emerald-300">{message}</p> : null}
+        {hasFeedback ? (
+          <p
+            role={error ? 'alert' : 'status'}
+            aria-live="polite"
+            className={`rounded-lg border px-3 py-2 text-sm ${
+              error ? 'border-red-500/50 bg-red-900/20 text-red-200' : 'border-emerald-500/50 bg-emerald-900/20 text-emerald-200'
+            }`}
+          >
+            {error || message}
+          </p>
+        ) : null}
       </section>
     </main>
   );
