@@ -35,7 +35,6 @@ export async function getPotreroAltoData() {
     name: sector.name,
     location: sector.location,
     description: sector.description ?? '',
-    subsectors: mapSubsectorRows(subsectorRows ?? [], routeRows ?? []),
-    isFallback: false
+    subsectors: mapSubsectorRows(subsectorRows ?? [], routeRows ?? [])
   };
 }
