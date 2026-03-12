@@ -156,7 +156,7 @@ function buildCodexMessage(changeLines) {
   }
 
   return [
-    'Aplicá estos cambios en GitHub para src/lib/fallback-subsectors.js:',
+    'Aplicá estos cambios en Supabase (tablas subsectors/routes):',
     '',
     ...changeLines.map((line) => `- ${line}`),
     '',
