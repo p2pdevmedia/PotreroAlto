@@ -1,5 +1,6 @@
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import PWARegister from './pwa-register';
 import WalletProvider from './wallet-provider';
 
@@ -139,6 +140,7 @@ export default function RootLayout({ children }) {
         <WalletProvider>
           <PWARegister />
           <Analytics />
+          <SpeedInsights />
           {children}
         </WalletProvider>
       </body>
