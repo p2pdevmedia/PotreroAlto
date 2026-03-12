@@ -27,27 +27,27 @@ const EMPTY_ROUTE = {
 const ROUTE_TYPE_OPTIONS = ['Sport', 'Trad', 'Boulder', 'Proyecto'];
 const STAR_OPTIONS = ['', '0', '1', '2', '3', '4', '5'];
 
-function fallbackSectorFromSubsectorId(subsectorId) {
+function routeSectorFromSubsectorId(subsectorId) {
   if (!subsectorId) {
     return 'subsector';
   }
 
-  return String(subsectorId).replace(/^fallback-/, '') || 'subsector';
+  return String(subsectorId).replace(/^(fallback-|subsector-)/, '') || 'subsector';
 }
 
-function splitRouteId(routeId, defaultFallbackSector) {
+function splitRouteId(routeId, defaultRouteSector) {
   const normalized = String(routeId ?? '').trim();
   const matched = normalized.match(/^(.*?)-(\d+)$/);
 
   if (matched) {
     return {
-      fallbackSector: matched[1] || defaultFallbackSector,
+      fallbackSector: matched[1] || defaultRouteSector,
       routeNumber: matched[2]
     };
   }
 
   return {
-    fallbackSector: normalized || defaultFallbackSector,
+    fallbackSector: normalized || defaultRouteSector,
     routeNumber: ''
   };
 }
@@ -192,10 +192,10 @@ export default function AdminEditor() {
     return options;
   }, [subsectors]);
 
-  const fallbackSectorOptions = useMemo(
+  const routeSectorOptions = useMemo(
     () =>
       Array.from(
-        new Set(subsectors.map((subsector) => fallbackSectorFromSubsectorId(subsector.id)).filter(Boolean))
+        new Set(subsectors.map((subsector) => routeSectorFromSubsectorId(subsector.id)).filter(Boolean))
       ),
     [subsectors]
   );
@@ -252,7 +252,7 @@ export default function AdminEditor() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/fallback', { headers: authHeaders });
+      const response = await fetch('/api/admin/database', { headers: authHeaders });
       const payload = await response.json();
 
       if (!response.ok) {
@@ -295,7 +295,7 @@ export default function AdminEditor() {
   };
 
   const addSubsector = () => {
-    const id = createId('fallback-subsector');
+    const id = createId('subsector');
     const next = {
       id,
       name: 'Nuevo subsector',
@@ -325,9 +325,9 @@ export default function AdminEditor() {
           return subsector;
         }
 
-        const fallbackSector = fallbackSectorFromSubsectorId(subsectorId);
+        const routeSector = routeSectorFromSubsectorId(subsectorId);
         const nextRouteNumber = String((subsector.routes ?? []).length + 1);
-        const newRoute = { ...EMPTY_ROUTE, id: buildRouteId(fallbackSector, nextRouteNumber) };
+        const newRoute = { ...EMPTY_ROUTE, id: buildRouteId(routeSector, nextRouteNumber) };
 
         return { ...subsector, routes: [...(subsector.routes ?? []), newRoute] };
       })
@@ -335,7 +335,7 @@ export default function AdminEditor() {
   };
 
   const updateRouteIdPart = (subsectorId, routeId, field, value) => {
-    const defaultFallbackSector = fallbackSectorFromSubsectorId(subsectorId);
+    const defaultFallbackSector = routeSectorFromSubsectorId(subsectorId);
     const partKey = field === 'fallbackSector' ? 'fallbackSector' : 'routeNumber';
 
     setSubsectors((current) =>
@@ -414,7 +414,7 @@ export default function AdminEditor() {
     setSaving(true);
 
     try {
-      const response = await fetch('/api/admin/fallback', {
+      const response = await fetch('/api/admin/database', {
         method: 'POST',
         headers: {
           ...authHeaders,
@@ -442,7 +442,7 @@ export default function AdminEditor() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <section className="card space-y-4">
-        <h1 className="text-2xl font-bold text-white">Admin de fallback</h1>
+        <h1 className="text-2xl font-bold text-white">Admin de base de datos</h1>
         <p className="text-sm text-slate-300">Entrá con password para editar subsectores y vías.</p>
 
         {!authenticated ? (
@@ -672,10 +672,10 @@ export default function AdminEditor() {
                         })()}
                         <div className="mb-2 grid gap-2 md:grid-cols-4">
                           {(() => {
-                            const defaultFallbackSector = fallbackSectorFromSubsectorId(selectedSubsector.id);
+                            const defaultFallbackSector = routeSectorFromSubsectorId(selectedSubsector.id);
                             const routeIdParts = splitRouteId(route.id, defaultFallbackSector);
                             const routeIdFallbackOptions = Array.from(
-                              new Set([...fallbackSectorOptions, defaultFallbackSector, routeIdParts.fallbackSector].filter(Boolean))
+                              new Set([...routeSectorOptions, defaultFallbackSector, routeIdParts.fallbackSector].filter(Boolean))
                             );
 
                             return (
