@@ -25,6 +25,7 @@ Crear `.env.local` con:
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_xxx
 NEXT_PUBLIC_SITE_URL=https://tu-dominio.com
+PRIVY_APP_ID=cmmnwy43j02im0bjgnc5ndmgh
 ```
 
 La app usa la REST API de Supabase (`/rest/v1`) con esas variables para lecturas/escrituras.
@@ -85,3 +86,13 @@ Ejemplo de payload:
 ```
 
 El endpoint hace upsert automático de usuario e identidades.
+
+### Verificación automática de tokens de Privy
+
+El endpoint `POST /api/auth/privy` valida automáticamente el access token firmado por Privy cuando existe `PRIVY_APP_ID` (o `NEXT_PUBLIC_PRIVY_APP_ID`) en variables de entorno.
+
+- Header soportado: `Authorization: Bearer <access_token>` (o `x-privy-token`).
+- JWKS usado para validación de firma: `https://auth.privy.io/api/v1/apps/<PRIVY_APP_ID>/jwks.json`.
+- Además, se valida que el token pertenezca al app ID configurado y que `sub` coincida con `user.id` del payload enviado al backend.
+
+Si no configurás `PRIVY_APP_ID`, la ruta mantiene compatibilidad y no fuerza validación de token.
