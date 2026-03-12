@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 function createId(prefix) {
@@ -383,13 +384,34 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
 
                 <ul className="space-y-2 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
                   {subsectors.map((subsector) => (
-                    <li key={subsector.id} className="flex items-center justify-between gap-3 rounded border border-slate-700 px-3 py-2">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-100">{subsector.name || '(sin nombre)'}</p>
-                        <p className="text-xs text-slate-400">ID: {subsector.id}</p>
-                      </div>
-                      <Link href={`/admin/${subsector.id}`} className="rounded border border-slate-500 px-3 py-1 text-xs text-slate-200">
-                        Editar subsector
+                    <li key={subsector.id} className="rounded border border-slate-700 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
+                      <Link href={`/admin/${subsector.id}`} className="block px-3 py-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold text-slate-100">{subsector.name || '(sin nombre)'}</p>
+                            <p className="text-xs text-slate-400">ID: {subsector.id}</p>
+                            <p className="text-xs text-slate-300">Sector: {subsector.sector || 'Potrero Alto'}</p>
+                            <p className="text-xs text-slate-400">Vías cargadas: {(subsector.routes ?? []).length}</p>
+                            <p className="text-xs text-slate-300">
+                              Descripción: {subsector.description?.trim() ? subsector.description : 'Sin descripción'}
+                            </p>
+                            <p className="text-xs text-slate-400">Foto: {subsector.image?.trim() ? subsector.image : 'Sin foto'}</p>
+                          </div>
+
+                          {subsector.image?.trim() ? (
+                            <Image
+                              src={subsector.image}
+                              alt={`Foto del subsector ${subsector.name || subsector.id}`}
+                              width={112}
+                              height={112}
+                              className="h-24 w-24 rounded-lg border border-slate-600 object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-slate-600 text-[10px] text-slate-400">
+                              Sin foto
+                            </div>
+                          )}
+                        </div>
                       </Link>
                     </li>
                   ))}
@@ -419,13 +441,35 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                   </button>
                   <ul className="space-y-2">
                     {(selectedSubsector.routes ?? []).map((route) => (
-                      <li key={route.id} className="flex items-center justify-between gap-3 rounded border border-slate-700 p-2">
-                        <div>
-                          <p className="text-sm text-slate-100">{route.name || '(sin nombre)'}</p>
-                          <p className="text-xs text-slate-400">{route.id}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Link href={`/admin/${selectedSubsector.id}/${route.id}`} className="rounded border border-slate-500 px-3 py-1 text-xs text-slate-200">Editar vía</Link>
+                      <li key={route.id} className="rounded border border-slate-700 p-2 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
+                        <div className="flex items-start gap-3">
+                          <Link href={`/admin/${selectedSubsector.id}/${route.id}`} className="block flex-1 rounded px-1 py-1">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                              <div className="space-y-1">
+                                <p className="text-sm font-semibold text-slate-100">{route.name || '(sin nombre)'}</p>
+                                <p className="text-xs text-slate-400">ID: {route.id}</p>
+                                <p className="text-xs text-slate-300">Grado: {route.grade || 'Sin grado'} · Tipo: {route.type || 'Sport'} · Estrellas: {route.stars ?? 'Sin dato'}</p>
+                                <p className="text-xs text-slate-400">Largo: {route.lengthMeters ?? 'Sin dato'} m · Chapas: {route.quickdraws ?? 'Sin dato'}</p>
+                                <p className="text-xs text-slate-300">Descripción: {route.description?.trim() ? route.description : 'Sin descripción'}</p>
+                                <p className="text-xs text-slate-400">Foto: {route.image?.trim() ? route.image : 'Sin foto'}</p>
+                              </div>
+
+                              {route.image?.trim() ? (
+                                <Image
+                                  src={route.image}
+                                  alt={`Foto de la vía ${route.name || route.id}`}
+                                  width={96}
+                                  height={96}
+                                  className="h-20 w-20 rounded-lg border border-slate-600 object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-slate-600 text-[10px] text-slate-400">
+                                  Sin foto
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+
                           <button type="button" onClick={() => removeRoute(selectedSubsector.id, route.id)} className="rounded border border-red-500/60 bg-red-700/20 px-2 py-1 text-xs font-semibold text-red-200">Eliminar</button>
                         </div>
                       </li>
