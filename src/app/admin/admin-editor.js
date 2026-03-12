@@ -73,109 +73,24 @@ function buildGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
-function deepClone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
-function comparableValue(value) {
-  if (value == null) {
-    return '';
-  }
-
-  return String(value).trim();
-}
-
-function summarizeChanges(previousSubsectors, nextSubsectors) {
-  const previousMap = new Map((previousSubsectors ?? []).map((subsector) => [subsector.id, subsector]));
-  const nextMap = new Map((nextSubsectors ?? []).map((subsector) => [subsector.id, subsector]));
-  const lines = [];
-
-  nextMap.forEach((nextSubsector, subsectorId) => {
-    const previousSubsector = previousMap.get(subsectorId);
-
-    if (!previousSubsector) {
-      lines.push(`+ Subsector agregado: ${nextSubsector.name || subsectorId} (${subsectorId})`);
-      return;
-    }
-
-    if (comparableValue(previousSubsector.name) !== comparableValue(nextSubsector.name)) {
-      lines.push(`~ Subsector ${subsectorId}: nombre "${previousSubsector.name || ''}" → "${nextSubsector.name || ''}"`);
-    }
-
-    if (comparableValue(previousSubsector.description) !== comparableValue(nextSubsector.description)) {
-      lines.push(`~ Subsector ${subsectorId}: descripción actualizada`);
-    }
-
-    const previousRoutes = new Map((previousSubsector.routes ?? []).map((route) => [route.id, route]));
-    const nextRoutes = new Map((nextSubsector.routes ?? []).map((route) => [route.id, route]));
-
-    nextRoutes.forEach((nextRoute, routeId) => {
-      const previousRoute = previousRoutes.get(routeId);
-
-      if (!previousRoute) {
-        lines.push(`+ Vía agregada en ${subsectorId}: ${nextRoute.name || routeId} (${routeId})`);
-        return;
-      }
-
-      if (comparableValue(previousRoute.name) !== comparableValue(nextRoute.name)) {
-        lines.push(`~ Vía ${routeId}: nombre "${previousRoute.name || ''}" → "${nextRoute.name || ''}"`);
-      }
-
-      if (comparableValue(previousRoute.grade) !== comparableValue(nextRoute.grade)) {
-        lines.push(`~ Vía ${routeId}: grado "${previousRoute.grade || ''}" → "${nextRoute.grade || ''}"`);
-      }
-
-      if (comparableValue(previousRoute.description) !== comparableValue(nextRoute.description)) {
-        lines.push(`~ Vía ${routeId}: descripción actualizada`);
-      }
-
-      if (comparableValue(previousRoute.latitude) !== comparableValue(nextRoute.latitude) || comparableValue(previousRoute.longitude) !== comparableValue(nextRoute.longitude)) {
-        lines.push(`~ Vía ${routeId}: coordenadas actualizadas`);
-      }
-    });
-
-    previousRoutes.forEach((previousRoute, routeId) => {
-      if (!nextRoutes.has(routeId)) {
-        lines.push(`- Vía eliminada en ${subsectorId}: ${previousRoute.name || routeId} (${routeId})`);
-      }
-    });
-  });
-
-  previousMap.forEach((previousSubsector, subsectorId) => {
-    if (!nextMap.has(subsectorId)) {
-      lines.push(`- Subsector eliminado: ${previousSubsector.name || subsectorId} (${subsectorId})`);
-    }
-  });
-
-  return lines;
-}
-
-function buildCodexMessage(changeLines) {
-  if (!changeLines.length) {
-    return '';
-  }
-
-  return [
-    'Aplicá estos cambios en Supabase (tablas subsectors/routes):',
-    '',
-    ...changeLines.map((line) => `- ${line}`),
-    '',
-    'Asegurate de mantener el formato del archivo y actualizar solo los subsectores/vías listados.'
-  ].join('\n');
-}
+const DEFAULT_SECTOR_INFO = {
+  name: 'Potrero Alto',
+  location: 'San Luis, Argentina',
+  description: ''
+};
 
 export default function AdminEditor() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [subsectors, setSubsectors] = useState([]);
-  const [originalSubsectors, setOriginalSubsectors] = useState([]);
+  const [sectorInfo, setSectorInfo] = useState(DEFAULT_SECTOR_INFO);
   const [selectedSubsectorId, setSelectedSubsectorId] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [lastSaveResult, setLastSaveResult] = useState('idle');
   const [locatingRouteId, setLocatingRouteId] = useState('');
-  const [codexMessage, setCodexMessage] = useState('');
 
   const selectedSubsector = useMemo(
     () => subsectors.find((subsector) => subsector.id === selectedSubsectorId) ?? null,
@@ -202,48 +117,22 @@ export default function AdminEditor() {
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
   const hasFeedback = Boolean(error || message);
-  const pendingChangeLines = useMemo(
-    () => summarizeChanges(originalSubsectors, subsectors),
-    [originalSubsectors, subsectors]
-  );
-  const generatedCodexMessage = useMemo(() => buildCodexMessage(pendingChangeLines), [pendingChangeLines]);
 
-  const copyTextToClipboard = async (textToCopy, successMessage) => {
-    if (!textToCopy) {
-      setError('No hay mensaje para copiar todavía.');
-      return;
+  const saveButtonLabel = useMemo(() => {
+    if (saving) {
+      return 'Guardando...';
     }
 
-    if (typeof window === 'undefined' || !window.navigator?.clipboard) {
-      setError('No se pudo copiar automáticamente. Copiá el texto manualmente.');
-      return;
+    if (lastSaveResult === 'success') {
+      return 'Guardado con éxito ✅';
     }
 
-    try {
-      await window.navigator.clipboard.writeText(textToCopy);
-      setError('');
-      setMessage(successMessage);
-    } catch {
-      setError('No se pudo acceder al portapapeles. Probá nuevamente.');
-    }
-  };
-
-  const openCodexWithMessage = async (textToSend) => {
-    if (!textToSend) {
-      setError('No hay cambios pendientes para enviar a Codex.');
-      return;
+    if (lastSaveResult === 'error') {
+      return 'Error al guardar ❌';
     }
 
-    await copyTextToClipboard(textToSend, 'Mensaje para Codex copiado al portapapeles.');
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const codexUrl = `https://chatgpt.com/?hints=codex&prompt=${encodeURIComponent(textToSend)}`;
-    window.open(codexUrl, '_blank', 'noopener,noreferrer');
-    setMessage('Abrí Codex en una nueva pestaña con el mensaje listo para pegar/enviar.');
-  };
+    return 'Guardar cambios';
+  }, [lastSaveResult, saving]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -260,11 +149,15 @@ export default function AdminEditor() {
       }
 
       const nextSubsectors = Array.isArray(payload.subsectors) ? payload.subsectors : [];
+      setSectorInfo({
+        name: payload?.name || DEFAULT_SECTOR_INFO.name,
+        location: payload?.location || DEFAULT_SECTOR_INFO.location,
+        description: payload?.description || ''
+      });
       setSubsectors(nextSubsectors);
-      setOriginalSubsectors(deepClone(nextSubsectors));
-      setCodexMessage('');
       setSelectedSubsectorId(nextSubsectors[0]?.id ?? null);
       setAuthenticated(true);
+      setLastSaveResult('idle');
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : 'Error desconocido de autenticación.');
       setAuthenticated(false);
@@ -412,6 +305,7 @@ export default function AdminEditor() {
     setError('');
     setMessage('');
     setSaving(true);
+    setLastSaveResult('idle');
 
     try {
       const response = await fetch('/api/admin/database', {
@@ -420,7 +314,10 @@ export default function AdminEditor() {
           ...authHeaders,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ subsectors })
+        body: JSON.stringify({
+          ...sectorInfo,
+          subsectors
+        })
       });
       const payload = await response.json();
 
@@ -428,11 +325,27 @@ export default function AdminEditor() {
         throw new Error(payload?.error ?? 'No se pudo guardar.');
       }
 
-      const nextCodexMessage = generatedCodexMessage;
-      setCodexMessage(nextCodexMessage);
-      setOriginalSubsectors(deepClone(subsectors));
+      const refreshResponse = await fetch('/api/admin/database', { headers: authHeaders });
+      const refreshPayload = await refreshResponse.json();
+
+      if (!refreshResponse.ok) {
+        throw new Error(refreshPayload?.error ?? 'Se guardó, pero no se pudo recargar desde la base.');
+      }
+
+      const refreshedSubsectors = Array.isArray(refreshPayload.subsectors) ? refreshPayload.subsectors : [];
+      setSectorInfo({
+        name: refreshPayload?.name || DEFAULT_SECTOR_INFO.name,
+        location: refreshPayload?.location || DEFAULT_SECTOR_INFO.location,
+        description: refreshPayload?.description || ''
+      });
+      setSubsectors(refreshedSubsectors);
+      setSelectedSubsectorId((currentId) =>
+        refreshedSubsectors.some((subsector) => subsector.id === currentId) ? currentId : refreshedSubsectors[0]?.id ?? null
+      );
+      setLastSaveResult('success');
       setMessage(`Guardado exitoso. Subsectores: ${payload.subsectorCount}.`);
     } catch (saveError) {
+      setLastSaveResult('error');
       setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
     } finally {
       setSaving(false);
@@ -476,65 +389,36 @@ export default function AdminEditor() {
                 disabled={saving}
                 className="rounded-lg border border-emerald-500/60 bg-emerald-700/20 px-3 py-2 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {saving ? 'Guardando...' : 'Guardar cambios'}
+                {saveButtonLabel}
               </button>
             </div>
 
-            <section className="space-y-2 rounded-xl border border-slate-700/70 bg-slate-900/50 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-slate-100">Diferencia antes de guardar</h2>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => copyTextToClipboard(generatedCodexMessage, 'Diferencias copiadas al portapapeles.')}
-                    disabled={!generatedCodexMessage}
-                    aria-label="Copiar diferencias"
-                    title="Copiar diferencias"
-                    className="rounded border border-slate-500 px-2 py-1 text-xs text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    📋
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openCodexWithMessage(generatedCodexMessage)}
-                    disabled={!generatedCodexMessage}
-                    className="rounded border border-cyan-400/70 bg-cyan-700/20 px-3 py-1 text-xs font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Enviar a Codex
-                  </button>
-                </div>
-              </div>
-              {pendingChangeLines.length ? (
-                <ul className="max-h-44 list-disc space-y-1 overflow-auto pl-5 text-xs text-slate-300">
-                  {pendingChangeLines.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-slate-400">Sin cambios pendientes.</p>
-              )}
-            </section>
-
-            {codexMessage ? (
-              <section className="space-y-2 rounded-xl border border-emerald-500/40 bg-emerald-900/10 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-emerald-100">Mensaje para Codex</h2>
-                  <button
-                    type="button"
-                    onClick={() => copyTextToClipboard(codexMessage, 'Mensaje para Codex copiado al portapapeles.')}
-                    className="rounded border border-emerald-400/60 px-3 py-1 text-xs font-semibold text-emerald-100"
-                  >
-                    Copiar mensaje
-                  </button>
-                </div>
-                <textarea
-                  readOnly
-                  value={codexMessage}
-                  rows={Math.min(14, Math.max(6, codexMessage.split('\n').length + 1))}
-                  className="w-full rounded-lg border border-emerald-500/30 bg-slate-950 p-2 text-xs text-emerald-100"
+            <section className="grid gap-3 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 md:grid-cols-3">
+              <label className="text-sm text-slate-200">
+                Sector (nombre)
+                <input
+                  value={sectorInfo.name}
+                  onChange={(event) => setSectorInfo((current) => ({ ...current, name: event.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
                 />
-              </section>
-            ) : null}
+              </label>
+              <label className="text-sm text-slate-200">
+                Ubicación
+                <input
+                  value={sectorInfo.location}
+                  onChange={(event) => setSectorInfo((current) => ({ ...current, location: event.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+              <label className="text-sm text-slate-200 md:col-span-3">
+                Descripción general
+                <textarea
+                  value={sectorInfo.description}
+                  onChange={(event) => setSectorInfo((current) => ({ ...current, description: event.target.value }))}
+                  className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+            </section>
 
             {hasFeedback ? (
               <p
