@@ -110,8 +110,7 @@ export default function HomeContent({ data, error }) {
   const [gradeSystem, setGradeSystem] = useState('french');
   const [isCheckingLocation, setIsCheckingLocation] = useState(false);
   const [locationCheckMessage, setLocationCheckMessage] = useState('');
-  const [walletError, setWalletError] = useState('');
-  const { address, isConnected, connectWallet, disconnectWallet } = useWallet();
+  const { address, isConnected, authError, connectWallet, disconnectWallet } = useWallet();
   const sectorMapStatePushedRef = useRef(false);
   const gradeBucketStatePushedRef = useRef(false);
   const gradeRouteStatePushedRef = useRef(false);
@@ -229,16 +228,10 @@ export default function HomeContent({ data, error }) {
   };
 
   const handleConnectWallet = async () => {
-    try {
-      setWalletError('');
-      await connectWallet();
-    } catch {
-      setWalletError(t(locale, 'walletConnectionError'));
-    }
+    await connectWallet();
   };
 
   const handleDisconnectWallet = () => {
-    setWalletError('');
     disconnectWallet();
   };
 
@@ -346,7 +339,7 @@ export default function HomeContent({ data, error }) {
         onGradeSystemChange={setGradeSystem}
         onConnectWallet={handleConnectWallet}
         onDisconnectWallet={handleDisconnectWallet}
-        walletError={walletError}
+        walletError={authError}
       />
 
       {activeSection === 'inicio' && (
