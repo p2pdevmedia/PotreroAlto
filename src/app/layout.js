@@ -1,6 +1,6 @@
 import './globals.css';
+import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import PWARegister from './pwa-register';
 import WalletProvider from './wallet-provider';
 
@@ -140,7 +140,10 @@ export default function RootLayout({ children }) {
         <WalletProvider>
           <PWARegister />
           <Analytics />
-          <SpeedInsights />
+          <Script
+            src="/_vercel/speed-insights/script.js"
+            strategy="afterInteractive"
+          />
           {children}
         </WalletProvider>
       </body>
