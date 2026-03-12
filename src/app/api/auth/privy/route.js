@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { upsertRows } from '@/lib/supabase';
+import { verifyPrivyAccessTokenFromRequest } from '@/lib/privy-auth';
 
 function normalizeString(value) {
   if (typeof value !== 'string') {
@@ -50,11 +51,19 @@ function inferLoginMethod(linkedAccounts = []) {
 export async function POST(request) {
   try {
     const body = await request.json();
+    const tokenVerification = await verifyPrivyAccessTokenFromRequest(request);
     const privyUser = body?.user ?? body;
 
     const userId = normalizeString(privyUser?.id);
     if (!userId) {
       return NextResponse.json({ error: 'Falta user.id de Privy.' }, { status: 400 });
+    }
+
+    if (tokenVerification.userId && tokenVerification.userId !== userId) {
+      return NextResponse.json(
+        { error: 'El user.id recibido no coincide con el subject (sub) del token de Privy.' },
+        { status: 401 }
+      );
     }
 
     const linkedAccounts = Array.isArray(privyUser?.linkedAccounts) ? privyUser.linkedAccounts : [];
@@ -82,11 +91,19 @@ export async function POST(request) {
 
     return NextResponse.json({ ok: true, userId, identities: linkedAccounts.length });
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'error desconocido';
+    const isAuthError =
+      message.toLowerCase().includes('token') ||
+      message.toLowerCase().includes('jwks') ||
+      message.toLowerCase().includes('authorization') ||
+      message.toLowerCase().includes('app id') ||
+      message.toLowerCase().includes('jwt');
+
     return NextResponse.json(
       {
-        error: `No se pudo sincronizar el usuario de Privy: ${error instanceof Error ? error.message : 'error desconocido'}`
+        error: `No se pudo sincronizar el usuario de Privy: ${message}`
       },
-      { status: 500 }
+      { status: isAuthError ? 401 : 500 }
     );
   }
 }
