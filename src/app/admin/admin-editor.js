@@ -487,14 +487,16 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             <Image
                               src={subsector.image}
                               alt={`Foto del subsector ${subsector.name || subsector.id}`}
-                              width={112}
-                              height={112}
-                              className="h-24 w-24 rounded-lg border border-slate-600 bg-slate-950 object-contain"
+
+                              width={80}
+                              height={80}
+                              className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
+
                               unoptimized
                             />
                           ) : (
-                            <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-slate-600 text-[10px] text-slate-400">
-                              Sin foto
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+                              SIN FOTO
                             </div>
                           )}
                         </div>
@@ -550,14 +552,15 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                                 <Image
                                   src={route.image}
                                   alt={`Foto de la vía ${route.name || route.id}`}
-                                  width={96}
-                                  height={96}
-                                  className="h-20 w-20 rounded-lg border border-slate-600 bg-slate-950 object-contain"
+                                  width={80}
+                                  height={80}
+                                  className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
+
                                   unoptimized
                                 />
                               ) : (
-                                <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-slate-600 text-[10px] text-slate-400">
-                                  Sin foto
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+                                  SIN FOTO
                                 </div>
                               )}
                             </div>

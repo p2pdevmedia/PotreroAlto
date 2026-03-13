@@ -91,3 +91,14 @@ El endpoint `POST /api/auth/privy` valida automáticamente el access token firma
 - Además, se valida que el token pertenezca al app ID configurado y que `sub` coincida con `user.id` del payload enviado al backend.
 
 Si no configurás `PRIVY_APP_ID`, la ruta mantiene compatibilidad y no fuerza validación de token.
+
+## QA manual sugerido para `/admin`
+
+- Después de ingresar el password en `/admin`, esperar entre **3 y 6 segundos** antes de validar la UI o sacar screenshots.
+- La autenticación/carga inicial puede demorar unos segundos; validar demasiado rápido genera falsos negativos.
+
+### Nota para QA automatizado (Playwright)
+
+- Esperar un estado autenticado estable antes de hacer assertions (por ejemplo, verificar título + navegación visibles).
+- Como alternativa, usar `networkidle` cuando aplique para asegurar que terminó la carga inicial.
+- Este margen reduce flakiness en tests que entran a `/admin` inmediatamente después del login.
