@@ -1,3 +1,8 @@
+function normalizePublicImagePath(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized.startsWith('/images/') ? normalized : null;
+}
+
 export function mapRouteRow(route) {
   return {
     id: route.id,
@@ -32,7 +37,7 @@ export function mapSubsectorRows(subsectorRows, routeRows) {
     name: subsector.name,
     sector: subsector.sector,
     description: subsector.description ?? '',
-    image: subsector.image,
+    image: normalizePublicImagePath(subsector.image),
     routes: routeMap.get(subsector.id) ?? []
   }));
 }
