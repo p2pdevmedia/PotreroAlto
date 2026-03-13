@@ -143,7 +143,37 @@ async function saveSingleSubsector(body) {
     { onConflict: 'id' }
   );
 
-  return { ok: true, mode: 'subsector', subsectorId: subsector.id };
+  await deleteRows('routes', {
+    sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
+    subsector_id: `eq.${subsector.id}`
+  });
+
+  const routesPayload = (subsector.routes ?? []).map((route) => ({
+    id: route.id,
+    sector_id: POTRERO_ALTO_SECTOR_ID,
+    subsector_id: subsector.id,
+    name: route.name,
+    grade: route.grade,
+    stars: route.stars,
+    type: route.type,
+    description: route.description,
+    image: route.image,
+    length_meters: route.lengthMeters,
+    quickdraws: route.quickdraws,
+    equipped_by: route.equippedBy,
+    equipped_date: route.equippedDate,
+    first_ascent_by: route.firstAscentBy,
+    first_ascent_date: route.firstAscentDate,
+    latitude: route.latitude,
+    longitude: route.longitude,
+    sort_order: route.sortOrder
+  }));
+
+  if (routesPayload.length) {
+    await upsertRows('routes', routesPayload, { onConflict: 'id' });
+  }
+
+  return { ok: true, mode: 'subsector', subsectorId: subsector.id, routeCount: routesPayload.length };
 }
 
 async function saveSingleRoute(body) {
