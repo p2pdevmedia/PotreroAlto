@@ -76,7 +76,62 @@ function buildGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
-export default function AdminEditor({ view = 'subsectors', subsectorId = null, routeId = null }) {
+function ImageField({
+  label,
+  value,
+  onChange,
+  availableImages = [],
+  inputPlaceholder = 'https://...'
+}) {
+  const hasImage = Boolean(value?.trim());
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm text-slate-200">
+        {label}
+        <select
+          value={availableImages.includes(value) ? value : ''}
+          onChange={(event) => onChange(event.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+        >
+          <option value="">Elegir desde /public/images</option>
+          {availableImages.map((imagePath) => (
+            <option key={imagePath} value={imagePath}>{imagePath}</option>
+          ))}
+        </select>
+      </label>
+
+      <label className="block text-xs text-slate-400">
+        O ingresar URL/ruta manual
+        <input
+          value={value ?? ''}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={inputPlaceholder}
+          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+        />
+      </label>
+
+      {hasImage ? (
+        <div className="relative h-48 w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+          <Image
+            src={value}
+            alt={`Previsualización de ${label}`}
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-contain"
+            unoptimized
+          />
+        </div>
+      ) : (
+        <div className="flex h-16 items-center justify-center rounded-lg border border-dashed border-slate-700 text-xs text-slate-400">
+          Sin imagen seleccionada
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function AdminEditor({ view = 'subsectors', subsectorId = null, routeId = null, availableImages = [] }) {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [subsectors, setSubsectors] = useState([]);
@@ -432,9 +487,11 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             <Image
                               src={subsector.image}
                               alt={`Foto del subsector ${subsector.name || subsector.id}`}
+
                               width={80}
                               height={80}
                               className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
+
                               unoptimized
                             />
                           ) : (
@@ -467,15 +524,12 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     Descripción
                     <textarea value={selectedSubsector.description ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'description', event.target.value)} className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
                   </label>
-                  <label className="block text-sm text-slate-200">
-                    Imagen (URL)
-                    <input
-                      value={selectedSubsector.image ?? ''}
-                      onChange={(event) => updateSubsector(selectedSubsector.id, 'image', event.target.value)}
-                      placeholder="https://..."
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                    />
-                  </label>
+                  <ImageField
+                    label="Imagen del subsector"
+                    value={selectedSubsector.image ?? ''}
+                    onChange={(nextValue) => updateSubsector(selectedSubsector.id, 'image', nextValue)}
+                    availableImages={availableImages}
+                  />
                   <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
                     + Agregar vía
                   </button>
@@ -501,6 +555,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                                   width={80}
                                   height={80}
                                   className="h-16 w-16 shrink-0 rounded-lg border border-sunset/60 object-cover"
+
                                   unoptimized
                                 />
                               ) : (
@@ -553,7 +608,15 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           </select>
                           <input value={selectedRoute.lengthMeters ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'lengthMeters', event.target.value)} placeholder="Largo (m)" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         </div>
-                        <input value={selectedRoute.image ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'image', event.target.value)} placeholder="Imagen (URL)" className="mb-2 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        <div className="mb-2">
+                          <ImageField
+                            label="Imagen de la vía"
+                            value={selectedRoute.image ?? ''}
+                            onChange={(nextValue) => updateRoute(selectedSubsector.id, selectedRoute.id, 'image', nextValue)}
+                            availableImages={availableImages}
+                            inputPlaceholder="/images/mi-foto.jpg o https://..."
+                          />
+                        </div>
                         <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
                           <input value={selectedRoute.latitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'latitude', event.target.value)} placeholder="Latitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                           <input value={selectedRoute.longitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'longitude', event.target.value)} placeholder="Longitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
