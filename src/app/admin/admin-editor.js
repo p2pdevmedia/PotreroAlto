@@ -76,6 +76,20 @@ function buildGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
+function normalizeImageSrc(value) {
+  const trimmed = String(value ?? '').trim();
+
+  if (!trimmed) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+
+  return `/${trimmed}`;
+}
+
 export default function AdminEditor({ view = 'subsectors', subsectorId = null, routeId = null }) {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
@@ -413,7 +427,10 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                 </div>
 
                 <ul className="space-y-2 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
-                  {subsectors.map((subsector) => (
+                  {subsectors.map((subsector) => {
+                    const subsectorImageSrc = normalizeImageSrc(subsector.image);
+
+                    return (
                     <li key={subsector.id} className="rounded border border-slate-700 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
                       <Link href={`/admin/${subsector.id}`} className="block px-3 py-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -428,13 +445,14 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             <p className="text-xs text-slate-400">Foto: {subsector.image?.trim() ? subsector.image : 'Sin foto'}</p>
                           </div>
 
-                          {subsector.image?.trim() ? (
+                          {subsectorImageSrc ? (
                             <Image
-                              src={subsector.image}
+                              src={subsectorImageSrc}
                               alt={`Foto del subsector ${subsector.name || subsector.id}`}
                               width={112}
                               height={112}
                               className="h-24 w-24 rounded-lg border border-slate-600 object-cover"
+                              unoptimized
                             />
                           ) : (
                             <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-slate-600 text-[10px] text-slate-400">
@@ -444,7 +462,8 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                         </div>
                       </Link>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </section>
             ) : null}
@@ -470,7 +489,10 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     + Agregar vía
                   </button>
                   <ul className="space-y-2">
-                    {(selectedSubsector.routes ?? []).map((route) => (
+                    {(selectedSubsector.routes ?? []).map((route) => {
+                      const routeImageSrc = normalizeImageSrc(route.image);
+
+                      return (
                       <li key={route.id} className="rounded border border-slate-700 p-2 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
                         <div className="flex items-start gap-3">
                           <Link href={`/admin/${selectedSubsector.id}/${route.id}`} className="block flex-1 rounded px-1 py-1">
@@ -484,13 +506,14 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                                 <p className="text-xs text-slate-400">Foto: {route.image?.trim() ? route.image : 'Sin foto'}</p>
                               </div>
 
-                              {route.image?.trim() ? (
+                              {routeImageSrc ? (
                                 <Image
-                                  src={route.image}
+                                  src={routeImageSrc}
                                   alt={`Foto de la vía ${route.name || route.id}`}
                                   width={96}
                                   height={96}
                                   className="h-20 w-20 rounded-lg border border-slate-600 object-cover"
+                                  unoptimized
                                 />
                               ) : (
                                 <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-slate-600 text-[10px] text-slate-400">
@@ -503,7 +526,8 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           <button type="button" onClick={() => removeRoute(selectedSubsector.id, route.id)} className="rounded border border-red-500/60 bg-red-700/20 px-2 py-1 text-xs font-semibold text-red-200">Eliminar</button>
                         </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                   <button type="button" onClick={() => removeSubsector(selectedSubsector.id)} className="rounded-lg border border-red-500/60 bg-red-700/20 px-3 py-2 text-sm font-semibold text-red-100">
                     Eliminar subsector
