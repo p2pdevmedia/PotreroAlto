@@ -279,13 +279,35 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     setLastSaveResult('idle');
 
     try {
+      let savePayload = null;
+
+      if (view === 'route' && selectedSubsector && selectedRoute) {
+        savePayload = {
+          mode: 'route',
+          route: {
+            ...selectedRoute,
+            subsectorId: selectedSubsector.id
+          }
+        };
+      } else if (view === 'subsector' && selectedSubsector) {
+        savePayload = {
+          mode: 'subsector',
+          subsector: selectedSubsector
+        };
+      } else {
+        savePayload = {
+          mode: 'sector',
+          sector: sectorInfo
+        };
+      }
+
       const response = await fetch('/api/admin/database', {
         method: 'POST',
         headers: {
           ...authHeaders,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ ...sectorInfo, subsectors })
+        body: JSON.stringify(savePayload)
       });
       const payload = await response.json();
 
@@ -294,7 +316,15 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       }
 
       setLastSaveResult('success');
-      setMessage(`Guardado exitoso. Subsectores: ${payload.subsectorCount}.`);
+      if (payload?.mode === 'route') {
+        setMessage('Vía guardada correctamente.');
+      } else if (payload?.mode === 'subsector') {
+        setMessage('Subsector guardado correctamente.');
+      } else if (payload?.mode === 'sector') {
+        setMessage('Datos del sector guardados correctamente.');
+      } else {
+        setMessage(`Guardado exitoso. Subsectores: ${payload?.subsectorCount ?? 0}.`);
+      }
       await login(password);
     } catch (saveError) {
       setLastSaveResult('error');
