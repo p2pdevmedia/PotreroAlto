@@ -4,23 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
 import { convertGrade, t } from '@/lib/i18n';
-
-const SUBSECTOR_IMAGE_OVERRIDES = {
-  'la chanchería':
-    '/images/chancheria.jpeg',
-  'cheto / pared este':
-    '/images/cheto.jpeg',
-  croto:
-    '/images/croto.jpeg',
-  'el arco':
-    '/images/arco.jpeg',
-  'el tablero':
-    '/images/tablero.jpeg',
-  'cañadón':
-    '/images/caniadon.jpeg',
-  'el derrumbe':
-    '/images/derrumbe.jpeg'
-};
+import { DEFAULT_SUBSECTOR_IMAGE } from '@/lib/subsector-images';
 
 function slugifySegment(value, defaultValue = 'item') {
   const normalized = String(value ?? '')
@@ -225,17 +209,11 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
 }
 
 function subsectorCover(subsector) {
-  const overrideImage = SUBSECTOR_IMAGE_OVERRIDES[subsector.name?.toLowerCase()];
-
-  if (overrideImage) {
-    return overrideImage;
-  }
-
   if (subsector.image) {
     return subsector.image;
   }
 
-  return '/images/tablero.jpeg';
+  return DEFAULT_SUBSECTOR_IMAGE;
 }
 
 export default function SubsectorAccordion({

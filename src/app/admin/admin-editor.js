@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SUBSECTOR_IMAGE_OPTIONS } from '@/lib/subsector-images';
 
 function createId(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
@@ -468,13 +469,19 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     <textarea value={selectedSubsector.description ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'description', event.target.value)} className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
                   </label>
                   <label className="block text-sm text-slate-200">
-                    Imagen (URL)
-                    <input
+                    Imagen del subsector
+                    <select
                       value={selectedSubsector.image ?? ''}
                       onChange={(event) => updateSubsector(selectedSubsector.id, 'image', event.target.value)}
-                      placeholder="https://..."
                       className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-                    />
+                    >
+                      <option value="">Sin imagen</option>
+                      {SUBSECTOR_IMAGE_OPTIONS.map((imagePath) => (
+                        <option key={imagePath} value={imagePath}>
+                          {imagePath}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
                     + Agregar vía

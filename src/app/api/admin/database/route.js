@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { mapSubsectorRows } from '@/lib/supabase-models';
 import { deleteRows, selectRows, upsertRows } from '@/lib/supabase';
+import { normalizeSubsectorImagePath } from '@/lib/subsector-images';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Simonalacacaliza!';
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
@@ -22,7 +23,10 @@ function sanitizeSubsector(subsector, subsectorIndex = 0) {
     name: String(subsector?.name || 'Subsector sin nombre'),
     sector: String(subsector?.sector || 'Potrero Alto'),
     description: subsector?.description ? String(subsector.description) : '',
-    image: subsector?.image ? String(subsector.image) : null,
+    image: (() => {
+      const normalizedImage = normalizeSubsectorImagePath(subsector?.image);
+      return normalizedImage || null;
+    })(),
     sortOrder: Number.isInteger(subsector?.sortOrder) ? subsector.sortOrder : subsectorIndex,
     routes: routes.map((route, routeIndex) => sanitizeRoute(route, { subsectorIndex, routeIndex }))
   };
