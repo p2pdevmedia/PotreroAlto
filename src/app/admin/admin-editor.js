@@ -466,6 +466,15 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     Descripción
                     <textarea value={selectedSubsector.description ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'description', event.target.value)} className="mt-1 min-h-20 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
                   </label>
+                  <label className="block text-sm text-slate-200">
+                    Imagen (URL)
+                    <input
+                      value={selectedSubsector.image ?? ''}
+                      onChange={(event) => updateSubsector(selectedSubsector.id, 'image', event.target.value)}
+                      placeholder="https://..."
+                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </label>
                   <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
                     + Agregar vía
                   </button>
@@ -542,6 +551,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           </select>
                           <input value={selectedRoute.lengthMeters ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'lengthMeters', event.target.value)} placeholder="Largo (m)" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         </div>
+                        <input value={selectedRoute.image ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'image', event.target.value)} placeholder="Imagen (URL)" className="mb-2 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
                           <input value={selectedRoute.latitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'latitude', event.target.value)} placeholder="Latitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                           <input value={selectedRoute.longitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'longitude', event.target.value)} placeholder="Longitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
