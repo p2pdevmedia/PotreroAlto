@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { mapSubsectorRows } from '@/lib/supabase-models';
 import { deleteRows, selectRows, upsertRows } from '@/lib/supabase';
 
-const ADMIN_PASSWORD = 'Simonalacacaliza!';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Simonalacacaliza!';
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
 
 function unauthorized() {
@@ -10,7 +10,7 @@ function unauthorized() {
 }
 
 function validatePassword(request) {
-  const password = request.headers.get('x-admin-password');
+  const password = request.headers.get('x-admin-password')?.trim();
   return password && password === ADMIN_PASSWORD;
 }
 
