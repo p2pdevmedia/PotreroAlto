@@ -132,17 +132,32 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [saving, setSaving] = useState(false);
   const [lastSaveResult, setLastSaveResult] = useState('idle');
   const [locatingRouteId, setLocatingRouteId] = useState('');
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftSubsectorId, setDraftSubsectorId] = useState('');
+  const [draftRouteId, setDraftRouteId] = useState('');
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
 
   const selectedSubsector = useMemo(
-    () => subsectors.find((subsector) => subsector.id === subsectorId) ?? null,
-    [subsectorId, subsectors]
+    () => {
+      if (view === 'new-subsector') {
+        return subsectors.find((subsector) => subsector.id === draftSubsectorId) ?? null;
+      }
+
+      return subsectors.find((subsector) => subsector.id === subsectorId) ?? null;
+    },
+    [draftSubsectorId, subsectorId, subsectors, view]
   );
 
   const selectedRoute = useMemo(
-    () => (selectedSubsector?.routes ?? []).find((route) => route.id === routeId) ?? null,
-    [routeId, selectedSubsector]
+    () => {
+      if (view === 'new-route') {
+        return (selectedSubsector?.routes ?? []).find((route) => route.id === draftRouteId) ?? null;
+      }
+
+      return (selectedSubsector?.routes ?? []).find((route) => route.id === routeId) ?? null;
+    },
+    [draftRouteId, routeId, selectedSubsector, view]
   );
 
   const hasFeedback = Boolean(error || message);
@@ -237,32 +252,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     );
   };
 
-  const addSubsector = () => {
-    const id = createId('subsector');
-    setSubsectors((current) => [
-      ...current,
-      { id, name: 'Nuevo subsector', sector: 'Potrero Alto', description: '', image: '', routes: [] }
-    ]);
-    setMessage('Subsector creado. Completá sus datos y guardá cambios.');
-  };
-
   const removeSubsector = (currentSubsectorId) => {
     setSubsectors((current) => current.filter((subsector) => subsector.id !== currentSubsectorId));
     setMessage('Subsector eliminado de la edición actual.');
-  };
-
-  const addRoute = (currentSubsectorId) => {
-    const routeSector = routeSectorFromSubsectorId(currentSubsectorId);
-    const newId = `${routeSector}-${Math.max(1, (selectedSubsector?.routes ?? []).length + 1)}`;
-
-    setSubsectors((current) =>
-      current.map((subsector) =>
-        subsector.id === currentSubsectorId
-          ? { ...subsector, routes: [...(subsector.routes ?? []), { ...EMPTY_ROUTE, id: newId, name: 'Nueva vía' }] }
-          : subsector
-      )
-    );
-    setMessage('Vía agregada. Editala y guardá cambios.');
   };
 
   const updateRouteIdPart = (currentSubsectorId, currentRouteId, field, value) => {
@@ -391,6 +383,47 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     }
   };
 
+  useEffect(() => {
+    if (!authenticated || !subsectors.length) {
+      return;
+    }
+
+    if (view === 'new-subsector' && !draftReady) {
+      const draftId = createId('subsector');
+      setSubsectors((current) => {
+        if (current.some((subsector) => subsector.id === draftId)) {
+          return current;
+        }
+
+        return [
+          ...current,
+          { id: draftId, name: 'Nuevo subsector', sector: 'Potrero Alto', description: '', image: '', routes: [] }
+        ];
+      });
+      setDraftSubsectorId(draftId);
+      setDraftReady(true);
+      setMessage('Subsector creado. Completá el formulario y guardá cambios.');
+      return;
+    }
+
+    if (view === 'new-route' && selectedSubsector && !draftReady) {
+      const routeSector = routeSectorFromSubsectorId(selectedSubsector.id);
+      const nextIndex = Math.max(1, (selectedSubsector.routes ?? []).length + 1);
+      const newId = `${routeSector}-${nextIndex}`;
+
+      setSubsectors((current) =>
+        current.map((subsector) =>
+          subsector.id === selectedSubsector.id
+            ? { ...subsector, routes: [...(subsector.routes ?? []), { ...EMPTY_ROUTE, id: newId, name: 'Nueva vía' }] }
+            : subsector
+        )
+      );
+      setDraftRouteId(newId);
+      setDraftReady(true);
+      setMessage('Vía agregada. Completá el formulario y guardá cambios.');
+    }
+  }, [authenticated, draftReady, selectedSubsector, subsectors.length, view]);
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <section className="card space-y-4">
@@ -447,9 +480,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
               <button type="button" onClick={save} disabled={saving} className="rounded-lg border border-emerald-500/60 bg-emerald-700/20 px-3 py-2 text-sm font-semibold text-emerald-100">
                 {saveButtonLabel}
               </button>
-              <button type="button" onClick={addSubsector} className="rounded-lg border border-slate-600 px-3 py-2 text-sm text-slate-100">
+              <Link href="/admin/new-subsector" className="rounded-lg border border-slate-600 px-3 py-2 text-sm text-slate-100">
                 + Agregar subsector
-              </button>
+              </Link>
             </div>
 
             {view === 'subsectors' ? (
@@ -509,9 +542,12 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
               </section>
             ) : null}
 
-            {view === 'subsector' ? (
+            {view === 'subsector' || view === 'new-subsector' ? (
               selectedSubsector ? (
                 <section className="space-y-4 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
+                  <h2 className="text-lg font-semibold text-slate-100">
+                    {view === 'new-subsector' ? 'Nuevo subsector' : `Editar subsector: ${selectedSubsector.name || selectedSubsector.id}`}
+                  </h2>
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="text-sm text-slate-200">
                       ID
@@ -532,9 +568,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     onChange={(nextValue) => updateSubsector(selectedSubsector.id, 'image', nextValue)}
                     availableImages={availableImages}
                   />
-                  <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
+                  <Link href={`/admin/${selectedSubsector.id}/new-route`} className="inline-block rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
                     + Agregar vía
-                  </button>
+                  </Link>
                   <ul className="space-y-2">
                     {(selectedSubsector.routes ?? []).map((route) => (
                       <li key={route.id} className="rounded border border-slate-700 p-2 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
@@ -547,7 +583,6 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                                 <p className="text-xs text-slate-300">Grado: {route.grade || 'Sin grado'} · Tipo: {route.type || 'Sport'} · Estrellas: {route.stars ?? 'Sin dato'}</p>
                                 <p className="text-xs text-slate-400">Largo: {route.lengthMeters ?? 'Sin dato'} m · Chapas: {route.quickdraws ?? 'Sin dato'}</p>
                                 <p className="text-xs text-slate-300">Descripción: {route.description?.trim() ? route.description : 'Sin descripción'}</p>
-                                <p className="text-xs text-slate-400">Foto: {route.image?.trim() ? route.image : 'Sin foto'}</p>
                               </div>
 
                               {route.image?.trim() ? (
@@ -582,10 +617,12 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
               )
             ) : null}
 
-            {view === 'route' ? (
+            {view === 'route' || view === 'new-route' ? (
               selectedSubsector && selectedRoute ? (
                 <section className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
-                  <h2 className="mb-3 text-lg font-semibold text-slate-100">Editar vía: {selectedRoute.name || selectedRoute.id}</h2>
+                  <h2 className="mb-3 text-lg font-semibold text-slate-100">
+                    {view === 'new-route' ? `Nueva vía en ${selectedSubsector.name || selectedSubsector.id}` : `Editar vía: ${selectedRoute.name || selectedRoute.id}`}
+                  </h2>
                   {(() => {
                     const defaultRouteSector = routeSectorFromSubsectorId(selectedSubsector.id);
                     const routeIdParts = splitRouteId(selectedRoute.id, defaultRouteSector);
