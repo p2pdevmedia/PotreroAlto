@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { adminLoginSchema, routeSchema, sectorSchema, subsectorSchema } from '@/lib/admin-zod-schemas';
 
 function createId(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
@@ -171,7 +172,10 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
 
   const login = useCallback(async (rawPassword) => {
     const candidate = rawPassword ?? password;
-    if (!candidate) {
+    const parsedLogin = adminLoginSchema.safeParse({ password: candidate });
+
+    if (!parsedLogin.success) {
+      setError(parsedLogin.error.issues[0]?.message ?? 'Password inválido.');
       return;
     }
 
@@ -348,6 +352,23 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
           mode: 'sector',
           sector: sectorInfo
         };
+      }
+
+      if (view === 'route' && selectedSubsector && selectedRoute) {
+        const parsedRoute = routeSchema.safeParse(selectedRoute);
+        if (!parsedRoute.success) {
+          throw new Error(parsedRoute.error.issues[0]?.message ?? 'La vía tiene datos inválidos.');
+        }
+      } else if (view === 'subsector' && selectedSubsector) {
+        const parsedSubsector = subsectorSchema.safeParse(selectedSubsector);
+        if (!parsedSubsector.success) {
+          throw new Error(parsedSubsector.error.issues[0]?.message ?? 'El subsector tiene datos inválidos.');
+        }
+      } else {
+        const parsedSector = sectorSchema.safeParse(sectorInfo);
+        if (!parsedSector.success) {
+          throw new Error(parsedSector.error.issues[0]?.message ?? 'El sector tiene datos inválidos.');
+        }
       }
 
       const response = await fetch('/api/admin/database', {

@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Sector {
+  id          String      @id @db.Text
+  name        String      @db.Text
+  location    String?     @db.Text
+  description String      @default("") @db.Text
+  subsectors  Subsector[]
+  routes      Route[]
+
+  @@map("sectors")
+}
+
+model Subsector {
+  id          String   @id @db.Text
+  sectorId    String   @map("sector_id") @db.Text
+  name        String   @db.Text
+  sector      String   @default("Potrero Alto") @db.Text
+  description String   @default("") @db.Text
+  image       String?  @db.Text
+  sortOrder   Int      @default(0) @map("sort_order")
+  sectorRef   Sector   @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  routes      Route[]
+
+  @@index([sectorId], map: "idx_subsectors_sector_id")
+  @@map("subsectors")
+}
+
+model Route {
+  id              String     @id @db.Text
+  sectorId        String     @map("sector_id") @db.Text
+  subsectorId     String     @map("subsector_id") @db.Text
+  name            String     @db.Text
+  grade           String     @default("Sin grado") @db.Text
+  stars           Decimal?   @db.Decimal(3, 1)
+  type            String     @default("Sport") @db.Text
+  description     String     @default("") @db.Text
+  image           String?    @db.Text
+  lengthMeters    Int?       @map("length_meters")
+  quickdraws      Int?
+  equippedBy      String?    @map("equipped_by") @db.Text
+  equippedDate    String?    @map("equipped_date") @db.Text
+  firstAscentBy   String?    @map("first_ascent_by") @db.Text
+  firstAscentDate String?    @map("first_ascent_date") @db.Text
+  latitude        Float?
+  longitude       Float?
+  sortOrder       Int        @default(0) @map("sort_order")
+  sectorRef       Sector     @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  subsectorRef    Subsector  @relation(fields: [subsectorId], references: [id], onDelete: Cascade)
+
+  @@index([sectorId], map: "idx_routes_sector_id")
+  @@index([subsectorId], map: "idx_routes_subsector_id")
+  @@map("routes")
+}
+
+model AppUser {
+  id                   String            @id @db.Text
+  email                String?           @db.Text
+  displayName          String?           @map("display_name") @db.Text
+  avatarUrl            String?           @map("avatar_url") @db.Text
+  loginMethod          String            @default("unknown") @map("login_method") @db.Text
+  primaryWalletAddress String?           @map("primary_wallet_address") @db.Text
+  isGuest              Boolean           @default(false) @map("is_guest")
+  privyCreatedAt       DateTime?         @map("privy_created_at") @db.Timestamptz(6)
+  metadata             Json              @default("{}")
+  lastLoginAt          DateTime          @default(now()) @map("last_login_at") @db.Timestamptz(6)
+  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime          @default(now()) @map("updated_at") @db.Timestamptz(6)
+  identities           AppUserIdentity[]
+
+  @@index([email], map: "idx_app_users_email")
+  @@map("app_users")
+}
+
+model AppUserIdentity {
+  id             BigInt    @id @default(autoincrement())
+  userId         String    @map("user_id") @db.Text
+  provider       String    @db.Text
+  providerUserId String    @map("provider_user_id") @db.Text
+  walletAddress  String?   @map("wallet_address") @db.Text
+  chainType      String?   @map("chain_type") @db.Text
+  isPrimary      Boolean   @default(false) @map("is_primary")
+  profile        Json      @default("{}")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  userRef        AppUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId], map: "idx_app_user_identities_user_id")
+  @@map("app_user_identities")
+}
