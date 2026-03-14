@@ -1,10 +1,23 @@
 import { z } from 'zod';
 
 const emptyToUndefined = (value) => {
+  if (value === null) return undefined;
   if (typeof value !== 'string') return value;
   const trimmed = value.trim();
   return trimmed === '' ? undefined : trimmed;
 };
+
+const optionalText = (fallback = '') => z
+  .preprocess(emptyToUndefined, z.string().optional())
+  .transform((value) => value ?? fallback);
+
+const VALID_ROUTE_GRADES = [
+  '<5a', '5a', '5a+', '5b', '5b+', '5c', '5c+',
+  '6a', '6a+', '6b', '6b+', '6c', '6c+',
+  '7a', '7a+', '7b', '7b+', '7c', '7c+',
+  '8a', '8a+', '8b', '8b+', '8c', '8c+',
+  '9a', '9a+', '>9a'
+];
 
 const numericString = (fieldLabel) => z
   .preprocess(emptyToUndefined, z.union([
@@ -31,19 +44,19 @@ export const sectorSchema = z.object({
 });
 
 export const routeSchema = z.object({
-  id: z.string().trim().min(1, 'El ID de la vía es obligatorio.'),
+  id: optionalText(''),
   name: z.string().trim().min(1, 'El nombre de la vía es obligatorio.'),
-  grade: z.string().optional().default('Sin grado'),
+  grade: z.preprocess(emptyToUndefined, z.string().trim().optional()).refine((value) => value == null || VALID_ROUTE_GRADES.includes(value), 'El grado seleccionado no es válido.').transform((value) => value ?? 'Sin grado'),
   stars: z.preprocess(emptyToUndefined, z.union([z.string(), z.number()]).optional()),
-  type: z.string().optional().default('Sport'),
-  description: z.string().optional().default(''),
+  type: optionalText('Sport'),
+  description: optionalText(''),
   lengthMeters: integerString('Largo'),
   quickdraws: integerString('Expresses'),
-  image: z.string().optional().default(''),
-  equippedBy: z.string().optional().default(''),
-  equippedDate: z.string().optional().default(''),
-  firstAscentBy: z.string().optional().default(''),
-  firstAscentDate: z.string().optional().default(''),
+  image: optionalText(''),
+  equippedBy: optionalText(''),
+  equippedDate: optionalText(''),
+  firstAscentBy: optionalText(''),
+  firstAscentDate: optionalText(''),
   latitude: numericString('Latitud'),
   longitude: numericString('Longitud')
 });
