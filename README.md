@@ -102,3 +102,9 @@ Si no configurás `PRIVY_APP_ID`, la ruta mantiene compatibilidad y no fuerza va
 - Esperar un estado autenticado estable antes de hacer assertions (por ejemplo, verificar título + navegación visibles).
 - Como alternativa, usar `networkidle` cuando aplique para asegurar que terminó la carga inicial.
 - Este margen reduce flakiness en tests que entran a `/admin` inmediatamente después del login.
+
+## Prisma models
+
+Se agregó un esquema inicial en `prisma/schema.prisma` que mapea todas las tablas actuales (`sectors`, `subsectors`, `routes`, `app_users`, `app_user_identities`).
+
+> Nota: para generar el cliente necesitás instalar dependencias de Prisma en tu entorno y definir `DATABASE_URL`.
