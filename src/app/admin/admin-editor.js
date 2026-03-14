@@ -35,6 +35,8 @@ const DEFAULT_SECTOR_INFO = {
   description: ''
 };
 
+const DEFAULT_THECRAG_URL = 'https://www.thecrag.com/en/climbing/argentina/area/6574670919';
+
 function routeSectorFromSubsectorId(subsectorId) {
   if (!subsectorId) {
     return 'subsector';
@@ -135,6 +137,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [draftReady, setDraftReady] = useState(false);
   const [draftSubsectorId, setDraftSubsectorId] = useState('');
   const [draftRouteId, setDraftRouteId] = useState('');
+  const [theCragUrl, setTheCragUrl] = useState(DEFAULT_THECRAG_URL);
+  const [theCragLoading, setTheCragLoading] = useState(false);
+  const [theCragListing, setTheCragListing] = useState(null);
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
 
@@ -383,6 +388,31 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     }
   };
 
+  const syncTheCragListing = async () => {
+    setError('');
+    setMessage('');
+    setTheCragLoading(true);
+
+    try {
+      const response = await fetch(`/api/admin/thecrag?url=${encodeURIComponent(theCragUrl)}`, {
+        headers: authHeaders
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'No se pudo leer TheCrag.');
+      }
+
+      setTheCragListing(payload);
+      setMessage(`Listado actualizado desde TheCrag: ${payload?.subsectorCount ?? 0} subsectores y ${payload?.routeCount ?? 0} vías.`);
+    } catch (syncError) {
+      setTheCragListing(null);
+      setError(syncError instanceof Error ? syncError.message : 'Error desconocido al consultar TheCrag.');
+    } finally {
+      setTheCragLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!authenticated || !subsectors.length) {
       return;
@@ -484,6 +514,58 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                 + Agregar subsector
               </Link>
             </div>
+
+            <section className="space-y-3 rounded-xl border border-indigo-500/40 bg-indigo-950/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold text-indigo-100">Listado actualizado desde TheCrag (subsectores y vías)</h2>
+                <button
+                  type="button"
+                  onClick={syncTheCragListing}
+                  disabled={theCragLoading || !theCragUrl}
+                  className="rounded-lg border border-indigo-400/70 bg-indigo-700/30 px-3 py-2 text-xs font-semibold text-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {theCragLoading ? 'Consultando...' : 'Actualizar desde administrador'}
+                </button>
+              </div>
+
+              <label className="block text-xs text-indigo-100/90">
+                URL origen
+                <input
+                  value={theCragUrl}
+                  onChange={(event) => setTheCragUrl(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-indigo-400/50 bg-slate-950 px-3 py-2 text-xs text-slate-100"
+                />
+              </label>
+
+              {theCragListing ? (
+                <div className="space-y-2 rounded-lg border border-indigo-400/30 bg-slate-950/50 p-3 text-xs text-slate-200">
+                  <p>
+                    Fuente: <a href={theCragListing.sourceUrl} target="_blank" rel="noreferrer" className="underline">{theCragListing.sourceTitle || theCragListing.sourceUrl}</a>
+                  </p>
+                  <p>
+                    Subsectores: <strong>{theCragListing.subsectorCount}</strong> · Vías: <strong>{theCragListing.routeCount}</strong>
+                  </p>
+                  <ul className="max-h-80 space-y-2 overflow-auto pr-1">
+                    {(theCragListing.subsectors ?? []).map((subsector) => (
+                      <li key={subsector.name} className="rounded border border-indigo-400/20 p-2">
+                        <p className="font-semibold text-indigo-100">{subsector.name}</p>
+                        {subsector.routes?.length ? (
+                          <ul className="mt-1 list-inside list-disc text-slate-300">
+                            {subsector.routes.map((routeName) => (
+                              <li key={`${subsector.name}-${routeName}`}>{routeName}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="mt-1 text-slate-400">Sin vías encontradas.</p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-xs text-indigo-100/80">Presioná “Actualizar desde administrador” para obtener un listado actualizado de subsectores y vías.</p>
+              )}
+            </section>
 
             {view === 'subsectors' ? (
               <section className="space-y-4">
