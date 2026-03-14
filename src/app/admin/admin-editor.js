@@ -404,6 +404,17 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     }
   };
 
+  const refreshCache = async () => {
+    if (!authenticated) {
+      setError('Primero iniciá sesión para refrescar la caché.');
+      return;
+    }
+
+    setError('');
+    setMessage('Refrescando caché...');
+    await login(password);
+  };
+
   useEffect(() => {
     if (!authenticated || !subsectors.length) {
       return;
@@ -448,7 +459,17 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <section className="card space-y-4">
-        <h1 className="text-2xl font-bold text-white">Admin de base de datos</h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-2xl font-bold text-white">Admin de base de datos</h1>
+          <button
+            type="button"
+            onClick={refreshCache}
+            disabled={!authenticated || loading || saving}
+            className="rounded-lg border border-sky-500/60 bg-sky-700/20 px-3 py-2 text-xs font-semibold text-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Refrescando...' : 'Refrescar caché'}
+          </button>
+        </div>
         <p className="text-sm text-slate-300">Flujo modular: Subsectores → vías → edición de vía.</p>
 
         {!authenticated ? (
