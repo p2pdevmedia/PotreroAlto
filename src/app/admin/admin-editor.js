@@ -80,17 +80,17 @@ function ImageField({
   label,
   value,
   onChange,
-  availableImages = [],
-  inputPlaceholder = 'https://...'
+  availableImages = []
 }) {
-  const hasImage = Boolean(value?.trim());
+  const normalizedValue = availableImages.includes(value) ? value : '';
+  const hasImage = Boolean(normalizedValue);
 
   return (
     <div className="space-y-2">
       <label className="block text-sm text-slate-200">
         {label}
         <select
-          value={availableImages.includes(value) ? value : ''}
+          value={normalizedValue}
           onChange={(event) => onChange(event.target.value)}
           className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
         >
@@ -101,20 +101,10 @@ function ImageField({
         </select>
       </label>
 
-      <label className="block text-xs text-slate-400">
-        O ingresar URL/ruta manual
-        <input
-          value={value ?? ''}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={inputPlaceholder}
-          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-        />
-      </label>
-
       {hasImage ? (
         <div className="relative h-48 w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
           <Image
-            src={value}
+            src={normalizedValue}
             alt={`Previsualización de ${label}`}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
@@ -190,7 +180,19 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         location: payload?.location || DEFAULT_SECTOR_INFO.location,
         description: payload?.description || ''
       });
-      setSubsectors(Array.isArray(payload.subsectors) ? payload.subsectors : []);
+      const normalizedSubsectors = Array.isArray(payload.subsectors)
+        ? payload.subsectors.map((subsector) => ({
+            ...subsector,
+            image: availableImages.includes(subsector?.image) ? subsector.image : '',
+            routes: Array.isArray(subsector?.routes)
+              ? subsector.routes.map((route) => ({
+                  ...route,
+                  image: availableImages.includes(route?.image) ? route.image : ''
+                }))
+              : []
+          }))
+        : [];
+      setSubsectors(normalizedSubsectors);
       setAuthenticated(true);
       setLastSaveResult('idle');
       if (typeof window !== 'undefined') {
@@ -202,7 +204,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     } finally {
       setLoading(false);
     }
-  }, [password]);
+  }, [availableImages, password]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -614,7 +616,6 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             value={selectedRoute.image ?? ''}
                             onChange={(nextValue) => updateRoute(selectedSubsector.id, selectedRoute.id, 'image', nextValue)}
                             availableImages={availableImages}
-                            inputPlaceholder="/images/mi-foto.jpg o https://..."
                           />
                         </div>
                         <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">

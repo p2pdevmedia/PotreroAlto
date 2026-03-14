@@ -14,6 +14,12 @@ function validatePassword(request) {
   return password && password === ADMIN_PASSWORD;
 }
 
+
+function normalizePublicImagePath(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized.startsWith('/images/') ? normalized : null;
+}
+
 function sanitizeSubsector(subsector, subsectorIndex = 0) {
   const routes = Array.isArray(subsector?.routes) ? subsector.routes : [];
 
@@ -22,7 +28,7 @@ function sanitizeSubsector(subsector, subsectorIndex = 0) {
     name: String(subsector?.name || 'Subsector sin nombre'),
     sector: String(subsector?.sector || 'Potrero Alto'),
     description: subsector?.description ? String(subsector.description) : '',
-    image: subsector?.image ? String(subsector.image) : null,
+    image: normalizePublicImagePath(subsector?.image),
     sortOrder: Number.isInteger(subsector?.sortOrder) ? subsector.sortOrder : subsectorIndex,
     routes: routes.map((route, routeIndex) => sanitizeRoute(route, { subsectorIndex, routeIndex }))
   };
@@ -39,7 +45,7 @@ function sanitizeRoute(route, { subsectorIndex = 0, routeIndex = 0 } = {}) {
     description: route?.description ? String(route.description) : '',
     lengthMeters: route?.lengthMeters === '' || route?.lengthMeters == null ? null : Number(route.lengthMeters),
     quickdraws: route?.quickdraws === '' || route?.quickdraws == null ? null : Number(route.quickdraws),
-    image: route?.image ? String(route.image) : null,
+    image: normalizePublicImagePath(route?.image),
     latitude: route?.latitude === '' || route?.latitude == null ? null : Number(route.latitude),
     longitude: route?.longitude === '' || route?.longitude == null ? null : Number(route.longitude),
     equippedBy: route?.equippedBy ? String(route.equippedBy) : null,
