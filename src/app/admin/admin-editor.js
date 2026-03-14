@@ -35,6 +35,23 @@ const DEFAULT_SECTOR_INFO = {
   description: ''
 };
 
+function normalizeSubsectorRoutes(routes = []) {
+  return routes.map((route, routeIndex) => ({
+    ...route,
+    sortOrder: routeIndex
+  }));
+}
+
+function createNewRouteDraft(subsectorId, routes = []) {
+  const routeSector = routeSectorFromSubsectorId(subsectorId);
+  return {
+    ...EMPTY_ROUTE,
+    id: `${routeSector}-${Math.max(1, routes.length + 1)}`,
+    name: '',
+    sortOrder: routes.length
+  };
+}
+
 function routeSectorFromSubsectorId(subsectorId) {
   if (!subsectorId) {
     return 'subsector';
@@ -142,6 +159,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [saving, setSaving] = useState(false);
   const [lastSaveResult, setLastSaveResult] = useState('idle');
   const [locatingRouteId, setLocatingRouteId] = useState('');
+  const [newRouteDraft, setNewRouteDraft] = useState({ ...EMPTY_ROUTE, id: '', name: '', sortOrder: 0 });
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
 
@@ -190,7 +208,14 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         location: payload?.location || DEFAULT_SECTOR_INFO.location,
         description: payload?.description || ''
       });
-      setSubsectors(Array.isArray(payload.subsectors) ? payload.subsectors : []);
+      setSubsectors(
+        Array.isArray(payload.subsectors)
+          ? payload.subsectors.map((subsector) => ({
+              ...subsector,
+              routes: normalizeSubsectorRoutes(subsector.routes ?? [])
+            }))
+          : []
+      );
       setAuthenticated(true);
       setLastSaveResult('idle');
       if (typeof window !== 'undefined') {
@@ -215,6 +240,14 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       login(savedPassword);
     }
   }, [login]);
+
+  useEffect(() => {
+    if (!selectedSubsector) {
+      return;
+    }
+
+    setNewRouteDraft(createNewRouteDraft(selectedSubsector.id, selectedSubsector.routes ?? []));
+  }, [selectedSubsector]);
 
   const updateSubsector = (currentSubsectorId, field, value) => {
     setSubsectors((current) =>
@@ -250,17 +283,67 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   };
 
   const addRoute = (currentSubsectorId) => {
-    const routeSector = routeSectorFromSubsectorId(currentSubsectorId);
-    const newId = `${routeSector}-${Math.max(1, (selectedSubsector?.routes ?? []).length + 1)}`;
+    const trimmedName = String(newRouteDraft.name ?? '').trim();
+
+    if (!trimmedName) {
+      setError('Completá al menos el nombre de la nueva vía.');
+      return;
+    }
+
+    const normalizedNewRoute = {
+      ...EMPTY_ROUTE,
+      ...newRouteDraft,
+      id: String(newRouteDraft.id || '').trim() || createNewRouteDraft(currentSubsectorId).id,
+      name: trimmedName
+    };
 
     setSubsectors((current) =>
-      current.map((subsector) =>
-        subsector.id === currentSubsectorId
-          ? { ...subsector, routes: [...(subsector.routes ?? []), { ...EMPTY_ROUTE, id: newId, name: 'Nueva vía' }] }
-          : subsector
-      )
+      current.map((subsector) => {
+        if (subsector.id !== currentSubsectorId) {
+          return subsector;
+        }
+
+        const nextRoutes = normalizeSubsectorRoutes([...(subsector.routes ?? []), normalizedNewRoute]);
+        return { ...subsector, routes: nextRoutes };
+      })
     );
-    setMessage('Vía agregada. Editala y guardá cambios.');
+    setError('');
+    setMessage('Vía agregada al final del subsector. Guardá cambios para persistir.');
+
+    const currentRoutes = selectedSubsector?.routes ?? [];
+    setNewRouteDraft(createNewRouteDraft(currentSubsectorId, [...currentRoutes, normalizedNewRoute]));
+  };
+
+  const moveRoute = (currentSubsectorId, currentRouteId, direction) => {
+    setSubsectors((current) =>
+      current.map((subsector) => {
+        if (subsector.id !== currentSubsectorId) {
+          return subsector;
+        }
+
+        const routes = [...(subsector.routes ?? [])];
+        const routeIndex = routes.findIndex((route) => route.id === currentRouteId);
+        if (routeIndex < 0) {
+          return subsector;
+        }
+
+        const destinationIndex = direction === 'up' ? routeIndex - 1 : routeIndex + 1;
+        if (destinationIndex < 0 || destinationIndex >= routes.length) {
+          return subsector;
+        }
+
+        const [route] = routes.splice(routeIndex, 1);
+        routes.splice(destinationIndex, 0, route);
+
+        return {
+          ...subsector,
+          routes: normalizeSubsectorRoutes(routes)
+        };
+      })
+    );
+
+    setError('');
+    setMessage('Orden de vías actualizado. Guardá cambios para persistir.');
   };
 
   const updateRouteIdPart = (currentSubsectorId, currentRouteId, field, value) => {
@@ -292,11 +375,16 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
 
   const removeRoute = (currentSubsectorId, currentRouteId) => {
     setSubsectors((current) =>
-      current.map((subsector) =>
-        subsector.id === currentSubsectorId
-          ? { ...subsector, routes: (subsector.routes ?? []).filter((route) => route.id !== currentRouteId) }
-          : subsector
-      )
+      current.map((subsector) => {
+        if (subsector.id !== currentSubsectorId) {
+          return subsector;
+        }
+
+        return {
+          ...subsector,
+          routes: normalizeSubsectorRoutes((subsector.routes ?? []).filter((route) => route.id !== currentRouteId))
+        };
+      })
     );
     setMessage('Vía eliminada de la edición actual.');
   };
@@ -530,11 +618,64 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     onChange={(nextValue) => updateSubsector(selectedSubsector.id, 'image', nextValue)}
                     availableImages={availableImages}
                   />
-                  <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
-                    + Agregar vía
-                  </button>
+                  <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                    <h3 className="text-sm font-semibold text-slate-100">Agregar nueva vía</h3>
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <label className="text-xs text-slate-300">
+                        ID
+                        <input
+                          value={newRouteDraft.id ?? ''}
+                          onChange={(event) => setNewRouteDraft((current) => ({ ...current, id: event.target.value }))}
+                          placeholder="sector-12"
+                          className="mt-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                        />
+                      </label>
+                      <label className="text-xs text-slate-300">
+                        Nombre *
+                        <input
+                          value={newRouteDraft.name ?? ''}
+                          onChange={(event) => setNewRouteDraft((current) => ({ ...current, name: event.target.value }))}
+                          placeholder="Nombre de la vía"
+                          className="mt-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                        />
+                      </label>
+                    </div>
+                    <div className="grid gap-2 md:grid-cols-4">
+                      <input
+                        value={newRouteDraft.grade ?? ''}
+                        onChange={(event) => setNewRouteDraft((current) => ({ ...current, grade: event.target.value }))}
+                        placeholder="Grado"
+                        className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                      />
+                      <select
+                        value={newRouteDraft.stars ?? ''}
+                        onChange={(event) => setNewRouteDraft((current) => ({ ...current, stars: event.target.value }))}
+                        className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                      >
+                        {STAR_OPTIONS.map((starOption) => <option key={starOption} value={starOption}>{starOption || 'Sin estrellas'}</option>)}
+                      </select>
+                      <select
+                        value={newRouteDraft.type ?? 'Sport'}
+                        onChange={(event) => setNewRouteDraft((current) => ({ ...current, type: event.target.value }))}
+                        className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                      >
+                        {ROUTE_TYPE_OPTIONS.map((typeOption) => <option key={typeOption} value={typeOption}>{typeOption}</option>)}
+                      </select>
+                      <input
+                        value={newRouteDraft.lengthMeters ?? ''}
+                        onChange={(event) => setNewRouteDraft((current) => ({ ...current, lengthMeters: event.target.value }))}
+                        placeholder="Largo (m)"
+                        className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+                      />
+                    </div>
+                    <button type="button" onClick={() => addRoute(selectedSubsector.id)} className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
+                      + Agregar vía al final
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-slate-400">Podés reordenar las vías con las flechas. El orden se guarda con &quot;Guardar cambios&quot;.</p>
                   <ul className="space-y-2">
-                    {(selectedSubsector.routes ?? []).map((route) => (
+                    {(selectedSubsector.routes ?? []).map((route, routeIndex, allRoutes) => (
                       <li key={route.id} className="rounded border border-slate-700 p-2 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
                         <div className="flex items-start gap-3">
                           <Link href={`/admin/${selectedSubsector.id}/${route.id}`} className="block flex-1 rounded px-1 py-1">
@@ -566,7 +707,25 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             </div>
                           </Link>
 
-                          <button type="button" onClick={() => removeRoute(selectedSubsector.id, route.id)} className="rounded border border-red-500/60 bg-red-700/20 px-2 py-1 text-xs font-semibold text-red-200">Eliminar</button>
+                          <div className="flex flex-col gap-1">
+                            <button
+                              type="button"
+                              onClick={() => moveRoute(selectedSubsector.id, route.id, 'up')}
+                              disabled={routeIndex === 0}
+                              className="rounded border border-slate-500 bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveRoute(selectedSubsector.id, route.id, 'down')}
+                              disabled={routeIndex === allRoutes.length - 1}
+                              className="rounded border border-slate-500 bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              ↓
+                            </button>
+                            <button type="button" onClick={() => removeRoute(selectedSubsector.id, route.id)} className="rounded border border-red-500/60 bg-red-700/20 px-2 py-1 text-xs font-semibold text-red-200">Eliminar</button>
+                          </div>
                         </div>
                       </li>
                     ))}

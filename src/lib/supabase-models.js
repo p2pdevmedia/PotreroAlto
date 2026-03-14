@@ -14,7 +14,8 @@ export function mapRouteRow(route) {
     firstAscentBy: route.first_ascent_by,
     firstAscentDate: route.first_ascent_date,
     latitude: route.latitude,
-    longitude: route.longitude
+    longitude: route.longitude,
+    sortOrder: route.sort_order
   };
 }
 
@@ -33,6 +34,7 @@ export function mapSubsectorRows(subsectorRows, routeRows) {
     sector: subsector.sector,
     description: subsector.description ?? '',
     image: subsector.image,
+    sortOrder: subsector.sort_order,
     routes: routeMap.get(subsector.id) ?? []
   }));
 }
