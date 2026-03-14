@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { z } from 'zod';
 import { adminLoginSchema, routeSchema, sectorSchema, subsectorSchema } from '@/lib/admin-zod-schemas';
 
 function createId(prefix) {
@@ -77,6 +78,20 @@ function buildGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
+function issuesToFieldErrors(issues = []) {
+  return issues.reduce((accumulator, issue) => {
+    const fieldName = String(issue.path?.[issue.path.length - 1] ?? '');
+    if (!fieldName || accumulator[fieldName]) {
+      return accumulator;
+    }
+
+    return {
+      ...accumulator,
+      [fieldName]: issue.message
+    };
+  }, {});
+}
+
 function ImageField({
   label,
   value,
@@ -128,6 +143,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [subsectors, setSubsectors] = useState([]);
   const [sectorInfo, setSectorInfo] = useState(DEFAULT_SECTOR_INFO);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -283,12 +299,26 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   }, [login]);
 
   const updateSubsector = (currentSubsectorId, field, value) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+
     setSubsectors((current) =>
       current.map((subsector) => (subsector.id === currentSubsectorId ? { ...subsector, [field]: value } : subsector))
     );
   };
 
   const updateRoute = (currentSubsectorId, currentRouteId, field, value) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+
     setSubsectors((current) =>
       current.map((subsector) => {
         if (subsector.id !== currentSubsectorId) return subsector;
@@ -414,6 +444,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
 
   const save = async () => {
     setError('');
+    setFieldErrors({});
     setMessage('');
     setSaving(true);
     setLastSaveResult('idle');
@@ -450,17 +481,20 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       if (view === 'route' && selectedSubsector && selectedRoute) {
         const parsedRoute = routeSchema.safeParse(selectedRoute);
         if (!parsedRoute.success) {
-          throw new Error(parsedRoute.error.issues[0]?.message ?? 'La vía tiene datos inválidos.');
+          setFieldErrors(issuesToFieldErrors(parsedRoute.error.issues));
+          throw parsedRoute.error;
         }
       } else if ((view === 'subsector' || view === 'new-subsector') && selectedSubsector) {
         const parsedSubsector = subsectorSchema.safeParse(selectedSubsector);
         if (!parsedSubsector.success) {
-          throw new Error(parsedSubsector.error.issues[0]?.message ?? 'El subsector tiene datos inválidos.');
+          setFieldErrors(issuesToFieldErrors(parsedSubsector.error.issues));
+          throw parsedSubsector.error;
         }
       } else {
         const parsedSector = sectorSchema.safeParse(sectorInfo);
         if (!parsedSector.success) {
-          throw new Error(parsedSector.error.issues[0]?.message ?? 'El sector tiene datos inválidos.');
+          setFieldErrors(issuesToFieldErrors(parsedSector.error.issues));
+          throw parsedSector.error;
         }
       }
 
@@ -493,7 +527,11 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       }
     } catch (saveError) {
       setLastSaveResult('error');
-      setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
+      if (saveError instanceof z.ZodError) {
+        setError('Revisá los campos marcados en rojo.');
+      } else {
+        setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
+      }
     } finally {
       setSaving(false);
     }
@@ -702,10 +740,12 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                     <label className="text-sm text-slate-200">
                       ID
                       <input value={selectedSubsector.id ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'id', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100" />
+                      {fieldErrors.id ? <span className="mt-1 block text-xs text-red-300">{fieldErrors.id}</span> : null}
                     </label>
                     <label className="text-sm text-slate-200">
                       Nombre
                       <input value={selectedSubsector.name ?? ''} onChange={(event) => updateSubsector(selectedSubsector.id, 'name', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                      {fieldErrors.name ? <span className="mt-1 block text-xs text-red-300">{fieldErrors.name}</span> : null}
                     </label>
                   </div>
                   <label className="block text-sm text-slate-200">
@@ -787,8 +827,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           <input value={routeIdParts.routeSector} onChange={(event) => updateRouteIdPart(selectedSubsector.id, selectedRoute.id, 'routeSector', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                           <input value={routeIdParts.routeNumber} onChange={(event) => updateRouteIdPart(selectedSubsector.id, selectedRoute.id, 'routeNumber', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         </div>
-                        <input value={selectedRoute.name ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'name', event.target.value)} placeholder="Nombre" className="mb-2 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
-                        <div className="mb-2 grid gap-2 md:grid-cols-4">
+                        <input value={selectedRoute.name ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'name', event.target.value)} placeholder="Nombre" className="mb-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        {fieldErrors.name ? <p className="mb-2 text-xs text-red-300">{fieldErrors.name}</p> : null}
+                        <div className="mb-1 grid gap-2 md:grid-cols-4">
                           <input value={selectedRoute.grade ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'grade', event.target.value)} placeholder="Grado" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                           <select value={selectedRoute.stars ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'stars', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
                             {STAR_OPTIONS.map((starOption) => <option key={starOption} value={starOption}>{starOption || 'Sin estrellas'}</option>)}
@@ -798,6 +839,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           </select>
                           <input value={selectedRoute.lengthMeters ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'lengthMeters', event.target.value)} placeholder="Largo (m)" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         </div>
+                        {fieldErrors.lengthMeters ? <p className="mb-2 text-xs text-red-300">{fieldErrors.lengthMeters}</p> : null}
                         <div className="mb-2">
                           <ImageField
                             label="Imagen de la vía"
@@ -806,11 +848,13 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             availableImages={availableImages}
                           />
                         </div>
-                        <div className="mb-2 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                        <div className="mb-1 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
                           <input value={selectedRoute.latitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'latitude', event.target.value)} placeholder="Latitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                           <input value={selectedRoute.longitude ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'longitude', event.target.value)} placeholder="Longitud" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                           <button type="button" onClick={() => captureRouteLocation(selectedSubsector.id, selectedRoute.id)} disabled={locatingRouteId === selectedRoute.id} className="rounded border border-sky-500/60 bg-sky-700/20 px-3 py-1 text-xs font-semibold text-sky-100 disabled:cursor-not-allowed disabled:opacity-60">{locatingRouteId === selectedRoute.id ? 'Ubicando...' : 'Usar mi ubicación'}</button>
                         </div>
+                        {fieldErrors.latitude ? <p className="text-xs text-red-300">{fieldErrors.latitude}</p> : null}
+                        {fieldErrors.longitude ? <p className="mb-2 text-xs text-red-300">{fieldErrors.longitude}</p> : null}
                         {hasValidCoordinates ? <a href={buildGoogleMapsUrl(latitude, longitude)} target="_blank" rel="noreferrer" className="mb-2 inline-block text-xs text-sky-300 underline">Ver en Google Maps</a> : null}
                         <textarea value={selectedRoute.description ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'description', event.target.value)} placeholder="Descripción" className="mb-2 min-h-16 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                       </>
