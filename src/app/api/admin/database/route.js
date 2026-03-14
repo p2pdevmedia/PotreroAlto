@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mapSubsectorRows } from '@/lib/supabase-models';
+import { mapRouteRow } from '@/lib/supabase-models';
 import { deleteRows, selectRows, upsertRows } from '@/lib/supabase';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Simonalacacaliza!';
@@ -62,6 +62,17 @@ function sanitizeSubsectors(subsectors) {
   }
 
   return subsectors.map((subsector, subsectorIndex) => sanitizeSubsector(subsector, subsectorIndex));
+}
+
+function mapSubsectorWithoutRoutes(subsector) {
+  return {
+    id: subsector.id,
+    name: subsector.name,
+    sector: subsector.sector,
+    description: subsector.description ?? '',
+    image: normalizePublicImagePath(subsector.image),
+    routes: []
+  };
 }
 
 async function saveSectorInfo(body) {
@@ -149,37 +160,29 @@ async function saveSingleSubsector(body) {
     { onConflict: 'id' }
   );
 
-  await deleteRows('routes', {
-    sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
-    subsector_id: `eq.${subsector.id}`
-  });
+  return { ok: true, mode: 'subsector', subsectorId: subsector.id };
+}
 
-  const routesPayload = (subsector.routes ?? []).map((route) => ({
-    id: route.id,
-    sector_id: POTRERO_ALTO_SECTOR_ID,
-    subsector_id: subsector.id,
-    name: route.name,
-    grade: route.grade,
-    stars: route.stars,
-    type: route.type,
-    description: route.description,
-    image: route.image,
-    length_meters: route.lengthMeters,
-    quickdraws: route.quickdraws,
-    equipped_by: route.equippedBy,
-    equipped_date: route.equippedDate,
-    first_ascent_by: route.firstAscentBy,
-    first_ascent_date: route.firstAscentDate,
-    latitude: route.latitude,
-    longitude: route.longitude,
-    sort_order: route.sortOrder
-  }));
+async function deleteSingleRoute(body) {
+  const routeId = String(body?.routeId ?? '').trim();
 
-  if (routesPayload.length) {
-    await upsertRows('routes', routesPayload, { onConflict: 'id' });
+  if (!routeId) {
+    throw new Error('Falta routeId para eliminar la vía.');
   }
 
-  return { ok: true, mode: 'subsector', subsectorId: subsector.id, routeCount: routesPayload.length };
+  await deleteRows('routes', { id: `eq.${routeId}`, sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
+  return { ok: true, mode: 'delete-route', routeId };
+}
+
+async function deleteSingleSubsector(body) {
+  const subsectorId = String(body?.subsectorId ?? '').trim();
+
+  if (!subsectorId) {
+    throw new Error('Falta subsectorId para eliminar el subsector.');
+  }
+
+  await deleteRows('subsectors', { id: `eq.${subsectorId}`, sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
+  return { ok: true, mode: 'delete-subsector', subsectorId };
 }
 
 async function saveSingleRoute(body) {
@@ -225,7 +228,29 @@ export async function GET(request) {
   }
 
   try {
-    const [sectorRows, subsectorsRows, routesRows] = await Promise.all([
+    const { searchParams } = new URL(request.url);
+    const subsectorId = searchParams.get('subsectorId')?.trim();
+
+    if (subsectorId) {
+      const routesRows = await selectRows('routes', {
+        select:
+          'id,subsector_id,name,grade,stars,type,description,image,length_meters,quickdraws,equipped_by,equipped_date,first_ascent_by,first_ascent_date,latitude,longitude,sort_order',
+        sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
+        subsector_id: `eq.${subsectorId}`,
+        order: 'sort_order.asc,name.asc'
+      });
+
+      return NextResponse.json({
+        subsectorId,
+        routes: (routesRows ?? []).map((routeRow) => ({
+          ...mapRouteRow(routeRow),
+          subsectorId: routeRow.subsector_id,
+          sortOrder: routeRow.sort_order
+        }))
+      });
+    }
+
+    const [sectorRows, subsectorsRows] = await Promise.all([
       selectRows('sectors', {
         select: 'id,name,location,description',
         id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
@@ -233,12 +258,6 @@ export async function GET(request) {
       }),
       selectRows('subsectors', {
         select: 'id,sector_id,name,sector,description,image,sort_order',
-        sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
-        order: 'sort_order.asc,name.asc'
-      }),
-      selectRows('routes', {
-        select:
-          'id,subsector_id,name,grade,stars,type,description,image,length_meters,quickdraws,equipped_by,equipped_date,first_ascent_by,first_ascent_date,latitude,longitude,sort_order',
         sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
         order: 'sort_order.asc,name.asc'
       })
@@ -256,7 +275,7 @@ export async function GET(request) {
       name: sector.name,
       location: sector.location,
       description: sector.description,
-      subsectors: mapSubsectorRows(subsectorsRows ?? [], routesRows ?? [])
+      subsectors: (subsectorsRows ?? []).map((subsector) => mapSubsectorWithoutRoutes(subsector))
     });
   } catch (error) {
     return NextResponse.json(
@@ -281,6 +300,10 @@ export async function POST(request) {
       result = await saveSingleRoute(body);
     } else if (body?.mode === 'subsector') {
       result = await saveSingleSubsector(body);
+    } else if (body?.mode === 'delete-route') {
+      result = await deleteSingleRoute(body);
+    } else if (body?.mode === 'delete-subsector') {
+      result = await deleteSingleSubsector(body);
     } else if (body?.mode === 'sector') {
       await saveSectorInfo(body?.sector ?? {});
       result = { ok: true, mode: 'sector' };

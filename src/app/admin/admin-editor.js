@@ -136,6 +136,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [draftReady, setDraftReady] = useState(false);
   const [draftSubsectorId, setDraftSubsectorId] = useState('');
   const [draftRouteId, setDraftRouteId] = useState('');
+  const [loadingRoutesFor, setLoadingRoutesFor] = useState('');
 
   const authHeaders = useMemo(() => ({ 'x-admin-password': password }), [password]);
 
@@ -170,6 +171,76 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     return 'Guardar cambios';
   }, [lastSaveResult, saving]);
 
+  const fetchOverview = useCallback(async (candidate) => {
+    const response = await fetch('/api/admin/database', {
+      headers: { 'x-admin-password': candidate }
+    });
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload?.error ?? 'No se pudo validar el password.');
+    }
+
+    setSectorInfo({
+      name: payload?.name || DEFAULT_SECTOR_INFO.name,
+      location: payload?.location || DEFAULT_SECTOR_INFO.location,
+      description: payload?.description || ''
+    });
+
+    const normalizedSubsectors = Array.isArray(payload.subsectors)
+      ? payload.subsectors.map((subsector) => ({
+          ...subsector,
+          image: availableImages.includes(subsector?.image) ? subsector.image : '',
+          routes: [],
+          routesLoaded: false
+        }))
+      : [];
+
+    setSubsectors(normalizedSubsectors);
+  }, [availableImages]);
+
+  const fetchRoutesForSubsector = useCallback(async (targetSubsectorId, { force = false } = {}) => {
+    const normalizedSubsectorId = String(targetSubsectorId ?? '').trim();
+    if (!normalizedSubsectorId || !password) {
+      return;
+    }
+
+    const cachedSubsector = subsectors.find((subsector) => subsector.id === normalizedSubsectorId);
+    if (!force && cachedSubsector?.routesLoaded) {
+      return;
+    }
+
+    setLoadingRoutesFor(normalizedSubsectorId);
+
+    try {
+      const response = await fetch(`/api/admin/database?subsectorId=${encodeURIComponent(normalizedSubsectorId)}`, {
+        headers: authHeaders
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'No se pudieron leer las vías del subsector.');
+      }
+
+      const normalizedRoutes = Array.isArray(payload?.routes)
+        ? payload.routes.map((route) => ({
+            ...route,
+            image: availableImages.includes(route?.image) ? route.image : ''
+          }))
+        : [];
+
+      setSubsectors((current) =>
+        current.map((subsector) => (
+          subsector.id === normalizedSubsectorId
+            ? { ...subsector, routes: normalizedRoutes, routesLoaded: true }
+            : subsector
+        ))
+      );
+    } finally {
+      setLoadingRoutesFor('');
+    }
+  }, [authHeaders, availableImages, password, subsectors]);
+
   const login = useCallback(async (rawPassword) => {
     const candidate = rawPassword ?? password;
     const parsedLogin = adminLoginSchema.safeParse({ password: candidate });
@@ -184,34 +255,8 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/database', {
-        headers: { 'x-admin-password': candidate }
-      });
-      const payload = await response.json();
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'No se pudo validar el password.');
-      }
-
       setPassword(candidate);
-      setSectorInfo({
-        name: payload?.name || DEFAULT_SECTOR_INFO.name,
-        location: payload?.location || DEFAULT_SECTOR_INFO.location,
-        description: payload?.description || ''
-      });
-      const normalizedSubsectors = Array.isArray(payload.subsectors)
-        ? payload.subsectors.map((subsector) => ({
-            ...subsector,
-            image: availableImages.includes(subsector?.image) ? subsector.image : '',
-            routes: Array.isArray(subsector?.routes)
-              ? subsector.routes.map((route) => ({
-                  ...route,
-                  image: availableImages.includes(route?.image) ? route.image : ''
-                }))
-              : []
-          }))
-        : [];
-      setSubsectors(normalizedSubsectors);
+      await fetchOverview(candidate);
       setAuthenticated(true);
       setLastSaveResult('idle');
       if (typeof window !== 'undefined') {
@@ -223,7 +268,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     } finally {
       setLoading(false);
     }
-  }, [availableImages, password]);
+  }, [fetchOverview, password]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -256,9 +301,30 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     );
   };
 
-  const removeSubsector = (currentSubsectorId) => {
-    setSubsectors((current) => current.filter((subsector) => subsector.id !== currentSubsectorId));
-    setMessage('Subsector eliminado de la edición actual.');
+  const removeSubsector = async (currentSubsectorId) => {
+    setError('');
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/admin/database', {
+        method: 'POST',
+        headers: {
+          ...authHeaders,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mode: 'delete-subsector', subsectorId: currentSubsectorId })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'No se pudo eliminar el subsector.');
+      }
+
+      setSubsectors((current) => current.filter((subsector) => subsector.id !== currentSubsectorId));
+      setMessage('Subsector eliminado correctamente.');
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Error desconocido eliminando subsector.');
+    }
   };
 
   const updateRouteIdPart = (currentSubsectorId, currentRouteId, field, value) => {
@@ -288,15 +354,36 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     );
   };
 
-  const removeRoute = (currentSubsectorId, currentRouteId) => {
-    setSubsectors((current) =>
-      current.map((subsector) =>
-        subsector.id === currentSubsectorId
-          ? { ...subsector, routes: (subsector.routes ?? []).filter((route) => route.id !== currentRouteId) }
-          : subsector
-      )
-    );
-    setMessage('Vía eliminada de la edición actual.');
+  const removeRoute = async (currentSubsectorId, currentRouteId) => {
+    setError('');
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/admin/database', {
+        method: 'POST',
+        headers: {
+          ...authHeaders,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mode: 'delete-route', routeId: currentRouteId })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'No se pudo eliminar la vía.');
+      }
+
+      setSubsectors((current) =>
+        current.map((subsector) =>
+          subsector.id === currentSubsectorId
+            ? { ...subsector, routes: (subsector.routes ?? []).filter((route) => route.id !== currentRouteId) }
+            : subsector
+        )
+      );
+      setMessage('Vía eliminada correctamente.');
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Error desconocido eliminando vía.');
+    }
   };
 
   const captureRouteLocation = (currentSubsectorId, currentRouteId) => {
@@ -342,10 +429,16 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
             subsectorId: selectedSubsector.id
           }
         };
-      } else if (view === 'subsector' && selectedSubsector) {
+      } else if ((view === 'subsector' || view === 'new-subsector') && selectedSubsector) {
         savePayload = {
           mode: 'subsector',
-          subsector: selectedSubsector
+          subsector: {
+            id: selectedSubsector.id,
+            name: selectedSubsector.name,
+            sector: selectedSubsector.sector,
+            description: selectedSubsector.description,
+            image: selectedSubsector.image
+          }
         };
       } else {
         savePayload = {
@@ -359,7 +452,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         if (!parsedRoute.success) {
           throw new Error(parsedRoute.error.issues[0]?.message ?? 'La vía tiene datos inválidos.');
         }
-      } else if (view === 'subsector' && selectedSubsector) {
+      } else if ((view === 'subsector' || view === 'new-subsector') && selectedSubsector) {
         const parsedSubsector = subsectorSchema.safeParse(selectedSubsector);
         if (!parsedSubsector.success) {
           throw new Error(parsedSubsector.error.issues[0]?.message ?? 'El subsector tiene datos inválidos.');
@@ -395,7 +488,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       } else {
         setMessage(`Guardado exitoso. Subsectores: ${payload?.subsectorCount ?? 0}.`);
       }
-      await login(password);
+      if (payload?.mode === 'route' && selectedSubsector?.id) {
+        await fetchRoutesForSubsector(selectedSubsector.id, { force: true });
+      }
     } catch (saveError) {
       setLastSaveResult('error');
       setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
@@ -412,8 +507,21 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
 
     setError('');
     setMessage('Refrescando caché...');
-    await login(password);
+    await fetchOverview(password);
+    setMessage('Caché actualizada.');
   };
+
+  useEffect(() => {
+    if (!authenticated || !selectedSubsector) {
+      return;
+    }
+
+    if (view === 'subsector' || view === 'route' || view === 'new-route') {
+      fetchRoutesForSubsector(selectedSubsector.id).catch((loadError) => {
+        setError(loadError instanceof Error ? loadError.message : 'No se pudieron cargar las vías del subsector.');
+      });
+    }
+  }, [authenticated, fetchRoutesForSubsector, selectedSubsector, view]);
 
   useEffect(() => {
     if (!authenticated || !subsectors.length) {
@@ -429,7 +537,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
 
         return [
           ...current,
-          { id: draftId, name: 'Nuevo subsector', sector: 'Potrero Alto', description: '', image: '', routes: [] }
+          { id: draftId, name: 'Nuevo subsector', sector: 'Potrero Alto', description: '', image: '', routes: [], routesLoaded: true }
         ];
       });
       setDraftSubsectorId(draftId);
@@ -438,7 +546,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       return;
     }
 
-    if (view === 'new-route' && selectedSubsector && !draftReady) {
+    if (view === 'new-route' && selectedSubsector && !draftReady && loadingRoutesFor !== selectedSubsector.id) {
       const routeSector = routeSectorFromSubsectorId(selectedSubsector.id);
       const nextIndex = Math.max(1, (selectedSubsector.routes ?? []).length + 1);
       const newId = `${routeSector}-${nextIndex}`;
@@ -454,7 +562,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       setDraftReady(true);
       setMessage('Vía agregada. Completá el formulario y guardá cambios.');
     }
-  }, [authenticated, draftReady, selectedSubsector, subsectors.length, view]);
+  }, [authenticated, draftReady, loadingRoutesFor, selectedSubsector, subsectors.length, view]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
@@ -553,7 +661,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                             <p className="text-sm font-semibold text-slate-100">{subsector.name || '(sin nombre)'}</p>
                             <p className="text-xs text-slate-400">ID: {subsector.id}</p>
                             <p className="text-xs text-slate-300">Sector: {subsector.sector || 'Potrero Alto'}</p>
-                            <p className="text-xs text-slate-400">Vías cargadas: {(subsector.routes ?? []).length}</p>
+                            <p className="text-xs text-slate-400">Vías: se cargan al entrar al subsector</p>
                             <p className="text-xs text-slate-300">
                               Descripción: {subsector.description?.trim() ? subsector.description : 'Sin descripción'}
                             </p>
@@ -613,6 +721,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                   <Link href={`/admin/${selectedSubsector.id}/new-route`} className="inline-block rounded border border-slate-500 px-3 py-1 text-sm text-slate-100">
                     + Agregar vía
                   </Link>
+                  {loadingRoutesFor === selectedSubsector.id ? <p className="text-xs text-slate-400">Cargando vías del subsector...</p> : null}
                   <ul className="space-y-2">
                     {(selectedSubsector.routes ?? []).map((route) => (
                       <li key={route.id} className="rounded border border-slate-700 p-2 transition-colors hover:border-slate-500 hover:bg-slate-800/60">
