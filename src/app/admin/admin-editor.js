@@ -133,7 +133,6 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [saving, setSaving] = useState(false);
   const [lastSaveResult, setLastSaveResult] = useState('idle');
   const [locatingRouteId, setLocatingRouteId] = useState('');
-  const [draftReady, setDraftReady] = useState(false);
   const [draftSubsectorId, setDraftSubsectorId] = useState('');
   const [draftRouteId, setDraftRouteId] = useState('');
 
@@ -405,11 +404,16 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   };
 
   useEffect(() => {
+    setDraftSubsectorId('');
+    setDraftRouteId('');
+  }, [subsectorId, view]);
+
+  useEffect(() => {
     if (!authenticated || !subsectors.length) {
       return;
     }
 
-    if (view === 'new-subsector' && !draftReady) {
+    if (view === 'new-subsector' && !draftSubsectorId) {
       const draftId = createId('subsector');
       setSubsectors((current) => {
         if (current.some((subsector) => subsector.id === draftId)) {
@@ -422,12 +426,11 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         ];
       });
       setDraftSubsectorId(draftId);
-      setDraftReady(true);
       setMessage('Subsector creado. Completá el formulario y guardá cambios.');
       return;
     }
 
-    if (view === 'new-route' && selectedSubsector && !draftReady) {
+    if (view === 'new-route' && selectedSubsector && !draftRouteId) {
       const routeSector = routeSectorFromSubsectorId(selectedSubsector.id);
       const nextIndex = Math.max(1, (selectedSubsector.routes ?? []).length + 1);
       const newId = `${routeSector}-${nextIndex}`;
@@ -440,10 +443,9 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         )
       );
       setDraftRouteId(newId);
-      setDraftReady(true);
       setMessage('Vía agregada. Completá el formulario y guardá cambios.');
     }
-  }, [authenticated, draftReady, selectedSubsector, subsectors.length, view]);
+  }, [authenticated, draftRouteId, draftSubsectorId, selectedSubsector, subsectors.length, view]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
