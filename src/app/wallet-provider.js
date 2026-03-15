@@ -10,19 +10,21 @@ const WalletContext = createContext({
   disconnectWallet: () => {}
 });
 
-async function syncPrivyUser(user) {
-  const response = await fetch('/api/auth/privy', {
+async function authRequest(payload) {
+  const response = await fetch('/api/auth/native', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify(payload)
   });
 
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(body || 'No se pudo sincronizar usuario con Privy.');
+    throw new Error(data?.error || 'No se pudo completar la autenticación.');
   }
+
+  return data;
 }
 
 async function connectWithInjectedProvider() {
@@ -40,30 +42,13 @@ async function connectWithInjectedProvider() {
   return primary;
 }
 
-function buildWalletPrivyPayload(address) {
-  const normalizedAddress = address.toLowerCase();
-
-  return {
-    id: `did:privy:wallet:${normalizedAddress}`,
-    isGuest: false,
-    linkedAccounts: [
-      {
-        type: 'wallet',
-        address: normalizedAddress,
-        chainType: 'ethereum',
-        walletClient: 'injected'
-      }
-    ]
-  };
-}
-
 function AuthOptionButton({ icon, label, onClick, disabled = false, rightSlot = null }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center gap-3 rounded-xl border border-slate-600 bg-slate-900/70 px-3 py-3 text-left text-sm text-slate-100 transition hover:border-sunset hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-80"
+      className="flex w-full items-center gap-3 rounded-xl border border-slate-600 bg-slate-900/70 px-3 py-3 text-left text-sm text-slate-100 transition hover:border-sunset hover:bg-slate-900 disabled:cursor-not-allowed disabled:border-slate-700 disabled:bg-slate-900/40 disabled:text-slate-500"
     >
       <span className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-500/60 bg-slate-800 text-slate-100">{icon}</span>
       <span className="flex-1">{label}</span>
@@ -121,12 +106,16 @@ export default function WalletProvider({ children }) {
   const [address, setAddress] = useState(null);
   const [authError, setAuthError] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [authMode, setAuthMode] = useState('login');
 
   const loginWithWallet = async () => {
     try {
       setAuthError('');
       const nextAddress = await connectWithInjectedProvider();
-      await syncPrivyUser(buildWalletPrivyPayload(nextAddress));
+      await authRequest({ action: 'wallet', walletAddress: nextAddress });
       setAddress(nextAddress);
       setIsLoginModalOpen(false);
     } catch (error) {
@@ -134,8 +123,21 @@ export default function WalletProvider({ children }) {
     }
   };
 
-  const loginWithSocial = (provider) => {
-    setAuthError(`Privy ${provider} requiere configurar el SDK cliente para OAuth.`);
+  const submitEmailAuth = async () => {
+    try {
+      setAuthError('');
+      const payload = { action: authMode, email, password, displayName };
+      const data = await authRequest(payload);
+      if (authMode === 'recover') {
+        setAuthError(data?.message || 'Si el email existe, enviamos instrucciones.');
+        return;
+      }
+
+      setAddress(data?.user?.walletAddress || `mail:${email.toLowerCase()}`);
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'No se pudo iniciar sesión.');
+    }
   };
 
   const value = useMemo(
@@ -172,24 +174,71 @@ export default function WalletProvider({ children }) {
                 Cerrar
               </button>
             </div>
-            <p className="mb-3 text-xs text-slate-400">Elegí cómo querés iniciar sesión con Privy:</p>
+            <p className="mb-3 text-xs text-slate-400">Elegí cómo querés iniciar sesión:</p>
             <div className="space-y-2">
               <AuthOptionButton
                 icon={<MailIcon />}
-                label="your@email.com"
-                onClick={() => loginWithSocial('Email')}
-                rightSlot={<span className="text-xs font-medium text-sunset">Submit</span>}
+                label="Email y password"
+                onClick={() => setAuthMode('login')}
+                rightSlot={<span className="text-xs font-medium text-sunset">Activo</span>}
               />
-              <AuthOptionButton icon={<GoogleIcon />} label="Google" onClick={() => loginWithSocial('Google')} />
-              <AuthOptionButton icon={<DiscordIcon />} label="Discord" onClick={() => loginWithSocial('Discord')} />
-              <AuthOptionButton icon={<AppleIcon />} label="Apple" onClick={() => loginWithSocial('Apple')} />
+              <AuthOptionButton icon={<GoogleIcon />} label="Google" disabled />
+              <AuthOptionButton icon={<DiscordIcon />} label="Discord" disabled />
+              <AuthOptionButton icon={<AppleIcon />} label="Apple" disabled />
               <AuthOptionButton icon={<WalletIcon />} label="Continue with a wallet" onClick={loginWithWallet} />
             </div>
-            <button
-              type="button"
-              onClick={() => loginWithSocial('Passkey')}
-              className="mx-auto mt-4 block text-xs font-medium text-sunset transition hover:text-amber-300"
-            >
+
+            <div className="mt-4 rounded-xl border border-slate-700/70 bg-slate-950/60 p-3">
+              <div className="mb-2 flex gap-2 text-xs">
+                {['login', 'signup', 'recover'].map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setAuthMode(mode)}
+                    className={`rounded px-2 py-1 uppercase ${authMode === mode ? 'bg-slate-700 text-slate-100' : 'text-slate-400'}`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-2">
+                {authMode === 'signup' ? (
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    placeholder="Nombre (opcional)"
+                    className="w-full rounded border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-slate-100"
+                  />
+                ) : null}
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="tu@email.com"
+                  className="w-full rounded border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-slate-100"
+                />
+                {authMode !== 'recover' ? (
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Password"
+                    className="w-full rounded border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-slate-100"
+                  />
+                ) : null}
+                <button
+                  type="button"
+                  onClick={submitEmailAuth}
+                  disabled={!email || (authMode !== 'recover' && !password)}
+                  className="w-full rounded border border-slate-600 px-3 py-2 text-xs text-slate-100 disabled:opacity-40"
+                >
+                  {authMode === 'login' ? 'Iniciar sesión' : authMode === 'signup' ? 'Crear cuenta' : 'Recuperar password'}
+                </button>
+              </div>
+            </div>
+
+            <button type="button" disabled className="mx-auto mt-4 block text-xs font-medium text-slate-500">
               I have a passkey
             </button>
             {authError ? <p className="mt-3 text-xs text-red-300">{authError}</p> : null}
