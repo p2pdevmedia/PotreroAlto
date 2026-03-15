@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
 const emptyToUndefined = (value) => {
-  if (value === null) return undefined;
-  if (typeof value !== 'string') return value;
-  const trimmed = value.trim();
-  return trimmed === '' ? undefined : trimmed;
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed === '' ? undefined : trimmed;
+  }
+
+  if (typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  return value;
 };
 
 const optionalText = (fallback = '') => z

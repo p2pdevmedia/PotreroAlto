@@ -30,6 +30,41 @@ const EMPTY_ROUTE = {
 
 const ROUTE_TYPE_OPTIONS = ['Sport', 'Trad', 'Boulder', 'Proyecto'];
 const STAR_OPTIONS = ['', '0', '1', '2', '3', '4', '5'];
+const GRADE_OPTIONS = [
+  'Sin grado',
+  'Proyecto',
+  'V+',
+  '5a',
+  '5a+',
+  '5b',
+  '5b+',
+  '5c',
+  '5c+',
+  '6a',
+  '6a+',
+  '6b',
+  '6b+',
+  '6c',
+  '6c/+',
+  '6c+',
+  '7a',
+  '7a+',
+  '7b',
+  '7b+',
+  '7c',
+  '7c+',
+  '8a',
+  '8a+',
+  '8b',
+  '8b+',
+  '8c',
+  '8c+',
+  '9a',
+  '9a+',
+  '9b',
+  '9b+',
+  '9c'
+];
 
 const DEFAULT_SECTOR_INFO = {
   name: 'Potrero Alto',
@@ -79,17 +114,37 @@ function buildGoogleMapsUrl(latitude, longitude) {
 }
 
 function issuesToFieldErrors(issues = []) {
+  const fallbackByField = {
+    id: 'El ID no es válido.',
+    name: 'El nombre es obligatorio.',
+    grade: 'El grado seleccionado no es válido.',
+    stars: 'Las estrellas no son válidas.',
+    type: 'El tipo de vía no es válido.',
+    lengthMeters: 'Largo debe ser un entero.',
+    quickdraws: 'Expresses debe ser un entero.',
+    latitude: 'Latitud debe ser numérica.',
+    longitude: 'Longitud debe ser numérica.'
+  };
+
   return issues.reduce((accumulator, issue) => {
     const fieldName = String(issue.path?.[issue.path.length - 1] ?? '');
     if (!fieldName || accumulator[fieldName]) {
       return accumulator;
     }
 
+    const isGenericInvalidInput = issue.message === 'Invalid input' || issue.message === 'Invalid';
+    const message = isGenericInvalidInput ? (fallbackByField[fieldName] ?? 'Valor inválido.') : issue.message;
+
     return {
       ...accumulator,
-      [fieldName]: issue.message
+      [fieldName]: message
     };
   }, {});
+}
+
+function firstFieldErrorMessage(fieldErrors = {}) {
+  const firstError = Object.values(fieldErrors)[0];
+  return typeof firstError === 'string' && firstError.trim() ? firstError : 'Revisá los campos marcados en rojo.';
 }
 
 function ImageField({
@@ -481,19 +536,25 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       if (view === 'route' && selectedSubsector && selectedRoute) {
         const parsedRoute = routeSchema.safeParse(selectedRoute);
         if (!parsedRoute.success) {
-          setFieldErrors(issuesToFieldErrors(parsedRoute.error.issues));
+          const nextErrors = issuesToFieldErrors(parsedRoute.error.issues);
+          setFieldErrors(nextErrors);
+          setError(firstFieldErrorMessage(nextErrors));
           throw parsedRoute.error;
         }
       } else if ((view === 'subsector' || view === 'new-subsector') && selectedSubsector) {
         const parsedSubsector = subsectorSchema.safeParse(selectedSubsector);
         if (!parsedSubsector.success) {
-          setFieldErrors(issuesToFieldErrors(parsedSubsector.error.issues));
+          const nextErrors = issuesToFieldErrors(parsedSubsector.error.issues);
+          setFieldErrors(nextErrors);
+          setError(firstFieldErrorMessage(nextErrors));
           throw parsedSubsector.error;
         }
       } else {
         const parsedSector = sectorSchema.safeParse(sectorInfo);
         if (!parsedSector.success) {
-          setFieldErrors(issuesToFieldErrors(parsedSector.error.issues));
+          const nextErrors = issuesToFieldErrors(parsedSector.error.issues);
+          setFieldErrors(nextErrors);
+          setError(firstFieldErrorMessage(nextErrors));
           throw parsedSector.error;
         }
       }
@@ -528,7 +589,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     } catch (saveError) {
       setLastSaveResult('error');
       if (saveError instanceof z.ZodError) {
-        setError('Revisá los campos marcados en rojo.');
+        setError((current) => current || 'Revisá los campos marcados en rojo.');
       } else {
         setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
       }
@@ -828,9 +889,12 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           <input value={routeIdParts.routeNumber} onChange={(event) => updateRouteIdPart(selectedSubsector.id, selectedRoute.id, 'routeNumber', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         </div>
                         <input value={selectedRoute.name ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'name', event.target.value)} placeholder="Nombre" className="mb-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        <p className="mb-1 text-xs text-slate-400">Campo obligatorio: nombre de la vía.</p>
                         {fieldErrors.name ? <p className="mb-2 text-xs text-red-300">{fieldErrors.name}</p> : null}
                         <div className="mb-1 grid gap-2 md:grid-cols-4">
-                          <input value={selectedRoute.grade ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'grade', event.target.value)} placeholder="Grado" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                          <select value={selectedRoute.grade || 'Sin grado'} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'grade', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
+                            {GRADE_OPTIONS.map((gradeOption) => <option key={gradeOption} value={gradeOption}>{gradeOption}</option>)}
+                          </select>
                           <select value={selectedRoute.stars ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'stars', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
                             {STAR_OPTIONS.map((starOption) => <option key={starOption} value={starOption}>{starOption || 'Sin estrellas'}</option>)}
                           </select>
