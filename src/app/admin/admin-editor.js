@@ -380,6 +380,76 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                 <label className="text-sm text-slate-200">Descripción
                   <textarea value={routeForm.description ?? ''} onChange={(e) => setRouteForm((c) => ({ ...c, description: e.target.value }))} className="mt-1 min-h-20 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
                 </label>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="text-sm text-slate-200">Largo (m)
+                    <input
+                      value={routeForm.lengthMeters ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, lengthMeters: e.target.value }))}
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                    {fieldErrors.lengthMeters ? <span className="text-xs text-red-300">{fieldErrors.lengthMeters}</span> : null}
+                  </label>
+                  <label className="text-sm text-slate-200">Expresses
+                    <input
+                      value={routeForm.quickdraws ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, quickdraws: e.target.value }))}
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                    {fieldErrors.quickdraws ? <span className="text-xs text-red-300">{fieldErrors.quickdraws}</span> : null}
+                  </label>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="text-sm text-slate-200">Equipada por
+                    <input
+                      value={routeForm.equippedBy ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, equippedBy: e.target.value }))}
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </label>
+                  <label className="text-sm text-slate-200">Fecha de equipamiento
+                    <input
+                      value={routeForm.equippedDate ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, equippedDate: e.target.value }))}
+                      placeholder="AAAA o YYYY-MM-DD"
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </label>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="text-sm text-slate-200">Primera ascensión por
+                    <input
+                      value={routeForm.firstAscentBy ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, firstAscentBy: e.target.value }))}
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </label>
+                  <label className="text-sm text-slate-200">Fecha primera ascensión
+                    <input
+                      value={routeForm.firstAscentDate ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, firstAscentDate: e.target.value }))}
+                      placeholder="AAAA o YYYY-MM-DD"
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </label>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="text-sm text-slate-200">Latitud
+                    <input
+                      value={routeForm.latitude ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, latitude: e.target.value }))}
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                    {fieldErrors.latitude ? <span className="text-xs text-red-300">{fieldErrors.latitude}</span> : null}
+                  </label>
+                  <label className="text-sm text-slate-200">Longitud
+                    <input
+                      value={routeForm.longitude ?? ''}
+                      onChange={(e) => setRouteForm((c) => ({ ...c, longitude: e.target.value }))}
+                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                    />
+                    {fieldErrors.longitude ? <span className="text-xs text-red-300">{fieldErrors.longitude}</span> : null}
+                  </label>
+                </div>
               </section>
             ) : null}
           </>
