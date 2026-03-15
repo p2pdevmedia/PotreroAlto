@@ -113,6 +113,39 @@ function buildGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
+function hasMeaningfulValue(value, ignoredValues = []) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  const normalizedValue = String(value).trim().toLowerCase();
+  if (!normalizedValue) {
+    return false;
+  }
+
+  return !ignoredValues.some((ignoredValue) => normalizedValue === String(ignoredValue).trim().toLowerCase());
+}
+
+function routeHasLoadedInfo(route) {
+  if (!route) {
+    return false;
+  }
+
+  return hasMeaningfulValue(route.grade, ['sin grado']);
+}
+
+function subsectorHasLoadedInfo(subsector) {
+  if (!subsector) {
+    return false;
+  }
+
+  return [
+    hasMeaningfulValue(subsector.description),
+    hasMeaningfulValue(subsector.image),
+    Array.isArray(subsector.routes) && subsector.routes.length > 0
+  ].some(Boolean);
+}
+
 function issuesToFieldErrors(issues = []) {
   const fallbackByField = {
     id: 'El ID no es válido.',
@@ -387,6 +420,19 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   };
 
   const removeSubsector = async (currentSubsectorId) => {
+    const currentSubsector = subsectors.find((subsector) => subsector.id === currentSubsectorId);
+    const needsConfirmation = subsectorHasLoadedInfo(currentSubsector);
+
+    if (typeof window !== 'undefined') {
+      const confirmationMessage = needsConfirmation
+        ? 'Este subsector ya tiene información cargada (descripción, foto o vías). ¿Seguro que querés eliminarlo?'
+        : '¿Seguro que querés eliminar este subsector?';
+
+      if (!window.confirm(confirmationMessage)) {
+        return;
+      }
+    }
+
     setError('');
     setMessage('');
 
@@ -440,6 +486,20 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   };
 
   const removeRoute = async (currentSubsectorId, currentRouteId) => {
+    const currentSubsector = subsectors.find((subsector) => subsector.id === currentSubsectorId);
+    const currentRoute = (currentSubsector?.routes ?? []).find((route) => route.id === currentRouteId);
+    const needsConfirmation = routeHasLoadedInfo(currentRoute);
+
+    if (typeof window !== 'undefined') {
+      const confirmationMessage = needsConfirmation
+        ? 'Esta vía ya tiene grado cargado. ¿Seguro que querés eliminarla?'
+        : '¿Seguro que querés eliminar esta vía?';
+
+      if (!window.confirm(confirmationMessage)) {
+        return;
+      }
+    }
+
     setError('');
     setMessage('');
 
