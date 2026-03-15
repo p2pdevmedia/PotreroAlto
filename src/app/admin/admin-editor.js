@@ -891,7 +891,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                         <input value={selectedRoute.name ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'name', event.target.value)} placeholder="Nombre" className="mb-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         <p className="mb-1 text-xs text-slate-400">Campo obligatorio: nombre de la vía.</p>
                         {fieldErrors.name ? <p className="mb-2 text-xs text-red-300">{fieldErrors.name}</p> : null}
-                        <div className="mb-1 grid gap-2 md:grid-cols-4">
+                        <div className="mb-1 grid gap-2 md:grid-cols-3">
                           <select value={selectedRoute.grade || 'Sin grado'} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'grade', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
                             {GRADE_OPTIONS.map((gradeOption) => <option key={gradeOption} value={gradeOption}>{gradeOption}</option>)}
                           </select>
@@ -901,9 +901,13 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
                           <select value={selectedRoute.type ?? 'Sport'} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'type', event.target.value)} className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100">
                             {ROUTE_TYPE_OPTIONS.map((typeOption) => <option key={typeOption} value={typeOption}>{typeOption}</option>)}
                           </select>
-                          <input value={selectedRoute.lengthMeters ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'lengthMeters', event.target.value)} placeholder="Largo (m)" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
                         </div>
-                        {fieldErrors.lengthMeters ? <p className="mb-2 text-xs text-red-300">{fieldErrors.lengthMeters}</p> : null}
+                        <div className="mb-1 grid gap-2 md:grid-cols-2">
+                          <input value={selectedRoute.lengthMeters ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'lengthMeters', event.target.value)} placeholder="Largo (m)" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                          <input value={selectedRoute.quickdraws ?? ''} onChange={(event) => updateRoute(selectedSubsector.id, selectedRoute.id, 'quickdraws', event.target.value)} placeholder="Expresses" className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100" />
+                        </div>
+                        {fieldErrors.lengthMeters ? <p className="text-xs text-red-300">{fieldErrors.lengthMeters}</p> : null}
+                        {fieldErrors.quickdraws ? <p className="mb-2 text-xs text-red-300">{fieldErrors.quickdraws}</p> : null}
                         <div className="mb-2">
                           <ImageField
                             label="Imagen de la vía"

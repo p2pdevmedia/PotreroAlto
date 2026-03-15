@@ -22,8 +22,7 @@ const numericString = (fieldLabel) => z
   .preprocess(emptyToUndefined, z.union([
     z.number(),
     z.string().trim().regex(/^-?\d+(?:[.,]\d+)?$/, `${fieldLabel} debe ser numérico.`).transform((value) => Number.parseFloat(value.replace(',', '.')))
-  ]))
-  .optional();
+  ]).optional());
 
 const integerString = (fieldLabel) => z
   .preprocess(emptyToUndefined, z.union([
