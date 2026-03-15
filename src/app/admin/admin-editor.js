@@ -237,7 +237,8 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
   const [saving, setSaving] = useState(false);
   const [lastSaveResult, setLastSaveResult] = useState('idle');
   const [locatingRouteId, setLocatingRouteId] = useState('');
-  const [draftReady, setDraftReady] = useState(false);
+  const [draftSubsectorReady, setDraftSubsectorReady] = useState(false);
+  const [draftRouteReady, setDraftRouteReady] = useState(false);
   const [draftSubsectorId, setDraftSubsectorId] = useState('');
   const [draftRouteId, setDraftRouteId] = useState('');
   const [loadingRoutesFor, setLoadingRoutesFor] = useState('');
@@ -567,7 +568,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     try {
       let savePayload = null;
 
-      if (view === 'route' && selectedSubsector && selectedRoute) {
+      if ((view === 'route' || view === 'new-route') && selectedSubsector && selectedRoute) {
         savePayload = {
           mode: 'route',
           route: {
@@ -593,7 +594,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         };
       }
 
-      if (view === 'route' && selectedSubsector && selectedRoute) {
+      if ((view === 'route' || view === 'new-route') && selectedSubsector && selectedRoute) {
         const parsedRoute = routeSchema.safeParse(selectedRoute);
         if (!parsedRoute.success) {
           const nextErrors = issuesToFieldErrors(parsedRoute.error.issues);
@@ -601,7 +602,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
           setError(firstFieldErrorMessage(nextErrors));
           throw parsedRoute.error;
         }
-      } else if ((view === 'subsector' || view === 'new-subsector') && selectedSubsector) {
+      } else if (view === 'subsector' || view === 'new-subsector') {
         const parsedSubsector = subsectorSchema.safeParse(selectedSubsector);
         if (!parsedSubsector.success) {
           const nextErrors = issuesToFieldErrors(parsedSubsector.error.issues);
@@ -687,7 +688,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       return;
     }
 
-    if (view === 'new-subsector' && !draftReady) {
+    if (view === 'new-subsector' && !draftSubsectorReady) {
       const draftId = createId('subsector');
       setSubsectors((current) => {
         if (current.some((subsector) => subsector.id === draftId)) {
@@ -700,12 +701,12 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         ];
       });
       setDraftSubsectorId(draftId);
-      setDraftReady(true);
+      setDraftSubsectorReady(true);
       setMessage('Subsector creado. Completá el formulario y guardá cambios.');
       return;
     }
 
-    if (view === 'new-route' && selectedSubsector && !draftReady && loadingRoutesFor !== selectedSubsector.id) {
+    if (view === 'new-route' && selectedSubsector && !draftRouteReady && loadingRoutesFor !== selectedSubsector.id) {
       const routeSector = routeSectorFromSubsectorId(selectedSubsector.id);
       const nextIndex = Math.max(1, (selectedSubsector.routes ?? []).length + 1);
       const newId = `${routeSector}-${nextIndex}`;
@@ -718,10 +719,28 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
         )
       );
       setDraftRouteId(newId);
-      setDraftReady(true);
+      setDraftRouteReady(true);
       setMessage('Vía agregada. Completá el formulario y guardá cambios.');
     }
-  }, [authenticated, draftReady, loadingRoutesFor, selectedSubsector, subsectors.length, view]);
+  }, [authenticated, draftRouteReady, draftSubsectorReady, loadingRoutesFor, selectedSubsector, subsectors.length, view]);
+
+  useEffect(() => {
+    if (view !== 'new-route') {
+      return;
+    }
+
+    setDraftRouteId('');
+    setDraftRouteReady(false);
+  }, [subsectorId, view]);
+
+  useEffect(() => {
+    if (view !== 'new-subsector') {
+      return;
+    }
+
+    setDraftSubsectorId('');
+    setDraftSubsectorReady(false);
+  }, [view]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
