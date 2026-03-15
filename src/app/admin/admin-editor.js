@@ -114,17 +114,37 @@ function buildGoogleMapsUrl(latitude, longitude) {
 }
 
 function issuesToFieldErrors(issues = []) {
+  const fallbackByField = {
+    id: 'El ID no es válido.',
+    name: 'El nombre es obligatorio.',
+    grade: 'El grado seleccionado no es válido.',
+    stars: 'Las estrellas no son válidas.',
+    type: 'El tipo de vía no es válido.',
+    lengthMeters: 'Largo debe ser un entero.',
+    quickdraws: 'Expresses debe ser un entero.',
+    latitude: 'Latitud debe ser numérica.',
+    longitude: 'Longitud debe ser numérica.'
+  };
+
   return issues.reduce((accumulator, issue) => {
     const fieldName = String(issue.path?.[issue.path.length - 1] ?? '');
     if (!fieldName || accumulator[fieldName]) {
       return accumulator;
     }
 
+    const isGenericInvalidInput = issue.message === 'Invalid input' || issue.message === 'Invalid';
+    const message = isGenericInvalidInput ? (fallbackByField[fieldName] ?? 'Valor inválido.') : issue.message;
+
     return {
       ...accumulator,
-      [fieldName]: issue.message
+      [fieldName]: message
     };
   }, {});
+}
+
+function firstFieldErrorMessage(fieldErrors = {}) {
+  const firstError = Object.values(fieldErrors)[0];
+  return typeof firstError === 'string' && firstError.trim() ? firstError : 'Revisá los campos marcados en rojo.';
 }
 
 function ImageField({
@@ -516,19 +536,25 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
       if (view === 'route' && selectedSubsector && selectedRoute) {
         const parsedRoute = routeSchema.safeParse(selectedRoute);
         if (!parsedRoute.success) {
-          setFieldErrors(issuesToFieldErrors(parsedRoute.error.issues));
+          const nextErrors = issuesToFieldErrors(parsedRoute.error.issues);
+          setFieldErrors(nextErrors);
+          setError(firstFieldErrorMessage(nextErrors));
           throw parsedRoute.error;
         }
       } else if ((view === 'subsector' || view === 'new-subsector') && selectedSubsector) {
         const parsedSubsector = subsectorSchema.safeParse(selectedSubsector);
         if (!parsedSubsector.success) {
-          setFieldErrors(issuesToFieldErrors(parsedSubsector.error.issues));
+          const nextErrors = issuesToFieldErrors(parsedSubsector.error.issues);
+          setFieldErrors(nextErrors);
+          setError(firstFieldErrorMessage(nextErrors));
           throw parsedSubsector.error;
         }
       } else {
         const parsedSector = sectorSchema.safeParse(sectorInfo);
         if (!parsedSector.success) {
-          setFieldErrors(issuesToFieldErrors(parsedSector.error.issues));
+          const nextErrors = issuesToFieldErrors(parsedSector.error.issues);
+          setFieldErrors(nextErrors);
+          setError(firstFieldErrorMessage(nextErrors));
           throw parsedSector.error;
         }
       }
@@ -563,7 +589,7 @@ export default function AdminEditor({ view = 'subsectors', subsectorId = null, r
     } catch (saveError) {
       setLastSaveResult('error');
       if (saveError instanceof z.ZodError) {
-        setError('Revisá los campos marcados en rojo.');
+        setError((current) => current || 'Revisá los campos marcados en rojo.');
       } else {
         setError(saveError instanceof Error ? saveError.message : 'Error desconocido guardando cambios.');
       }
