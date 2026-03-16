@@ -519,7 +519,7 @@ export default function SubsectorAccordion({
             >
               {t(locale, 'closeButton')}
             </button>
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-16">
+            <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-slate-950 via-slate-950/80 to-transparent p-4 pb-16 pr-20">
               <h4 id="selected-route-title" className="text-lg font-semibold text-white">
                 {selectedRoute.name}
               </h4>
@@ -527,6 +527,8 @@ export default function SubsectorAccordion({
                 {convertGrade(selectedRoute.grade, gradeSystem) ?? t(locale, 'noGrade')}
                 {selectedRoute.type ? ` · ${selectedRoute.type}` : ''}
               </p>
+            </div>
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-16">
               <p className="mt-3 text-sm text-slate-200">
                 {selectedRoute.description ?? t(locale, 'noDescription')}
               </p>
