@@ -740,6 +740,10 @@ export default function HomeContent({
           <a href="/privacy-policy" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
             {locale === 'en' ? 'Privacy Policy' : 'Política de privacidad'}
           </a>
+          <span className="mx-2 text-slate-500">•</span>
+          <a href="/terms-of-service" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
+            {locale === 'en' ? 'Terms of Service' : 'Condiciones del servicio'}
+          </a>
         </p>
         <a
           href="https://link.mercadopago.com.ar/potreroalto"
