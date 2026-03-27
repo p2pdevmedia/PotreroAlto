@@ -736,6 +736,11 @@ export default function HomeContent({
 
       <footer className="mt-10 border-t border-slate-700/60 pt-6 text-center text-slate-300">
         <p className="text-sm">{t(locale, 'footerMadeWith')}</p>
+        <p className="mt-3 text-sm">
+          <a href="/privacy-policy" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
+            {locale === 'en' ? 'Privacy Policy' : 'Política de privacidad'}
+          </a>
+        </p>
         <a
           href="https://link.mercadopago.com.ar/potreroalto"
           target="_blank"

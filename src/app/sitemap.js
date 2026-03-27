@@ -29,6 +29,12 @@ export default function sitemap() {
           Object.entries(LOCALE_PATHS).map(([locale, path]) => [locale, `${siteUrl}${path}`])
         )
       }
+    },
+    {
+      url: `${siteUrl}/privacy-policy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.4
     }
   ];
 }
