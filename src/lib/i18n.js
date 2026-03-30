@@ -130,7 +130,15 @@ const BASE_ES = {
   routeLocatorWaitingPosition: '📍 Esperando ubicación para encontrar la vía más cercana...',
   routeLocatorNoRoutesWithCoordinates: '📍 No hay vías con coordenadas cargadas.',
   routeLocatorNotSupported: '📍 Tu dispositivo no soporta geolocalización para detectar vías.',
-  routeLocatorPermissionError: '📍 Activá permisos de ubicación para detectar la vía donde estás.'
+  routeLocatorPermissionError: '📍 Activá permisos de ubicación para detectar la vía donde estás.',
+  gradeRouletteTitle: 'Ruleta de vías por grado',
+  gradeRouletteDescription: 'Elegí un rango de grados y tirá la ruleta para que te sugiera una vía.',
+  gradeRouletteFrom: 'Desde',
+  gradeRouletteTo: 'Hasta',
+  gradeRouletteSpin: 'Girar ruleta',
+  gradeRouletteAvailable: '{count} vías disponibles en este rango.',
+  gradeRouletteEmpty: 'No hay vías con grado en este rango.',
+  gradeRouletteSelected: 'Vía elegida'
 };
 
 const BASE_EN = {
@@ -248,7 +256,15 @@ const BASE_EN = {
   routeLocatorWaitingPosition: '📍 Waiting for your location to find the nearest route...',
   routeLocatorNoRoutesWithCoordinates: '📍 There are no routes with coordinates loaded yet.',
   routeLocatorNotSupported: '📍 Your device does not support geolocation to detect routes.',
-  routeLocatorPermissionError: '📍 Enable location permissions to detect the route where you are standing.'
+  routeLocatorPermissionError: '📍 Enable location permissions to detect the route where you are standing.',
+  gradeRouletteTitle: 'Route grade roulette',
+  gradeRouletteDescription: 'Pick a grade range and spin the roulette to get a suggested route.',
+  gradeRouletteFrom: 'From',
+  gradeRouletteTo: 'To',
+  gradeRouletteSpin: 'Spin roulette',
+  gradeRouletteAvailable: '{count} routes available in this range.',
+  gradeRouletteEmpty: 'No graded routes are available in this range.',
+  gradeRouletteSelected: 'Selected route'
 };
 
 const COPY = {

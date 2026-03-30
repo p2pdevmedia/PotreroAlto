@@ -131,6 +131,9 @@ export default function HomeContent({
   const [gradeSystem, setGradeSystem] = useState('french');
   const [isCheckingLocation, setIsCheckingLocation] = useState(false);
   const [locationCheckMessage, setLocationCheckMessage] = useState('');
+  const [rouletteMinGrade, setRouletteMinGrade] = useState(GRADE_BUCKETS[0]);
+  const [rouletteMaxGrade, setRouletteMaxGrade] = useState(GRADE_BUCKETS[GRADE_BUCKETS.length - 1]);
+  const [rouletteSelectedRoute, setRouletteSelectedRoute] = useState(null);
   const { address, isConnected, authError, connectWallet, disconnectWallet } = useWallet();
   const sectorMapStatePushedRef = useRef(false);
   const gradeBucketStatePushedRef = useRef(false);
@@ -313,6 +316,18 @@ export default function HomeContent({
   const allRoutesWithSubsector = (data?.subsectors ?? []).flatMap((subsector) =>
     (subsector.routes ?? []).map((route) => ({ ...route, subsectorName: subsector.name }))
   );
+  const rouletteMinIndex = Math.max(0, GRADE_BUCKETS.indexOf(rouletteMinGrade));
+  const rouletteMaxIndex = Math.max(rouletteMinIndex, GRADE_BUCKETS.indexOf(rouletteMaxGrade));
+  const rouletteRoutes = allRoutesWithSubsector.filter((route) => {
+    const normalizedGrade = normalizeGrade(route.grade);
+
+    if (!normalizedGrade) {
+      return false;
+    }
+
+    const gradeIndex = GRADE_BUCKETS.indexOf(normalizedGrade);
+    return gradeIndex >= rouletteMinIndex && gradeIndex <= rouletteMaxIndex;
+  });
 
   useEffect(() => {
     if (!initialGradeSlug || initialGradeAppliedRef.current) {
@@ -378,6 +393,42 @@ export default function HomeContent({
     );
   };
 
+  const handleRouletteMinChange = (nextMinGrade) => {
+    const nextMinIndex = GRADE_BUCKETS.indexOf(nextMinGrade);
+    const currentMaxIndex = GRADE_BUCKETS.indexOf(rouletteMaxGrade);
+
+    setRouletteMinGrade(nextMinGrade);
+
+    if (nextMinIndex > currentMaxIndex) {
+      setRouletteMaxGrade(nextMinGrade);
+    }
+
+    setRouletteSelectedRoute(null);
+  };
+
+  const handleRouletteMaxChange = (nextMaxGrade) => {
+    const nextMaxIndex = GRADE_BUCKETS.indexOf(nextMaxGrade);
+    const currentMinIndex = GRADE_BUCKETS.indexOf(rouletteMinGrade);
+
+    setRouletteMaxGrade(nextMaxGrade);
+
+    if (nextMaxIndex < currentMinIndex) {
+      setRouletteMinGrade(nextMaxGrade);
+    }
+
+    setRouletteSelectedRoute(null);
+  };
+
+  const spinGradeRoulette = () => {
+    if (!rouletteRoutes.length) {
+      setRouletteSelectedRoute(null);
+      return;
+    }
+
+    const randomRoute = rouletteRoutes[Math.floor(Math.random() * rouletteRoutes.length)];
+    setRouletteSelectedRoute(randomRoute);
+  };
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 md:px-8">
       <Navbar
@@ -413,6 +464,64 @@ export default function HomeContent({
                 gradeSystem={gradeSystem}
                 onGradeSelect={setSelectedGradeBucket}
               />
+              <section className="rounded-xl border border-slate-700/70 bg-slate-950/60 p-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-100">{t(locale, 'gradeRouletteTitle')}</h3>
+                <p className="mt-1 text-xs text-slate-400">{t(locale, 'gradeRouletteDescription')}</p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <label className="flex flex-col gap-2 text-sm text-slate-200">
+                    <span className="text-xs uppercase tracking-wide text-slate-400">{t(locale, 'gradeRouletteFrom')}</span>
+                    <select
+                      value={rouletteMinGrade}
+                      onChange={(event) => handleRouletteMinChange(event.target.value)}
+                      className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100"
+                    >
+                      {GRADE_BUCKETS.map((gradeBucket) => (
+                        <option key={`min-${gradeBucket}`} value={gradeBucket}>
+                          {convertGrade(gradeBucket, gradeSystem)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-slate-200">
+                    <span className="text-xs uppercase tracking-wide text-slate-400">{t(locale, 'gradeRouletteTo')}</span>
+                    <select
+                      value={rouletteMaxGrade}
+                      onChange={(event) => handleRouletteMaxChange(event.target.value)}
+                      className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100"
+                    >
+                      {GRADE_BUCKETS.map((gradeBucket) => (
+                        <option key={`max-${gradeBucket}`} value={gradeBucket}>
+                          {convertGrade(gradeBucket, gradeSystem)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={spinGradeRoulette}
+                    disabled={!rouletteRoutes.length}
+                    className="rounded-lg bg-sunset px-4 py-2 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {t(locale, 'gradeRouletteSpin')}
+                  </button>
+                  <p className="text-xs text-slate-300">
+                    {rouletteRoutes.length > 0
+                      ? t(locale, 'gradeRouletteAvailable').replace('{count}', rouletteRoutes.length.toString())
+                      : t(locale, 'gradeRouletteEmpty')}
+                  </p>
+                </div>
+                {rouletteSelectedRoute ? (
+                  <article className="mt-4 rounded-lg border border-slate-700 bg-slate-900/80 p-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t(locale, 'gradeRouletteSelected')}</p>
+                    <p className="mt-1 text-base font-semibold text-slate-100">{rouletteSelectedRoute.name}</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {rouletteSelectedRoute.subsectorName} · {convertGrade(rouletteSelectedRoute.grade, gradeSystem) ?? t(locale, 'noGrade')}
+                    </p>
+                  </article>
+                ) : null}
+              </section>
               <SubsectorAccordion
                 subsectors={data.subsectors}
                 locale={locale}
