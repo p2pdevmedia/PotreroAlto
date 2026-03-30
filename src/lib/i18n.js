@@ -136,8 +136,10 @@ const BASE_ES = {
   gradeRouletteFrom: 'Desde',
   gradeRouletteTo: 'Hasta',
   gradeRouletteSpin: 'Girar ruleta',
+  gradeRouletteSpinning: 'Girando...',
   gradeRouletteAvailable: '{count} vías disponibles en este rango.',
   gradeRouletteEmpty: 'No hay vías con grado en este rango.',
+  gradeRoulettePreview: 'Pasando opciones...',
   gradeRouletteSelected: 'Vía elegida'
 };
 
@@ -262,8 +264,10 @@ const BASE_EN = {
   gradeRouletteFrom: 'From',
   gradeRouletteTo: 'To',
   gradeRouletteSpin: 'Spin roulette',
+  gradeRouletteSpinning: 'Spinning...',
   gradeRouletteAvailable: '{count} routes available in this range.',
   gradeRouletteEmpty: 'No graded routes are available in this range.',
+  gradeRoulettePreview: 'Cycling options...',
   gradeRouletteSelected: 'Selected route'
 };
 

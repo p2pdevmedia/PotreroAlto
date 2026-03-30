@@ -134,6 +134,8 @@ export default function HomeContent({
   const [rouletteMinGrade, setRouletteMinGrade] = useState(GRADE_BUCKETS[0]);
   const [rouletteMaxGrade, setRouletteMaxGrade] = useState(GRADE_BUCKETS[GRADE_BUCKETS.length - 1]);
   const [rouletteSelectedRoute, setRouletteSelectedRoute] = useState(null);
+  const [roulettePreviewRoute, setRoulettePreviewRoute] = useState(null);
+  const [isSpinningRoulette, setIsSpinningRoulette] = useState(false);
   const { address, isConnected, authError, connectWallet, disconnectWallet } = useWallet();
   const sectorMapStatePushedRef = useRef(false);
   const gradeBucketStatePushedRef = useRef(false);
@@ -141,6 +143,8 @@ export default function HomeContent({
   const selectedGradeBucketRef = useRef(null);
   const selectedGradeRouteRef = useRef(null);
   const initialGradeAppliedRef = useRef(false);
+  const rouletteIntervalRef = useRef(null);
+  const rouletteTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -194,6 +198,18 @@ export default function HomeContent({
   useEffect(() => {
     selectedGradeRouteRef.current = selectedGradeRoute;
   }, [selectedGradeRoute]);
+
+  useEffect(() => {
+    return () => {
+      if (rouletteIntervalRef.current) {
+        window.clearInterval(rouletteIntervalRef.current);
+      }
+
+      if (rouletteTimeoutRef.current) {
+        window.clearTimeout(rouletteTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -394,6 +410,10 @@ export default function HomeContent({
   };
 
   const handleRouletteMinChange = (nextMinGrade) => {
+    if (isSpinningRoulette) {
+      return;
+    }
+
     const nextMinIndex = GRADE_BUCKETS.indexOf(nextMinGrade);
     const currentMaxIndex = GRADE_BUCKETS.indexOf(rouletteMaxGrade);
 
@@ -404,9 +424,14 @@ export default function HomeContent({
     }
 
     setRouletteSelectedRoute(null);
+    setRoulettePreviewRoute(null);
   };
 
   const handleRouletteMaxChange = (nextMaxGrade) => {
+    if (isSpinningRoulette) {
+      return;
+    }
+
     const nextMaxIndex = GRADE_BUCKETS.indexOf(nextMaxGrade);
     const currentMinIndex = GRADE_BUCKETS.indexOf(rouletteMinGrade);
 
@@ -417,16 +442,45 @@ export default function HomeContent({
     }
 
     setRouletteSelectedRoute(null);
+    setRoulettePreviewRoute(null);
   };
 
   const spinGradeRoulette = () => {
-    if (!rouletteRoutes.length) {
+    if (!rouletteRoutes.length || isSpinningRoulette) {
       setRouletteSelectedRoute(null);
+      setRoulettePreviewRoute(null);
       return;
     }
 
-    const randomRoute = rouletteRoutes[Math.floor(Math.random() * rouletteRoutes.length)];
-    setRouletteSelectedRoute(randomRoute);
+    if (rouletteIntervalRef.current) {
+      window.clearInterval(rouletteIntervalRef.current);
+    }
+
+    if (rouletteTimeoutRef.current) {
+      window.clearTimeout(rouletteTimeoutRef.current);
+    }
+
+    setIsSpinningRoulette(true);
+    setRouletteSelectedRoute(null);
+
+    let previewIndex = 0;
+    setRoulettePreviewRoute(rouletteRoutes[previewIndex]);
+
+    rouletteIntervalRef.current = window.setInterval(() => {
+      previewIndex = (previewIndex + 1) % rouletteRoutes.length;
+      setRoulettePreviewRoute(rouletteRoutes[previewIndex]);
+    }, 100);
+
+    rouletteTimeoutRef.current = window.setTimeout(() => {
+      if (rouletteIntervalRef.current) {
+        window.clearInterval(rouletteIntervalRef.current);
+      }
+
+      const randomRoute = rouletteRoutes[Math.floor(Math.random() * rouletteRoutes.length)];
+      setRouletteSelectedRoute(randomRoute);
+      setRoulettePreviewRoute(null);
+      setIsSpinningRoulette(false);
+    }, 3000);
   };
 
   return (
@@ -473,6 +527,7 @@ export default function HomeContent({
                     <select
                       value={rouletteMinGrade}
                       onChange={(event) => handleRouletteMinChange(event.target.value)}
+                      disabled={isSpinningRoulette}
                       className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100"
                     >
                       {GRADE_BUCKETS.map((gradeBucket) => (
@@ -487,6 +542,7 @@ export default function HomeContent({
                     <select
                       value={rouletteMaxGrade}
                       onChange={(event) => handleRouletteMaxChange(event.target.value)}
+                      disabled={isSpinningRoulette}
                       className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100"
                     >
                       {GRADE_BUCKETS.map((gradeBucket) => (
@@ -501,10 +557,10 @@ export default function HomeContent({
                   <button
                     type="button"
                     onClick={spinGradeRoulette}
-                    disabled={!rouletteRoutes.length}
+                    disabled={!rouletteRoutes.length || isSpinningRoulette}
                     className="rounded-lg bg-sunset px-4 py-2 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {t(locale, 'gradeRouletteSpin')}
+                    {isSpinningRoulette ? t(locale, 'gradeRouletteSpinning') : t(locale, 'gradeRouletteSpin')}
                   </button>
                   <p className="text-xs text-slate-300">
                     {rouletteRoutes.length > 0
@@ -512,6 +568,12 @@ export default function HomeContent({
                       : t(locale, 'gradeRouletteEmpty')}
                   </p>
                 </div>
+                {isSpinningRoulette && roulettePreviewRoute ? (
+                  <article className="mt-4 rounded-lg border border-slate-700 bg-slate-900/80 p-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t(locale, 'gradeRoulettePreview')}</p>
+                    <p className="mt-1 animate-pulse text-base font-semibold text-slate-100">{roulettePreviewRoute.name}</p>
+                  </article>
+                ) : null}
                 {rouletteSelectedRoute ? (
                   <article className="mt-4 rounded-lg border border-slate-700 bg-slate-900/80 p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-400">{t(locale, 'gradeRouletteSelected')}</p>
