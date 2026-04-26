@@ -101,7 +101,7 @@ export default function Navbar({
   const [nearestRouteMessage, setNearestRouteMessage] = useState('');
   const [routeLocatorError, setRouteLocatorError] = useState('');
   const compactStateRef = useRef(false);
-  const { address, isConnected } = useWallet();
+  const { address, isConnected, profileImageUrl } = useWallet();
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   useEffect(() => {
@@ -350,7 +350,11 @@ export default function Navbar({
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-900/70 text-lg transition hover:border-sunset"
               aria-label={t(locale, 'userPreferences')}
             >
-              👤
+              {profileImageUrl ? (
+                <Image src={profileImageUrl} alt="Foto de perfil" width={40} height={40} unoptimized className="h-full w-full rounded-full object-cover" />
+              ) : (
+                '👤'
+              )}
             </button>
             {isUserMenuOpen ? (
               <div className="absolute right-0 top-12 z-50 w-72 space-y-3 rounded-xl border border-slate-700 bg-slate-950/95 p-3 shadow-2xl">
@@ -424,7 +428,11 @@ export default function Navbar({
               aria-label={t(locale, 'userPreferences')}
               aria-expanded={isMobileUserMenuOpen}
             >
-              👤
+              {profileImageUrl ? (
+                <Image src={profileImageUrl} alt="Foto de perfil" width={40} height={40} unoptimized className="h-full w-full rounded-full object-cover" />
+              ) : (
+                '👤'
+              )}
             </button>
           </li>
           {isMobileUserMenuOpen ? (

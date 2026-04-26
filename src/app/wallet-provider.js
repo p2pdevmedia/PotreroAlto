@@ -4,6 +4,7 @@ import { createContext, useContext, useMemo, useState } from 'react';
 
 const WalletContext = createContext({
   address: null,
+  profileImageUrl: null,
   isConnected: false,
   authError: '',
   connectWallet: async () => false,
@@ -119,6 +120,7 @@ function MailIcon() {
 
 export default function WalletProvider({ children }) {
   const [address, setAddress] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [authError, setAuthError] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -128,6 +130,7 @@ export default function WalletProvider({ children }) {
       const nextAddress = await connectWithInjectedProvider();
       await syncPrivyUser(buildWalletPrivyPayload(nextAddress));
       setAddress(nextAddress);
+      setProfileImageUrl(null);
       setIsLoginModalOpen(false);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'No se pudo iniciar sesión.');
@@ -141,6 +144,7 @@ export default function WalletProvider({ children }) {
   const value = useMemo(
     () => ({
       address,
+      profileImageUrl,
       isConnected: Boolean(address),
       authError,
       connectWallet: async () => {
@@ -151,9 +155,10 @@ export default function WalletProvider({ children }) {
       disconnectWallet: () => {
         setAuthError('');
         setAddress(null);
+        setProfileImageUrl(null);
       }
     }),
-    [address, authError]
+    [address, authError, profileImageUrl]
   );
 
   return (
