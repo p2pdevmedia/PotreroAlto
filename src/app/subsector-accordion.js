@@ -67,27 +67,7 @@ function starToEmoji(stars) {
   return ratingScale.slice(0, totalIcons).reverse().join('');
 }
 
-function toRadians(value) {
-  return (value * Math.PI) / 180;
-}
-
-function calculateDistanceInMeters(fromLat, fromLng, toLat, toLng) {
-  const earthRadiusInMeters = 6371000;
-  const latDistanceInRadians = toRadians(toLat - fromLat);
-  const lngDistanceInRadians = toRadians(toLng - fromLng);
-  const haversineValue =
-    Math.sin(latDistanceInRadians / 2) * Math.sin(latDistanceInRadians / 2) +
-    Math.cos(toRadians(fromLat)) * Math.cos(toRadians(toLat)) * Math.sin(lngDistanceInRadians / 2) * Math.sin(lngDistanceInRadians / 2);
-
-  const angularDistance = 2 * Math.atan2(Math.sqrt(haversineValue), Math.sqrt(1 - haversineValue));
-
-  return earthRadiusInMeters * angularDistance;
-}
-
 function RouteRow({ route, onSelect, locale, gradeSystem }) {
-  const [checkingLocation, setCheckingLocation] = useState(false);
-  const [locationMessage, setLocationMessage] = useState('');
-
   const hasImage = Boolean(route.image);
   const hasCoordinates = Number.isFinite(route.latitude) && Number.isFinite(route.longitude);
   const ratingEmojis = starToEmoji(route.stars);
@@ -109,51 +89,6 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
   const directionsUrl = hasCoordinates
     ? `https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`
     : null;
-
-  const checkIfStandingOnRoute = () => {
-    if (!hasCoordinates) {
-      setLocationMessage(t(locale, 'routeLocationMissing'));
-      return;
-    }
-
-    if (typeof window === 'undefined' || !window.navigator?.geolocation) {
-      setLocationMessage(t(locale, 'routeLocationNotSupported'));
-      return;
-    }
-
-    setCheckingLocation(true);
-    setLocationMessage('');
-
-    window.navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const distanceInMeters = calculateDistanceInMeters(
-          position.coords.latitude,
-          position.coords.longitude,
-          route.latitude,
-          route.longitude
-        );
-
-        const standingThresholdInMeters = 80;
-
-        if (distanceInMeters <= standingThresholdInMeters) {
-          setLocationMessage(t(locale, 'routeLocationInside'));
-        } else {
-          setLocationMessage(t(locale, 'routeLocationOutside').replace('{distance}', Math.round(distanceInMeters)));
-        }
-
-        setCheckingLocation(false);
-      },
-      () => {
-        setLocationMessage(t(locale, 'routeLocationPermissionError'));
-        setCheckingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-  };
 
   return (
     <li>
@@ -197,14 +132,6 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
           </div>
         </button>
         <div className="mt-2 flex flex-wrap items-center gap-2 pl-[92px]">
-          <button
-            type="button"
-            onClick={checkIfStandingOnRoute}
-            disabled={checkingLocation}
-            className="rounded-md border border-slate-600 px-2 py-1 text-xs font-medium text-slate-100 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {checkingLocation ? t(locale, 'checkingRouteLocation') : t(locale, 'checkRouteLocation')}
-          </button>
           {directionsUrl ? (
             <a
               href={directionsUrl}
@@ -217,7 +144,6 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
               <span>{t(locale, 'getRouteDirections')}</span>
             </a>
           ) : null}
-          {locationMessage ? <p className="w-full text-xs text-slate-300">{locationMessage}</p> : null}
         </div>
       </div>
     </li>
