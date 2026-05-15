@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import GradeDistributionChart from '@/app/grade-distribution-chart';
 import { convertGrade, t } from '@/lib/i18n';
+import { buildRoutePath, buildSubsectorPath, slugifySegment } from '@/lib/route-utils';
 
 const SUBSECTOR_IMAGE_OVERRIDES = {
   'la chanchería':
@@ -21,25 +23,6 @@ const SUBSECTOR_IMAGE_OVERRIDES = {
   'el derrumbe':
     '/images/derrumbe.jpeg'
 };
-
-function slugifySegment(value, defaultValue = 'item') {
-  const normalized = String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-  return normalized || defaultValue;
-}
-
-function buildSubsectorPath(subsectorName) {
-  return `/sector/${slugifySegment(subsectorName, 'subsector')}`;
-}
-
-function buildRoutePath(subsectorName, routeName) {
-  return `${buildSubsectorPath(subsectorName)}/ruta/${slugifySegment(routeName, 'ruta')}`;
-}
 
 function routeImage(route) {
   return route.image;
@@ -84,7 +67,7 @@ function calculateDistanceInMeters(fromLat, fromLng, toLat, toLng) {
   return earthRadiusInMeters * angularDistance;
 }
 
-function RouteRow({ route, onSelect, locale, gradeSystem }) {
+function RouteRow({ route, subsectorName, onSelect, locale, gradeSystem }) {
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
 
@@ -158,11 +141,13 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
   return (
     <li>
       <div className="border-b border-slate-700/60 py-3 last:border-0">
-        <button
-          type="button"
+        <Link
+          href={buildRoutePath(subsectorName, route.name)}
           className="flex w-full items-start gap-3 text-left disabled:cursor-default disabled:opacity-70"
-          onClick={() => onSelect(route)}
-          disabled={!hasImage}
+          onClick={(event) => {
+            event.preventDefault();
+            onSelect(route);
+          }}
         >
           {hasImage ? (
             <Image
@@ -195,7 +180,7 @@ function RouteRow({ route, onSelect, locale, gradeSystem }) {
               </p>
             ) : null}
           </div>
-        </button>
+        </Link>
         <div className="mt-2 flex flex-wrap items-center gap-2 pl-[92px]">
           <button
             type="button"
@@ -279,7 +264,7 @@ export default function SubsectorAccordion({
 
     const matchingRoute = matchingSubsector.routes.find((route) => {
       const routeSlug = slugifySegment(route.name, 'ruta');
-      return routeSlug === initialRouteSlug && Boolean(routeImage(route));
+      return routeSlug === initialRouteSlug;
     });
 
     setSelectedRoute(matchingRoute ?? null);
@@ -399,17 +384,13 @@ export default function SubsectorAccordion({
     <>
       <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
         {subsectors.map((subsector) => (
-          <div
+          <Link
             key={subsector.id}
-            role="button"
-            tabIndex={0}
+            href={buildSubsectorPath(subsector.name)}
             className="group relative aspect-[3/4] overflow-hidden bg-slate-900 text-left"
-            onClick={() => setSelectedSubsectorId(subsector.id)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                setSelectedSubsectorId(subsector.id);
-              }
+            onClick={(event) => {
+              event.preventDefault();
+              setSelectedSubsectorId(subsector.id);
             }}
             aria-label={`${t(locale, 'viewSubsectorRoutes')} ${subsector.name}`}
           >
@@ -432,7 +413,7 @@ export default function SubsectorAccordion({
                 ▶ {subsector.routes.length} {subsector.routes.length === 1 ? t(locale, 'routeSingle') : t(locale, 'routePlural')}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -481,6 +462,7 @@ export default function SubsectorAccordion({
                     <RouteRow
                       key={route.id ?? `${selectedSubsector.id}-${route.name}`}
                       route={route}
+                      subsectorName={selectedSubsector.name}
                       onSelect={setSelectedRoute}
                       locale={locale}
                       gradeSystem={gradeSystem}
@@ -505,9 +487,9 @@ export default function SubsectorAccordion({
             onClick={(event) => event.stopPropagation()}
           >
             <Image
-              src={routeImage(selectedRoute)}
+              src={routeImage(selectedRoute) || '/images/tablero.jpeg'}
               alt={`${t(locale, 'routeImageAlt')} ${selectedRoute.name}`}
-              className="h-full w-full object-contain"
+              className={routeImage(selectedRoute) ? 'h-full w-full object-contain' : 'h-full w-full object-cover opacity-25'}
               fill
               sizes="100vw"
               unoptimized

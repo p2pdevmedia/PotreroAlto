@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { buildPageMetadata } from '@/lib/site-seo';
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: 'Política de privacidad | Potrero Alto',
   description:
-    'Política de privacidad de Potrero Alto con información sobre el uso del sitio, datos técnicos y opciones de contacto.'
-};
+    'Política de privacidad de Potrero Alto con información sobre el uso del sitio, datos técnicos y opciones de contacto.',
+  path: '/privacy-policy'
+});
 
 export default function PrivacyPolicyPage() {
   return (

@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { buildPageMetadata } from '@/lib/site-seo';
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: 'Condiciones del servicio | Potrero Alto',
   description:
-    'Condiciones del servicio de Potrero Alto con reglas de uso, disponibilidad y limitación de responsabilidad.'
-};
+    'Condiciones del servicio de Potrero Alto con reglas de uso, disponibilidad y limitación de responsabilidad.',
+  path: '/terms-of-service'
+});
 
 export default function TermsOfServicePage() {
   return (

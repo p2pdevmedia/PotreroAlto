@@ -1,9 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWallet } from '@/app/wallet-provider';
 import { convertGrade, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
+import { buildRoutePath } from '@/lib/route-utils';
 
 const navItems = [
   { id: 'como-llegar', labelKey: 'howToGetThere' },
@@ -549,11 +551,17 @@ export default function Navbar({
               <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
                 {routeSearchResults.map((route) => (
                   <li key={route.id ?? `${route.subsectorName}-${route.name}`}>
-                    <button
-                      type="button"
+                    <Link
+                      href={buildRoutePath(route.subsectorName, route.name)}
                       className="w-full rounded-xl border border-slate-700/70 bg-slate-900/70 p-2 text-left transition hover:border-sunset/60 disabled:cursor-default disabled:hover:border-slate-700/70"
-                      onClick={() => setSelectedSearchRoute(route)}
-                      disabled={!route.image}
+                      onClick={(event) => {
+                        if (!route.image) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        setSelectedSearchRoute(route);
+                      }}
                     >
                       <div className="flex gap-3">
                       {route.image ? (
@@ -582,7 +590,7 @@ export default function Navbar({
                         ) : null}
                       </div>
                       </div>
-                    </button>
+                    </Link>
                   </li>
                 ))}
               </ul>

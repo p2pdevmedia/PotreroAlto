@@ -1,6 +1,7 @@
 import { getBucketGradeLabel, t } from '@/lib/i18n';
+import { GRADE_BUCKETS, normalizeGrade } from '@/lib/route-utils';
 
-export const GRADE_BUCKETS = ['5b', '5c', '6a', '6b', '6c', '7a', '7b', '7c', '8a', '8b', '8c'];
+export { GRADE_BUCKETS, normalizeGrade };
 
 const DIFFICULTY_COLOR_STOPS = [
   { stop: 0, color: '34 197 94' }, // verde: muy fácil
@@ -40,38 +41,6 @@ function getDifficultyColor(gradeIndex) {
   const interpolatedColor = interpolateColor(parseRgbColor(lowerStop.color), parseRgbColor(upperStop.color), ratio);
 
   return `rgb(${interpolatedColor.join(' ')})`;
-}
-
-export function normalizeGrade(grade) {
-  if (!grade) {
-    return null;
-  }
-
-  const cleanedGrade = String(grade).trim().toLowerCase();
-
-  if (!cleanedGrade || cleanedGrade.includes('sin grado') || cleanedGrade.includes('proyecto')) {
-    return null;
-  }
-
-  const primaryGrade = cleanedGrade.split('/')[0]?.trim();
-  const match = primaryGrade?.match(/(\d)([abc]?)(\+)?/);
-
-  if (!match) {
-    return null;
-  }
-
-  const numericGrade = Number.parseInt(match[1], 10);
-  const letter = match[2] || (match[3] ? 'c' : 'a');
-
-  if (numericGrade < 5) {
-    return '<5a';
-  }
-
-  if (numericGrade > 9) {
-    return '>9a';
-  }
-
-  return `${numericGrade}${letter}`;
 }
 
 function buildDistribution(routes = []) {

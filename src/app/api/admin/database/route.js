@@ -143,7 +143,7 @@ export async function POST(request) {
     await writeLocalDataset({
       id: POTRERO_ALTO_SECTOR_ID,
       name: body?.name || 'Potrero Alto',
-      location: body?.location || 'San Luis, Argentina',
+      location: body?.location || 'San Martín de los Andes, Neuquén, Argentina',
       description: body?.description || '',
       subsectors
     });

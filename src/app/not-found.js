@@ -1,6 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Página no encontrada | Potrero Alto',
+  robots: {
+    index: false,
+    follow: false
+  }
+};
+
 export default function NotFound() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-4 py-6">

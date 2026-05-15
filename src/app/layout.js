@@ -2,37 +2,18 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import PWARegister from './pwa-register';
 import WalletProvider from './wallet-provider';
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_DEFAULT_TITLE,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  absoluteUrl,
+  buildPageMetadata,
+  getSiteUrl
+} from '@/lib/site-seo';
 
-const DEFAULT_SITE_URL = 'https://potreroalto.xyz';
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
-const pageTitle = 'Potrero Alto | Escalada deportiva en San Martín de los Andes';
-const pageDescription =
-  'Potrero Alto, escalada en San Martín de los Andes: guía del sector de escalada deportiva en Neuquén, Argentina. Información de subsectores, vías, grados y ubicación para planificar tu visita.';
-
-const pageKeywords = [
-  'Potrero Alto',
-  'escalada deportiva',
-  'San Martín de los Andes',
-  'escalada San Martín de los Andes',
-  'escalada san martin de los andes',
-  'escalada en San Martín de los Andes',
-  'escalada en Neuquén',
-  'guía de escalada',
-  'vías de escalada',
-  'subsectores de escalada',
-  'sport climbing Argentina',
-  'rock climbing san martin de los andes',
-  'potrero alto escalada',
-  'climbing argentina patagonia',
-  'vias escalada lanin',
-  'climbing topo argentina',
-  'sport climbing san martin de los andes',
-  'sma',
-  'sanmarland',
-  'kletten',
-  'grampe'
-];
+const siteUrl = getSiteUrl();
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -40,18 +21,18 @@ const structuredData = {
     {
       '@type': 'WebSite',
       '@id': `${siteUrl}/#website`,
-      name: 'Potrero Alto',
+      name: SITE_NAME,
       url: siteUrl,
-      inLanguage: ['es-AR', 'en', 'pt', 'fr', 'de', 'it'],
-      description: pageDescription,
-      keywords: pageKeywords.join(', ')
+      inLanguage: 'es-AR',
+      description: SITE_DESCRIPTION,
+      keywords: SITE_KEYWORDS.join(', ')
     },
     {
       '@type': 'SportsActivityLocation',
       '@id': `${siteUrl}/#climbing-sector`,
-      name: 'Potrero Alto',
+      name: SITE_NAME,
       description: 'Sector de escalada deportiva en San Martín de los Andes, Neuquén, Argentina.',
-      sport: 'Sport climbing',
+      sport: 'Escalada deportiva',
       url: siteUrl,
       isPartOf: {
         '@id': `${siteUrl}/#website`
@@ -67,55 +48,23 @@ const structuredData = {
         latitude: -40.13691962008833,
         longitude: -71.2525320779115
       },
-      keywords: pageKeywords.join(', ')
+      image: absoluteUrl(DEFAULT_OG_IMAGE),
+      keywords: SITE_KEYWORDS.join(', ')
     }
   ],
 };
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
-  title: pageTitle,
-  description: pageDescription,
-  applicationName: 'Potrero Alto',
-  keywords: pageKeywords,
-  alternates: {
-    canonical: '/',
-    languages: {
-      'es-AR': '/',
-      es: '/',
-      en: '/',
-      pt: '/',
-      fr: '/',
-      de: '/',
-      it: '/',
-      'x-default': '/'
-    }
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'es_AR',
-    alternateLocale: ['en_US', 'pt_BR', 'fr_FR', 'de_DE', 'it_IT'],
-    url: '/',
-    siteName: 'Potrero Alto',
-    title: pageTitle,
-    description: pageDescription
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: pageTitle,
-    description: pageDescription
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1
-    }
-  },
+  ...buildPageMetadata({
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
+    path: '/',
+    image: DEFAULT_OG_IMAGE
+  }),
+  applicationName: SITE_NAME,
+  category: 'sports',
+  classification: 'Escalada deportiva',
   icons: {
     icon: '/potrero-alto-carabiner-orange-large.ico',
     apple: '/potrero-alto-carabiner-orange-large.ico'
@@ -124,7 +73,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Potrero Alto'
+    title: SITE_NAME
   }
 };
 

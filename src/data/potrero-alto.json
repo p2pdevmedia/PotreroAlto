@@ -1,8 +1,8 @@
 {
   "id": "6574670919",
   "name": "Potrero Alto",
-  "location": "San Luis, Argentina",
-  "description": "Datos de respaldo locales para subsectores y vías. Se usan cuando la API de theCrag no está disponible.",
+  "location": "San Martín de los Andes, Neuquén, Argentina",
+  "description": "Guía local de subsectores y vías de escalada deportiva de Potrero Alto en San Martín de los Andes, Neuquén.",
   "subsectors": [
     {
       "id": "fallback-pared-este",

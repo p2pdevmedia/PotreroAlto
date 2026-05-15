@@ -1,12 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWallet } from '@/app/wallet-provider';
 import Image from 'next/image';
+import Link from 'next/link';
 import SubsectorAccordion from '@/app/subsector-accordion';
 import Navbar from '@/app/_Navbar';
-import GradeDistributionChart, { GRADE_BUCKETS, normalizeGrade } from '@/app/grade-distribution-chart';
+import GradeDistributionChart from '@/app/grade-distribution-chart';
 import { convertGrade, detectPreferredLocale, getBucketGradeLabel, GRADE_SYSTEM_OPTIONS, LANGUAGE_OPTIONS, t } from '@/lib/i18n';
+import {
+  buildRoutePath,
+  GRADE_BUCKETS,
+  getRoutesWithSubsectors,
+  gradeBucketFromSlug,
+  gradeBucketToSlug,
+  normalizeGrade
+} from '@/lib/route-utils';
 
 const GRADE_CONVERSION_ROWS = [
   ['V+', '5.9', 'VI-', '17'],
@@ -60,39 +69,6 @@ function calculateDistanceInMeters(fromLat, fromLng, toLat, toLng) {
   return earthRadiusInMeters * c;
 }
 
-
-function slugifySegment(value, defaultValue = 'item') {
-  const normalized = String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-  return normalized || defaultValue;
-}
-
-function buildRoutePath(subsectorName, routeName) {
-  const sectorSlug = slugifySegment(subsectorName, 'subsector');
-  const routeSlug = slugifySegment(routeName, 'ruta');
-
-  return `/sector/${sectorSlug}/ruta/${routeSlug}`;
-}
-
-function gradeBucketToSlug(gradeBucket) {
-  return String(gradeBucket ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/\//g, '-slash-')
-    .replace(/\+/g, '-plus')
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function gradeBucketFromSlug(gradeSlug) {
-  return GRADE_BUCKETS.find((gradeBucket) => gradeBucketToSlug(gradeBucket) === gradeSlug) ?? null;
-}
 
 function ratingIconCount(stars) {
   const numericStars = Number.parseFloat(stars);
@@ -329,8 +305,9 @@ export default function HomeContent({
     }
   }, [selectedGradeRoute]);
 
-  const allRoutesWithSubsector = (data?.subsectors ?? []).flatMap((subsector) =>
-    (subsector.routes ?? []).map((route) => ({ ...route, subsectorName: subsector.name }))
+  const allRoutesWithSubsector = useMemo(
+    () => getRoutesWithSubsectors(data?.subsectors ?? []),
+    [data?.subsectors]
   );
   const rouletteMinIndex = Math.max(0, GRADE_BUCKETS.indexOf(rouletteMinGrade));
   const rouletteMaxIndex = Math.max(rouletteMinIndex, GRADE_BUCKETS.indexOf(rouletteMaxGrade));
@@ -908,13 +885,21 @@ export default function HomeContent({
       <footer className="mt-10 border-t border-slate-700/60 pt-6 text-center text-slate-300">
         <p className="text-sm">{t(locale, 'footerMadeWith')}</p>
         <p className="mt-3 text-sm">
-          <a href="/privacy-policy" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
+          <Link href="/privacy-policy" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
             {locale === 'en' ? 'Privacy Policy' : 'Política de privacidad'}
-          </a>
+          </Link>
           <span className="mx-2 text-slate-500">•</span>
-          <a href="/terms-of-service" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
+          <Link href="/terms-of-service" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
             {locale === 'en' ? 'Terms of Service' : 'Condiciones del servicio'}
-          </a>
+          </Link>
+          <span className="mx-2 text-slate-500">•</span>
+          <Link href="/rutas" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
+            {locale === 'en' ? 'Route index' : 'Índice de vías'}
+          </Link>
+          <span className="mx-2 text-slate-500">•</span>
+          <Link href="/grados" className="underline decoration-slate-400 underline-offset-4 hover:text-white">
+            {locale === 'en' ? 'Grades' : 'Grados'}
+          </Link>
         </p>
         <a
           href="https://link.mercadopago.com.ar/potreroalto"
