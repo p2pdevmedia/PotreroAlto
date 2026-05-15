@@ -575,6 +575,25 @@
       "sortOrder": 3,
       "routes": [
         {
+          "id": "derrumbe-7",
+          "subsectorId": "fallback-derrumbe",
+          "name": "Y ahora que?",
+          "grade": "7a+",
+          "stars": 2,
+          "type": "Sport",
+          "description": "",
+          "image": null,
+          "lengthMeters": 22,
+          "quickdraws": 13,
+          "equippedBy": "иван & JP",
+          "equippedDate": "10 Mar",
+          "firstAscentBy": "JP",
+          "firstAscentDate": "12 Mar",
+          "latitude": null,
+          "longitude": null,
+          "sortOrder": 0
+        },
+        {
           "id": "derrumbe-1",
           "subsectorId": "fallback-derrumbe",
           "name": "Matematicamenteposible",
@@ -591,7 +610,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 0
+          "sortOrder": 1
         },
         {
           "id": "derrumbe-2",
@@ -610,7 +629,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 1
+          "sortOrder": 2
         },
         {
           "id": "derrumbe-3",
@@ -629,7 +648,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 2
+          "sortOrder": 3
         },
         {
           "id": "derrumbe-4",
@@ -648,7 +667,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 3
+          "sortOrder": 4
         },
         {
           "id": "derrumbe-5",
@@ -667,7 +686,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 4
+          "sortOrder": 5
         },
         {
           "id": "derrumbe-6",
@@ -686,7 +705,7 @@
           "firstAscentDate": "10 May 2025",
           "latitude": null,
           "longitude": null,
-          "sortOrder": 5
+          "sortOrder": 6
         }
       ]
     },
@@ -1042,6 +1061,25 @@
       "sortOrder": 6,
       "routes": [
         {
+          "id": "croto-7",
+          "subsectorId": "fallback-croto",
+          "name": "Puerco Araña",
+          "grade": "7a",
+          "stars": null,
+          "type": "Sport",
+          "description": "",
+          "image": null,
+          "lengthMeters": 17,
+          "quickdraws": 12,
+          "equippedBy": "Tomas Genova & иван",
+          "equippedDate": "10 Abr",
+          "firstAscentBy": null,
+          "firstAscentDate": null,
+          "latitude": null,
+          "longitude": null,
+          "sortOrder": 0
+        },
+        {
           "id": "croto-1",
           "subsectorId": "fallback-croto",
           "name": "sin terminar",
@@ -1058,13 +1096,13 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 0
+          "sortOrder": 1
         },
         {
           "id": "croto-2",
           "subsectorId": "fallback-croto",
           "name": "Aliento de chancho",
-          "grade": "8?",
+          "grade": "7c+",
           "stars": null,
           "type": "Sport",
           "description": "",
@@ -1077,7 +1115,26 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 1
+          "sortOrder": 2
+        },
+        {
+          "id": "croto-8",
+          "subsectorId": "fallback-croto",
+          "name": "Deja me Soñar",
+          "grade": "8a - b",
+          "stars": 3,
+          "type": "Sport",
+          "description": "Primer octavo en potrero?",
+          "image": null,
+          "lengthMeters": 22,
+          "quickdraws": 13,
+          "equippedBy": "Eche & иван",
+          "equippedDate": "1 Abr",
+          "firstAscentBy": null,
+          "firstAscentDate": null,
+          "latitude": null,
+          "longitude": null,
+          "sortOrder": 3
         },
         {
           "id": "croto-3",
@@ -1096,13 +1153,13 @@
           "firstAscentDate": "8 Feb 2026",
           "latitude": null,
           "longitude": null,
-          "sortOrder": 2
+          "sortOrder": 4
         },
         {
           "id": "croto-4",
           "subsectorId": "fallback-croto",
           "name": "Mariscal the campo",
-          "grade": "Sin grado",
+          "grade": "6c",
           "stars": null,
           "type": "Sport",
           "description": "",
@@ -1115,7 +1172,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 3
+          "sortOrder": 5
         },
         {
           "id": "croto-5",
@@ -1134,7 +1191,7 @@
           "firstAscentDate": null,
           "latitude": null,
           "longitude": null,
-          "sortOrder": 4
+          "sortOrder": 6
         },
         {
           "id": "croto-6",
@@ -1153,7 +1210,7 @@
           "firstAscentDate": "9 Feb 2026",
           "latitude": null,
           "longitude": null,
-          "sortOrder": 5
+          "sortOrder": 7
         }
       ]
     }
