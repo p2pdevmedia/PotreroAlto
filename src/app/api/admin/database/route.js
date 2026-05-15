@@ -18,6 +18,11 @@ function normalizePublicImagePath(value) {
   return normalized.startsWith('/images/') ? normalized : null;
 }
 
+function normalizeRouteImage(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized || null;
+}
+
 function sanitizeSubsector(subsector, subsectorIndex = 0) {
   const routes = Array.isArray(subsector?.routes) ? subsector.routes : [];
 
@@ -43,7 +48,7 @@ function sanitizeRoute(route, { subsectorIndex = 0, routeIndex = 0 } = {}) {
     description: route?.description ? String(route.description) : '',
     lengthMeters: route?.lengthMeters === '' || route?.lengthMeters == null ? null : Number(route.lengthMeters),
     quickdraws: route?.quickdraws === '' || route?.quickdraws == null ? null : Number(route.quickdraws),
-    image: normalizePublicImagePath(route?.image),
+    image: normalizeRouteImage(route?.image),
     latitude: route?.latitude === '' || route?.latitude == null ? null : Number(route.latitude),
     longitude: route?.longitude === '' || route?.longitude == null ? null : Number(route.longitude),
     equippedBy: route?.equippedBy ? String(route.equippedBy) : null,
