@@ -1,12 +1,12 @@
 # Potrero Alto - Next.js + Tailwind + Supabase PostgreSQL
 
-Aplicación web para mostrar información de escalada del sector **Potrero Alto** usando **Supabase PostgreSQL** como fuente única de datos.
+Aplicación web para mostrar información de escalada del sector **Potrero Alto** usando un archivo **JSON local** como fuente de datos principal.
 
 ## Objetivo
 
-- Guardar toda la información de sector, subsectores y vías en Supabase.
+- Guardar toda la información de sector, subsectores y vías en `src/data/potrero-alto.json`.
 - Eliminar dependencia de theCrag para lectura runtime.
-- Mantener edición desde `/admin`, persistiendo en PostgreSQL.
+- Mantener edición desde `/admin`, persistiendo en JSON local.
 
 ## Ejecutar en local
 

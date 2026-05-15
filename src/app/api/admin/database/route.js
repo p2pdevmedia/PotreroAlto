@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mapRouteRow } from '@/lib/supabase-models';
-import { deleteRows, selectRows, upsertRows } from '@/lib/supabase';
+import { readLocalDataset, writeLocalDataset } from '@/lib/local-dataset';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Simonalacacaliza!';
 const POTRERO_ALTO_SECTOR_ID = '6574670919';
@@ -13,7 +12,6 @@ function validatePassword(request) {
   const password = request.headers.get('x-admin-password')?.trim();
   return password && password === ADMIN_PASSWORD;
 }
-
 
 function normalizePublicImagePath(value) {
   const normalized = String(value ?? '').trim();
@@ -57,267 +55,96 @@ function sanitizeRoute(route, { subsectorIndex = 0, routeIndex = 0 } = {}) {
 }
 
 function sanitizeSubsectors(subsectors) {
-  if (!Array.isArray(subsectors)) {
-    throw new Error('Subsectores inválidos.');
-  }
-
+  if (!Array.isArray(subsectors)) throw new Error('Subsectores inválidos.');
   return subsectors.map((subsector, subsectorIndex) => sanitizeSubsector(subsector, subsectorIndex));
 }
 
-function mapSubsectorWithoutRoutes(subsector) {
-  return {
-    id: subsector.id,
-    name: subsector.name,
-    sector: subsector.sector,
-    description: subsector.description ?? '',
-    image: normalizePublicImagePath(subsector.image),
-    routes: []
-  };
-}
-
-async function saveSectorInfo(body) {
-  await upsertRows(
-    'sectors',
-    [
-      {
-        id: POTRERO_ALTO_SECTOR_ID,
-        name: body?.name || 'Potrero Alto',
-        location: body?.location || 'San Luis, Argentina',
-        description: body?.description || ''
-      }
-    ],
-    { onConflict: 'id' }
-  );
-}
-
-async function saveFullDataset(body) {
-  const subsectors = sanitizeSubsectors(body?.subsectors);
-
-  await saveSectorInfo(body);
-  await deleteRows('routes', { sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
-  await deleteRows('subsectors', { sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
-
-  const subsectorPayload = subsectors.map((subsector) => ({
-    id: subsector.id,
-    sector_id: POTRERO_ALTO_SECTOR_ID,
-    name: subsector.name,
-    sector: subsector.sector,
-    description: subsector.description,
-    image: subsector.image,
-    sort_order: subsector.sortOrder
-  }));
-
-  if (subsectorPayload.length) {
-    await upsertRows('subsectors', subsectorPayload, { onConflict: 'id' });
-  }
-
-  const routesPayload = subsectors.flatMap((subsector) =>
-    subsector.routes.map((route) => ({
-      id: route.id,
-      sector_id: POTRERO_ALTO_SECTOR_ID,
-      subsector_id: subsector.id,
-      name: route.name,
-      grade: route.grade,
-      stars: route.stars,
-      type: route.type,
-      description: route.description,
-      image: route.image,
-      length_meters: route.lengthMeters,
-      quickdraws: route.quickdraws,
-      equipped_by: route.equippedBy,
-      equipped_date: route.equippedDate,
-      first_ascent_by: route.firstAscentBy,
-      first_ascent_date: route.firstAscentDate,
-      latitude: route.latitude,
-      longitude: route.longitude,
-      sort_order: route.sortOrder
-    }))
-  );
-
-  if (routesPayload.length) {
-    await upsertRows('routes', routesPayload, { onConflict: 'id' });
-  }
-
-  return { ok: true, mode: 'full', subsectorCount: subsectors.length };
-}
-
-async function saveSingleSubsector(body) {
-  const subsector = sanitizeSubsector(body?.subsector);
-
-  await upsertRows(
-    'subsectors',
-    [
-      {
-        id: subsector.id,
-        sector_id: POTRERO_ALTO_SECTOR_ID,
-        name: subsector.name,
-        sector: subsector.sector,
-        description: subsector.description,
-        image: subsector.image,
-        sort_order: subsector.sortOrder
-      }
-    ],
-    { onConflict: 'id' }
-  );
-
-  return { ok: true, mode: 'subsector', subsectorId: subsector.id };
-}
-
-async function deleteSingleRoute(body) {
-  const routeId = String(body?.routeId ?? '').trim();
-
-  if (!routeId) {
-    throw new Error('Falta routeId para eliminar la vía.');
-  }
-
-  await deleteRows('routes', { id: `eq.${routeId}`, sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
-  return { ok: true, mode: 'delete-route', routeId };
-}
-
-async function deleteSingleSubsector(body) {
-  const subsectorId = String(body?.subsectorId ?? '').trim();
-
-  if (!subsectorId) {
-    throw new Error('Falta subsectorId para eliminar el subsector.');
-  }
-
-  await deleteRows('subsectors', { id: `eq.${subsectorId}`, sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}` });
-  return { ok: true, mode: 'delete-subsector', subsectorId };
-}
-
-async function saveSingleRoute(body) {
-  const route = sanitizeRoute(body?.route);
-
-  if (!route.subsectorId) {
-    throw new Error('La vía no tiene subsector asociado.');
-  }
-
-  await upsertRows(
-    'routes',
-    [
-      {
-        id: route.id,
-        sector_id: POTRERO_ALTO_SECTOR_ID,
-        subsector_id: route.subsectorId,
-        name: route.name,
-        grade: route.grade,
-        stars: route.stars,
-        type: route.type,
-        description: route.description,
-        image: route.image,
-        length_meters: route.lengthMeters,
-        quickdraws: route.quickdraws,
-        equipped_by: route.equippedBy,
-        equipped_date: route.equippedDate,
-        first_ascent_by: route.firstAscentBy,
-        first_ascent_date: route.firstAscentDate,
-        latitude: route.latitude,
-        longitude: route.longitude,
-        sort_order: route.sortOrder
-      }
-    ],
-    { onConflict: 'id' }
-  );
-
-  return { ok: true, mode: 'route', routeId: route.id, subsectorId: route.subsectorId };
-}
-
 export async function GET(request) {
-  if (!validatePassword(request)) {
-    return unauthorized();
-  }
+  if (!validatePassword(request)) return unauthorized();
 
   try {
+    const dataset = await readLocalDataset();
     const { searchParams } = new URL(request.url);
     const subsectorId = searchParams.get('subsectorId')?.trim();
 
     if (subsectorId) {
-      const routesRows = await selectRows('routes', {
-        select:
-          'id,subsector_id,name,grade,stars,type,description,image,length_meters,quickdraws,equipped_by,equipped_date,first_ascent_by,first_ascent_date,latitude,longitude,sort_order',
-        sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
-        subsector_id: `eq.${subsectorId}`,
-        order: 'sort_order.asc,name.asc'
-      });
-
-      return NextResponse.json({
-        subsectorId,
-        routes: (routesRows ?? []).map((routeRow) => ({
-          ...mapRouteRow(routeRow),
-          subsectorId: routeRow.subsector_id,
-          sortOrder: routeRow.sort_order
-        }))
-      });
+      const subsector = dataset.subsectors.find((item) => item.id === subsectorId);
+      return NextResponse.json({ subsectorId, routes: subsector?.routes ?? [] });
     }
 
-    const [sectorRows, subsectorsRows] = await Promise.all([
-      selectRows('sectors', {
-        select: 'id,name,location,description',
-        id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
-        limit: '1'
-      }),
-      selectRows('subsectors', {
-        select: 'id,sector_id,name,sector,description,image,sort_order',
-        sector_id: `eq.${POTRERO_ALTO_SECTOR_ID}`,
-        order: 'sort_order.asc,name.asc'
-      })
-    ]);
-
-    const sector = sectorRows?.[0] ?? {
-      id: POTRERO_ALTO_SECTOR_ID,
-      name: 'Potrero Alto',
-      location: 'San Luis, Argentina',
-      description: ''
-    };
-
     return NextResponse.json({
-      id: sector.id,
-      name: sector.name,
-      location: sector.location,
-      description: sector.description,
-      subsectors: (subsectorsRows ?? []).map((subsector) => mapSubsectorWithoutRoutes(subsector))
+      id: dataset.id,
+      name: dataset.name,
+      location: dataset.location,
+      description: dataset.description,
+      subsectors: (dataset.subsectors ?? []).map(({ routes, ...subsector }) => ({ ...subsector, routes: [] }))
     });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: `No se pudo leer desde Supabase: ${error instanceof Error ? error.message : 'error desconocido'}`
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: `No se pudo leer JSON local: ${error instanceof Error ? error.message : 'error desconocido'}` }, { status: 500 });
   }
 }
 
 export async function POST(request) {
-  if (!validatePassword(request)) {
-    return unauthorized();
-  }
+  if (!validatePassword(request)) return unauthorized();
 
   try {
     const body = await request.json();
+    const dataset = await readLocalDataset();
 
-    let result;
     if (body?.mode === 'route') {
-      result = await saveSingleRoute(body);
-    } else if (body?.mode === 'subsector') {
-      result = await saveSingleSubsector(body);
-    } else if (body?.mode === 'delete-route') {
-      result = await deleteSingleRoute(body);
-    } else if (body?.mode === 'delete-subsector') {
-      result = await deleteSingleSubsector(body);
-    } else if (body?.mode === 'sector') {
-      await saveSectorInfo(body?.sector ?? {});
-      result = { ok: true, mode: 'sector' };
-    } else {
-      result = await saveFullDataset(body);
+      const route = sanitizeRoute(body?.route);
+      if (!route.subsectorId) throw new Error('La vía no tiene subsector asociado.');
+      const subsectors = [...dataset.subsectors];
+      const idx = subsectors.findIndex((s) => s.id === route.subsectorId);
+      if (idx < 0) throw new Error('Subsector no encontrado.');
+      const routes = [...(subsectors[idx].routes ?? [])];
+      const routeIdx = routes.findIndex((r) => r.id === route.id);
+      if (routeIdx >= 0) routes[routeIdx] = route; else routes.push(route);
+      subsectors[idx] = { ...subsectors[idx], routes };
+      await writeLocalDataset({ ...dataset, subsectors });
+      return NextResponse.json({ ok: true, mode: 'route', routeId: route.id, subsectorId: route.subsectorId });
     }
 
-    return NextResponse.json(result);
+    if (body?.mode === 'subsector') {
+      const subsector = sanitizeSubsector(body?.subsector);
+      const subsectors = [...dataset.subsectors];
+      const idx = subsectors.findIndex((s) => s.id === subsector.id);
+      if (idx >= 0) subsectors[idx] = { ...subsectors[idx], ...subsector, routes: subsectors[idx].routes ?? [] };
+      else subsectors.push({ ...subsector, routes: [] });
+      await writeLocalDataset({ ...dataset, subsectors });
+      return NextResponse.json({ ok: true, mode: 'subsector', subsectorId: subsector.id });
+    }
+
+    if (body?.mode === 'delete-route') {
+      const routeId = String(body?.routeId ?? '').trim();
+      const subsectors = dataset.subsectors.map((s) => ({ ...s, routes: (s.routes ?? []).filter((r) => r.id !== routeId) }));
+      await writeLocalDataset({ ...dataset, subsectors });
+      return NextResponse.json({ ok: true, mode: 'delete-route', routeId });
+    }
+
+    if (body?.mode === 'delete-subsector') {
+      const subsectorId = String(body?.subsectorId ?? '').trim();
+      const subsectors = dataset.subsectors.filter((s) => s.id !== subsectorId);
+      await writeLocalDataset({ ...dataset, subsectors });
+      return NextResponse.json({ ok: true, mode: 'delete-subsector', subsectorId });
+    }
+
+    if (body?.mode === 'sector') {
+      await writeLocalDataset({ ...dataset, id: POTRERO_ALTO_SECTOR_ID, ...(body?.sector ?? {}) });
+      return NextResponse.json({ ok: true, mode: 'sector' });
+    }
+
+    const subsectors = sanitizeSubsectors(body?.subsectors);
+    await writeLocalDataset({
+      id: POTRERO_ALTO_SECTOR_ID,
+      name: body?.name || 'Potrero Alto',
+      location: body?.location || 'San Luis, Argentina',
+      description: body?.description || '',
+      subsectors
+    });
+
+    return NextResponse.json({ ok: true, mode: 'full', subsectorCount: subsectors.length });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: `No se pudo guardar en Supabase: ${error instanceof Error ? error.message : 'error desconocido'}`
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: `No se pudo guardar JSON local: ${error instanceof Error ? error.message : 'error desconocido'}` }, { status: 500 });
   }
 }
