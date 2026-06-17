@@ -25,26 +25,24 @@ Crear `.env.local` con:
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_xxx
 NEXT_PUBLIC_SITE_URL=https://tu-dominio.com
-PRIVY_APP_ID=cmmnwy43j02im0bjgnc5ndmgh
 ```
 
 La app usa la REST API de Supabase (`/rest/v1`) con esas variables para lecturas/escrituras.
-
 
 ## Migración SQL a Supabase
 
 1. Abrí Supabase SQL Editor.
 2. Ejecutá `db/schema.sql` para crear tablas e índices.
 3. Ejecutá `db/seed.sql` para cargar la base inicial en Supabase.
-4. Ejecutá `db/migrations/001_privy_auth_schema.sql` para habilitar login con Privy (wallets + redes sociales).
-5. Ejecutá `db/migrations/002_seed_privy_user.sql` para crear un usuario inicial de ejemplo.
-
+4. (Opcional) Ejecutá `db/migrations/002_seed_privy_user.sql` si querés datos de ejemplo en `app_users`.
 
 ## Modelo de datos
 
 - `sectors`: sector principal (Potrero Alto).
 - `subsectors`: subsectores por sector.
 - `routes`: vías por subsector, con metadata técnica (grado, chapas, longitud, equipador, FA, coordenadas, etc).
+- `app_users`: usuarios de autenticación nativa (email/password o wallet).
+- `app_user_identities`: identidades vinculadas (wallet y otras fuentes).
 
 ## Notas
 
@@ -53,44 +51,16 @@ La app usa la REST API de Supabase (`/rest/v1`) con esas variables para lecturas
 - Mapeo de modelos en `src/lib/supabase-models.js`.
 - Edición admin usa `/api/admin/database` y persiste en Supabase.
 
+## Login nativo (email/password + wallet)
 
-## Login con Privy (wallet + social)
+Se agregó el endpoint `POST /api/auth/native` con acciones:
 
-Se agregó el endpoint `POST /api/auth/privy` para sincronizar usuarios autenticados con Privy en Supabase.
+- `login`: email + password.
+- `signup`: registro con email + password.
+- `recover`: solicitud de recuperación por email.
+- `wallet`: login con wallet inyectada.
 
-- Tabla principal: `app_users`.
-- Tabla de identidades vinculadas (`wallet`, `google`, `twitter`, etc): `app_user_identities`.
-
-Ejemplo de payload:
-
-```json
-{
-  "user": {
-    "id": "did:privy:abc123",
-    "name": "Juan Escalador",
-    "email": { "address": "juan@example.com" },
-    "profilePictureUrl": "https://...",
-    "isGuest": false,
-    "createdAt": "2026-03-12T10:00:00.000Z",
-    "linkedAccounts": [
-      { "type": "wallet", "address": "0xabc...", "chainType": "ethereum" },
-      { "type": "google", "email": "juan@example.com", "subject": "google-oauth-id" }
-    ]
-  }
-}
-```
-
-El endpoint hace upsert automático de usuario e identidades.
-
-### Verificación automática de tokens de Privy
-
-El endpoint `POST /api/auth/privy` valida automáticamente el access token firmado por Privy cuando existe `PRIVY_APP_ID` (o `NEXT_PUBLIC_PRIVY_APP_ID`) en variables de entorno.
-
-- Header soportado: `Authorization: Bearer <access_token>` (o `x-privy-token`).
-- JWKS usado para validación de firma: `https://auth.privy.io/api/v1/apps/<PRIVY_APP_ID>/jwks.json`.
-- Además, se valida que el token pertenezca al app ID configurado y que `sub` coincida con `user.id` del payload enviado al backend.
-
-Si no configurás `PRIVY_APP_ID`, la ruta mantiene compatibilidad y no fuerza validación de token.
+La UI mantiene el look & feel de Privy, pero proveedores sociales/passkey quedan deshabilitados (en gris) mientras se usa autenticación nativa.
 
 ## QA manual sugerido para `/admin`
 
